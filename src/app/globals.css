@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #E51A4B;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  color: #111827;
+  background: #ffffff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-full bg-brand px-4 py-2 text-white text-sm font-semibold hover:bg-brand-600 active:scale-[0.99] transition;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold hover:bg-gray-50 transition;
+}
+
+/* marquee styles */
+.marquee {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  user-select: none;
+}
+.marquee__track {
+  display: flex;
+  white-space: nowrap;
+  will-change: transform;
+  animation: marquee-scroll 90s linear infinite;
+}
+.marquee__item {
+  @apply px-6 sm:px-10 font-extrabold text-white/95; 
+}
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* slow spin for circular text */
+@keyframes spin-slower {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slower {
+  animation: spin-slower 14s linear infinite;
+}
+
