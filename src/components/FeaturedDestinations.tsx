@@ -1,30 +1,24 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { destinations as fallback } from '@/data/destinations';
 
-const destinations = [
-  {
-    slug: 'wayanad',
-    name: 'Wayanad',
-    image: 'https://images.unsplash.com/photo-1563738066387-c2abdbbd3061?q=80&w=1200&auto=format&fit=crop'
-  },
-  {
-    slug: 'munnar',
-    name: 'Munnar',
-    image: 'https://images.unsplash.com/photo-1530032099965-1993a4b9ad1a?q=80&w=1200&auto=format&fit=crop'
-  },
-  {
-    slug: 'coorg',
-    name: 'Coorg',
-    image: 'https://images.unsplash.com/photo-1617814074383-6b6564a5bc2a?q=80&w=1200&auto=format&fit=crop'
-  },
-  {
-    slug: 'alleppey',
-    name: 'Alleppey',
-    image: 'https://images.unsplash.com/photo-1563293941-669ce8d2dc83?q=80&w=1200&auto=format&fit=crop'
+type Card = { slug: string; name: string; image: string };
+
+async function fetchFeatured(): Promise<Card[]> {
+  try {
+    const base = process.env.NEXT_PUBLIC_SITE_URL ?? '';
+    const res = await fetch(`${base}/api/destinations`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed');
+    const json = await res.json();
+    const rows = (json.data as Array<any>) || [];
+    return rows.slice(0, 4).map((d: any) => ({ slug: d.slug, name: d.name, image: d.coverImage }));
+  } catch {
+    return fallback.slice(0, 4).map((d) => ({ slug: d.slug, name: d.name, image: d.coverImage }));
   }
-];
+}
 
-export function FeaturedDestinations() {
+export async function FeaturedDestinations() {
+  const destinations = await fetchFeatured();
   return (
     <section className="mt-16 sm:mt-24">
       <div className="container">

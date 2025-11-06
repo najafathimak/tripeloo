@@ -9,7 +9,10 @@ const About = () => {
         <Image
           src={assets.about}
           alt="Luxury stay background"
-          className="absolute inset-0 w-full h-full object-cover opacity-10"
+          fill
+          priority
+          sizes="100vw"
+          className="absolute inset-0 object-cover opacity-10"
         />
 
         <div className="relative z-10">
@@ -23,7 +26,9 @@ const About = () => {
             <Image
               src={assets.staysfeatures}
               alt="Tripeloo"
-              className="w-full md:max-w-[400px] rounded-lg shadow-md"
+              width={400}
+              height={300}
+              className="w-full md:max-w-[400px] rounded-lg shadow-md h-auto"
             />
 
             <div className="flex flex-col gap-6 md:w-2/4 text-sm text-gray-600">

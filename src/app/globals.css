@@ -40,7 +40,7 @@ html {
   display: flex;
   white-space: nowrap;
   will-change: transform;
-  animation: marquee-scroll 90s linear infinite;
+  animation: marquee-scroll 140s linear infinite;
 }
 .marquee__item {
   @apply px-6 sm:px-10 font-extrabold text-white/95; 
@@ -58,4 +58,40 @@ html {
 .animate-spin-slower {
   animation: spin-slower 14s linear infinite;
 }
+
+/* hero slogan slide-up */
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-slogan {
+  animation: slide-up-fade 800ms ease-out both;
+}
+.hero-slogan.delay-150 { animation-delay: 150ms; }
+.hero-slogan.delay-300 { animation-delay: 300ms; }
+
+/* mobile sidebar animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in { animation: fade-in 250ms ease-out both; }
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.animate-fade-out { animation: fade-out 200ms ease-in both; }
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in-left { animation: slide-in-left 280ms ease-out both; }
+
+@keyframes slide-out-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+.animate-slide-out-left { animation: slide-out-left 240ms ease-in both; }
 

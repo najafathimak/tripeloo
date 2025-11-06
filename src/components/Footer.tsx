@@ -29,7 +29,7 @@ export function Footer() {
           <div>
             <div className="font-semibold">Contact</div>
             <ul className="mt-2 space-y-1 text-sm">
-              <li>Email: hello@tripeloo.com</li>
+              <li>Email: <a className="hover:text-brand underline underline-offset-2" href="mailto:hello@tripeloo.com">hello@tripeloo.com</a></li>
               <li>Phone: +91 00000 00000</li>
             </ul>
           </div>
