@@ -1,27 +1,26 @@
 export function AboutBand() {
   return (
     <section className="bg-gray-50 border-y border-gray-100">
-      <div className="container py-8 sm:py-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-sm sm:text-base text-gray-700 max-w-3xl">
-            Tripeloo helps you discover handpicked stays, curated activities, and seamless trips across India. 
-            Chat with our experts on WhatsApp or call us to plan your next getaway.
+      <div className="container py-10 sm:py-14">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl sm:text-3xl font-serif font-semibold text-gray-900">
+            Discover India with Tripeloo
+          </h2>
+          <p className="text-gray-700 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-serif">
+            At Tripeloo, we handcraft travel experiences that celebrate India’s diverse beauty — 
+            from misty mountains to sun-kissed beaches, royal heritage, and hidden escapes. 
+            Whether you seek adventure or serenity, our curated stays and guided journeys ensure every trip feels personal and effortless.
           </p>
-          <div className="flex items-center gap-3">
+          <div className="pt-4">
             <a
-              href="https://wa.me/0000000000"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary"
+              href="mailto:hello@tripeloo.com"
+              className="inline-block bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm sm:text-base font-medium hover:bg-gray-800 transition"
             >
-              WhatsApp Us
+              hello@tripeloo.com
             </a>
-            <a href="tel:+910000000000" className="btn-ghost">Call Now</a>
           </div>
         </div>
       </div>
     </section>
   );
 }
-
-

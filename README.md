@@ -1,3 +1,13 @@
+## Environment variables
+
+Create a `.env.local` with:
+
+```
+MONGODB_URI=
+MONGODB_DB=tripeloo
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
 # Tripeloo Booking Platform (Landing)
 
 Mobile-first Next.js landing page with Tailwind, SEO, and modular config.
