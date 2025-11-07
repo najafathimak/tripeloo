@@ -85,7 +85,7 @@ const rooms = [
     ],
   },
   {
-    id: 4,
+    id: 5,
     name: "Luxury Villa",
     thumb:
       "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=400&q=80",
@@ -104,7 +104,7 @@ const rooms = [
     ],
   },
   {
-    id: 5,
+    id: 6,
     name: "Luxury Villa",
     thumb:
       "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=400&q=80",
