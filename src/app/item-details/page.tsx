@@ -67,9 +67,9 @@ const ListingDetails = () => {
             <div className=" mb-5">
               <PriceSection />
             </div>
-            <div className="px-4 sm:px-6 mb-5">
+            {/* <div className="px-4 sm:px-6 mb-5">
               <LocationSection />
-            </div>
+            </div> */}
             <div className="px-4 sm:px-6 mb-5">
               <ReviewsSection />
             </div>

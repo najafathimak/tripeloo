@@ -1,5 +1,4 @@
 "use client";
-
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -26,10 +25,26 @@ type Stay = {
   highlights: string[];
 };
 
+type Activity = {
+  id: string;
+  name: string;
+  coverImage: string;
+  duration: string;
+  price: number;
+};
+
+type Trip = {
+  id: string;
+  name: string;
+  coverImage: string;
+  duration: string;
+  price: number;
+};
+
 const stayData: Record<string, Stay[]> = {
   wayanad: [
     {
-      id: "stay1",
+      id: "mountain",
       name: "Wayanad Jungle Resort",
       coverImage:
         "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1600&auto=format&fit=crop",
@@ -39,12 +54,74 @@ const stayData: Record<string, Stay[]> = {
   ],
   goa: [
     {
-      id: "stay1",
+      id: "beachside",
       name: "Goa Beachside Retreat",
       coverImage:
-        "https://images.unsplash.com/photo-1546484959-f9a53db89f9e?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1551632811-561732d1e306?q=80&w=1600&auto=format&fit=crop",
       startingPrice: 4499,
       highlights: ["Beachfront rooms", "Pool bar", "Live music evenings"],
+    },
+  ],
+};
+
+const activitiesData: Record<string, Activity[]> = {
+  wayanad: [
+    {
+      id: "trekking",
+      name: "Chembra Peak Trek",
+      coverImage:
+        "https://images.unsplash.com/photo-1551632811-561732d1e306?q=80&w=1600&auto=format&fit=crop",
+      duration: "6 hours",
+      price: 1500,
+    },
+    {
+      id: "wildlife",
+      name: "Wildlife Safari",
+      coverImage:
+        "https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=1600&auto=format&fit=crop",
+      duration: "4 hours",
+      price: 2000,
+    },
+  ],
+  goa: [
+    {
+      id: "watersports",
+      name: "Water Sports Package",
+      coverImage:
+        "https://images.unsplash.com/photo-1505142468610-359e7d316be0?q=80&w=1600&auto=format&fit=crop",
+      duration: "3 hours",
+      price: 2500,
+    },
+  ],
+};
+
+const tripsData: Record<string, Trip[]> = {
+  wayanad: [
+    {
+      id: "camping",
+      name: "Forest Camping Experience",
+      coverImage:
+        "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?q=80&w=1600&auto=format&fit=crop",
+      duration: "2 days",
+      price: 5000,
+    },
+    {
+      id: "heritage",
+      name: "Heritage Tour",
+      coverImage:
+        "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1600&auto=format&fit=crop",
+      duration: "3 days",
+      price: 8000,
+    },
+  ],
+  goa: [
+    {
+      id: "island",
+      name: "Island Hopping Tour",
+      coverImage:
+        "https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=1600&auto=format&fit=crop",
+      duration: "1 day",
+      price: 3500,
     },
   ],
 };
@@ -60,7 +137,6 @@ function StayListingsContent() {
 
   useEffect(() => setIsVisible(true), []);
 
-  // No destination provided — redirect after 5s
   useEffect(() => {
     if (!rawDestination) {
       const timer = setTimeout(() => router.push("/destinations"), 5000);
@@ -68,26 +144,48 @@ function StayListingsContent() {
     }
   }, [rawDestination, router]);
 
+  const handleItemClick = (itemId: string) => {
+    if (!rawDestination) return;
+
+    const destination = encodeURIComponent(rawDestination);
+    let queryParam = "";
+
+    if (activeTab === "Stays") {
+      queryParam = `stay=${itemId}`;
+    } else if (activeTab === "Things to Do") {
+      queryParam = `things-to-do=${itemId}`;
+    } else if (activeTab === "Trips") {
+      queryParam = `trips=${itemId}`;
+    }
+
+    router.push(`/item-details?destination=${destination}&${queryParam}`);
+  };
+
   if (!rawDestination) {
     return (
-      <section className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-b from-white via-[#FFF8F9] to-[#FFF0F3] text-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-orange-50 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-lg"
+          className="text-center max-w-md"
         >
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+          <FaCompass className="text-6xl text-[#E51A4B] mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
             Choose Your Destination First
           </h1>
-          <p className="text-base md:text-lg text-gray-600 mb-6 leading-relaxed">
+          <p className="text-gray-600 mb-6">
             Redirecting you to the destination selection page in 5 seconds
           </p>
-          <div className="animate-pulse text-[#E51A4B] text-sm md:text-base font-semibold tracking-wide">
-            /destinations
-          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push("/destinations")}
+            className="bg-[#E51A4B] text-white px-6 py-3 rounded-full font-semibold"
+          >
+            Go to Destinations
+          </motion.button>
         </motion.div>
-      </section>
+      </div>
     );
   }
 
@@ -96,103 +194,72 @@ function StayListingsContent() {
     Object.keys(stayData).find((key) =>
       decodedDestination.includes(key.toLowerCase())
     ) || null;
+
   const stays = matchedKey ? stayData[matchedKey] : null;
+  const activities = matchedKey ? activitiesData[matchedKey] : null;
+  const trips = matchedKey ? tripsData[matchedKey] : null;
+
   const hasStays = stays && stays.length > 0;
+  const hasActivities = activities && activities.length > 0;
+  const hasTrips = trips && trips.length > 0;
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-gradient-to-b from-white via-[#FFF8F9] to-[#FFF0F3] pb-16 md:pb-20 pt-16 md:pt-20">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br mt-12 from-blue-50 via-white to-pink-50">
       {/* Dynamic Background Animation */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {activeTab === "Stays" && (
           <>
             {/* Sun */}
             <motion.div
-              className="absolute top-6 md:top-10 left-4 md:left-16 text-[#E51A4B] text-4xl md:text-6xl opacity-20 md:opacity-30"
-              animate={{ y: [0, 20, 0], rotate: [0, 180, 360] }}
-              transition={{ duration: 8, repeat: Infinity }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 0.6 }}
+              transition={{ duration: 1 }}
+              className="absolute top-10 right-10"
             >
-              <FaSun />
+              <FaSun className="text-yellow-400 text-8xl" />
             </motion.div>
-            
+
             {/* Clouds */}
             <motion.div
-              className="absolute top-16 md:top-24 left-0 text-gray-300 text-3xl md:text-5xl opacity-30"
               animate={{ x: [0, 100, 0] }}
+              transition={{ duration: 20, repeat: Infinity }}
+              className="absolute top-20 left-10"
+            >
+              <FaCloud className="text-white text-6xl opacity-40" />
+            </motion.div>
+            <motion.div
+              animate={{ x: [0, -80, 0] }}
               transition={{ duration: 25, repeat: Infinity }}
+              className="absolute top-40 right-20"
             >
-              <FaCloud />
+              <FaCloud className="text-white text-5xl opacity-30" />
             </motion.div>
-            <motion.div
-              className="absolute top-32 md:top-40 right-10 text-gray-200 text-2xl md:text-4xl opacity-25"
-              animate={{ x: [100, -50, 100] }}
-              transition={{ duration: 35, repeat: Infinity }}
-            >
-              <FaCloud />
-            </motion.div>
-            <motion.div
-              className="absolute top-48 md:top-56 left-1/3 text-gray-300 text-2xl md:text-3xl opacity-20"
-              animate={{ x: [-30, 80, -30] }}
-              transition={{ duration: 30, repeat: Infinity }}
-            >
-              <FaCloud />
-            </motion.div>
-            
+
             {/* Airplanes */}
             <motion.div
-              className="absolute bottom-1/4 left-[-80px] md:left-[-120px] text-[#E51A4B] text-3xl md:text-5xl rotate-12"
-              animate={{ x: ["-10%", "110%"] }}
-              transition={{ duration: 40, repeat: Infinity }}
+              animate={{ x: [-100, window.innerWidth + 100] }}
+              transition={{ duration: 15, repeat: Infinity }}
+              className="absolute top-32 left-0"
             >
-              <FaPlaneDeparture />
+              <FaPlaneDeparture className="text-gray-400 text-4xl opacity-50" />
             </motion.div>
-            <motion.div
-              className="absolute top-1/3 right-[-100px] md:right-[-150px] text-[#E51A4B] text-2xl md:text-4xl opacity-25 -rotate-12"
-              animate={{ x: ["110%", "-10%"] }}
-              transition={{ duration: 50, repeat: Infinity, delay: 10 }}
-            >
-              <FaPlaneDeparture />
-            </motion.div>
-            
+
             {/* Mountains */}
             <motion.div
-              className="absolute bottom-0 left-1/4 text-gray-400 text-5xl md:text-8xl opacity-15 md:opacity-20"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 10, repeat: Infinity }}
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 0.3 }}
+              transition={{ duration: 1.5 }}
+              className="absolute bottom-0 left-0"
             >
-              <FaMountain />
+              <FaMountain className="text-gray-500 text-9xl" />
             </motion.div>
             <motion.div
-              className="absolute bottom-0 right-1/4 text-gray-300 text-5xl md:text-8xl opacity-15 md:opacity-20"
-              animate={{ y: [0, 15, 0] }}
-              transition={{ duration: 12, repeat: Infinity }}
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 0.25 }}
+              transition={{ duration: 1.5, delay: 0.2 }}
+              className="absolute bottom-0 right-10"
             >
-              <FaMountain />
-            </motion.div>
-            <motion.div
-              className="absolute bottom-0 left-0 text-gray-400 text-4xl md:text-7xl opacity-10 md:opacity-15"
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 11, repeat: Infinity }}
-            >
-              <FaMountain />
-            </motion.div>
-            <motion.div
-              className="absolute bottom-0 right-0 text-gray-300 text-4xl md:text-6xl opacity-10 md:opacity-15"
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 13, repeat: Infinity }}
-            >
-              <FaMountain />
-            </motion.div>
-            
-            {/* Additional decorative elements */}
-            <motion.div
-              className="absolute top-1/2 left-8 md:left-20 text-[#E51A4B] text-2xl md:text-3xl opacity-15"
-              animate={{ 
-                scale: [1, 1.3, 1],
-                opacity: [0.15, 0.25, 0.15]
-              }}
-              transition={{ duration: 6, repeat: Infinity }}
-            >
-              <FaSun />
+              <FaMountain className="text-gray-400 text-7xl" />
             </motion.div>
           </>
         )}
@@ -200,25 +267,25 @@ function StayListingsContent() {
         {activeTab === "Things to Do" && (
           <>
             <motion.div
-              className="absolute top-1/3 left-4 md:left-10 text-green-500 text-3xl md:text-5xl opacity-30 md:opacity-40"
-              animate={{ rotate: [0, 360] }}
+              animate={{ rotate: 360 }}
               transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+              className="absolute top-20 right-20"
             >
-              <FaCompass />
+              <FaCompass className="text-[#E51A4B] text-7xl opacity-20" />
             </motion.div>
             <motion.div
-              className="absolute bottom-1/4 right-4 md:right-10 text-green-600 text-4xl md:text-6xl opacity-25 md:opacity-30"
-              animate={{ y: [0, 15, 0] }}
-              transition={{ duration: 8, repeat: Infinity }}
+              animate={{ y: [0, -20, 0] }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="absolute top-40 left-20"
             >
-              <FaLeaf />
+              <FaHiking className="text-green-600 text-6xl opacity-30" />
             </motion.div>
             <motion.div
-              className="absolute top-1/2 right-1/4 text-orange-400 text-4xl md:text-6xl opacity-30 md:opacity-40"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 12, repeat: Infinity }}
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 4, repeat: Infinity }}
+              className="absolute bottom-20 right-40"
             >
-              <FaHiking />
+              <FaLeaf className="text-green-500 text-5xl opacity-25" />
             </motion.div>
           </>
         )}
@@ -226,193 +293,291 @@ function StayListingsContent() {
         {activeTab === "Trips" && (
           <>
             <motion.div
-              className="absolute bottom-1/4 left-[-100px] md:left-[-150px] text-[#E51A4B] text-3xl md:text-5xl"
-              animate={{ x: ["-10%", "110%"] }}
-              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-            >
-              <FaCarSide />
-            </motion.div>
-            <motion.div
-              className="absolute bottom-16 md:bottom-20 right-1/4 text-gray-400 text-5xl md:text-8xl opacity-15 md:opacity-20"
               animate={{ x: [0, 50, 0] }}
-              transition={{ duration: 12, repeat: Infinity }}
+              transition={{ duration: 8, repeat: Infinity }}
+              className="absolute top-32 left-20"
             >
-              <FaRoad />
+              <FaCarSide className="text-blue-500 text-7xl opacity-30" />
             </motion.div>
             <motion.div
-              className="absolute top-1/4 right-8 md:right-20 text-[#E51A4B] text-3xl md:text-5xl opacity-30 md:opacity-40"
-              animate={{ y: [0, 15, 0] }}
-              transition={{ duration: 10, repeat: Infinity }}
+              animate={{ y: [0, 30, 0] }}
+              transition={{ duration: 5, repeat: Infinity }}
+              className="absolute bottom-32 right-20"
             >
-              <FaSuitcaseRolling />
+              <FaSuitcaseRolling className="text-orange-500 text-6xl opacity-25" />
+            </motion.div>
+            <motion.div
+              animate={{ rotate: [0, 10, 0] }}
+              transition={{ duration: 4, repeat: Infinity }}
+              className="absolute top-1/2 left-10"
+            >
+              <FaRoad className="text-gray-400 text-8xl opacity-20" />
             </motion.div>
           </>
         )}
       </div>
 
       {/* Foreground Content */}
-      <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         {/* Tabs */}
-        <div className="flex justify-center mb-8 md:mb-12">
-          <div className="flex bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-gray-200 p-1 w-full max-w-md overflow-x-auto">
-            {tabData.map((tab) => (
-              <motion.button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`relative flex-1 px-4 md:px-6 py-2.5 md:py-3 text-xs md:text-sm lg:text-base font-semibold rounded-full transition-all whitespace-nowrap ${
-                  activeTab === tab
-                    ? "text-white"
-                    : "text-gray-700 hover:text-[#E51A4B]"
-                }`}
-                whileTap={{ scale: 0.95 }}
-              >
-                {activeTab === tab && (
-                  <motion.span
-                    layoutId="active-tab"
-                    className="absolute inset-0 bg-[#E51A4B] rounded-full z-0 shadow-md"
-                    transition={{ type: "spring", duration: 0.5 }}
-                  />
-                )}
-                <span className="relative z-10">{tab}</span>
-              </motion.button>
-            ))}
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -20 }}
+          transition={{ duration: 0.6 }}
+          className="flex gap-2 md:gap-3 mb-8 md:mb-10 bg-white/80 backdrop-blur-sm p-1.5 md:p-2 rounded-full shadow-lg max-w-2xl mx-auto"
+        >
+          {tabData.map((tab) => (
+            <motion.button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`relative flex-1 px-4 md:px-6 py-2.5 md:py-3 text-xs md:text-sm lg:text-base font-semibold rounded-full transition-all whitespace-nowrap ${
+                activeTab === tab
+                  ? "text-white"
+                  : "text-gray-700 hover:text-[#E51A4B]"
+              }`}
+              whileTap={{ scale: 0.95 }}
+            >
+              {activeTab === tab && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-gradient-to-r from-[#E51A4B] to-[#FF6B6B] rounded-full"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">{tab}</span>
+            </motion.button>
+          ))}
+        </motion.div>
 
         {/* Heading */}
-        <div className="text-center mb-10 md:mb-16 px-4">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 capitalize leading-tight">
-            {activeTab === "Stays" && `Stays in ${decodedDestination}`}
-            {activeTab === "Things to Do" && `Things to Do in ${decodedDestination}`}
-            {activeTab === "Trips" && `Trips around ${decodedDestination}`}
-          </h1>
-        </div>
+        <motion.h1
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isVisible ? 1 : 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 md:mb-12 bg-gradient-to-r from-[#E51A4B] to-[#FF6B6B] bg-clip-text text-transparent capitalize"
+        >
+          {activeTab === "Stays" && `Stays in ${decodedDestination}`}
+          {activeTab === "Things to Do" &&
+            `Things to Do in ${decodedDestination}`}
+          {activeTab === "Trips" && `Trips around ${decodedDestination}`}
+        </motion.h1>
 
         {/* No stays available */}
         {!hasStays && activeTab === "Stays" && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center text-gray-700 mt-12 md:mt-20 px-4 max-w-2xl mx-auto"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center py-16 bg-white/70 backdrop-blur-sm rounded-3xl shadow-xl max-w-2xl mx-auto"
           >
-            <p className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 md:mb-6 text-gray-900 leading-snug">
+            <FaSuitcaseRolling className="text-6xl text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
               No stays or resorts available in this location right now
+            </h2>
+            <p className="text-gray-600 mb-6">
+              We're expanding our listings soon. For assistance, contact our
+              support team.
             </p>
-            <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed">
-              We're expanding our listings soon. For assistance, contact our support team.
-            </p>
-            <a
-              href="https://wa.me/919876543210"
+            <motion.a
+              href="https://wa.me/1234567890"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 md:gap-3 bg-green-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg hover:bg-green-600 transition-all text-sm md:text-base font-semibold hover:shadow-xl"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:bg-green-600 transition"
             >
-              <FaWhatsapp className="text-lg md:text-xl" /> Chat with us on WhatsApp
-            </a>
+              <FaWhatsapp className="text-xl" />
+              Chat with us on WhatsApp
+            </motion.a>
           </motion.div>
         )}
 
         {/* Show stays if available */}
         {hasStays && activeTab === "Stays" && (
-          <motion.div
-            key="stays"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 ${
-              isVisible ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            {stays.map((stay) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {stays.map((stay, index) => (
               <motion.div
                 key={stay.id}
-                whileHover={{ scale: 1.02 }}
-                className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl md:rounded-3xl shadow-lg hover:shadow-2xl transition-all overflow-hidden group"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                onClick={() => handleItemClick(stay.id)}
+                className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
               >
-                <div className="relative h-56 md:h-64 w-full overflow-hidden">
+                <div className="relative h-64 overflow-hidden">
                   <Image
                     src={stay.coverImage}
                     alt={stay.name}
                     fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute bottom-3 right-3 bg-white/95 text-gray-900 text-xs md:text-sm font-bold px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-gray-200 shadow-md backdrop-blur-sm">
-                    ₹{stay.startingPrice} / night
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <p className="text-[#E51A4B] font-bold text-lg">
+                      ₹{stay.startingPrice}
+                      <span className="text-sm text-gray-600"> / night</span>
+                    </p>
                   </div>
                 </div>
-                <div className="p-5 md:p-6">
-                  <h3 className="font-bold text-lg md:text-xl text-gray-900 group-hover:text-[#E51A4B] transition-colors mb-3 md:mb-4 leading-tight">
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-[#E51A4B] transition">
                     {stay.name}
                   </h3>
-                  <ul className="text-sm md:text-base text-gray-600 list-disc list-inside space-y-1.5 md:space-y-2 leading-relaxed">
-                    {stay.highlights.map((h, i) => (
-                      <li key={i}>{h}</li>
+                  <ul className="space-y-2">
+                    {stay.highlights.map((highlight, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center gap-2 text-gray-600"
+                      >
+                        <span className="w-1.5 h-1.5 bg-[#E51A4B] rounded-full" />
+                        {highlight}
+                      </li>
                     ))}
                   </ul>
                 </div>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         )}
 
         {/* No Things to Do available */}
-        {activeTab === "Things to Do" && (
+        {!hasActivities && activeTab === "Things to Do" && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center text-gray-700 mt-12 md:mt-20 px-4 max-w-2xl mx-auto"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center py-16 bg-white/70 backdrop-blur-sm rounded-3xl shadow-xl max-w-2xl mx-auto"
           >
-            <p className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 md:mb-6 text-gray-900 leading-snug">
+            <FaHiking className="text-6xl text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
               No activities or experiences available in this location right now
+            </h2>
+            <p className="text-gray-600 mb-6">
+              We're curating amazing experiences for you. For custom activity
+              recommendations, contact our support team.
             </p>
-            <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed">
-              We're curating amazing experiences for you. For custom activity recommendations, contact our support team.
-            </p>
-            <a
-              href="https://wa.me/919876543210"
+            <motion.a
+              href="https://wa.me/1234567890"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 md:gap-3 bg-green-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg hover:bg-green-600 transition-all text-sm md:text-base font-semibold hover:shadow-xl"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:bg-green-600 transition"
             >
-              <FaWhatsapp className="text-lg md:text-xl" /> Chat with us on WhatsApp
-            </a>
+              <FaWhatsapp className="text-xl" />
+              Chat with us on WhatsApp
+            </motion.a>
           </motion.div>
         )}
 
+        {/* Show activities if available */}
+        {hasActivities && activeTab === "Things to Do" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {activities.map((activity, index) => (
+              <motion.div
+                key={activity.id}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                onClick={() => handleItemClick(activity.id)}
+                className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
+              >
+                <div className="relative h-64 overflow-hidden">
+                  <Image
+                    src={activity.coverImage}
+                    alt={activity.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <p className="text-[#E51A4B] font-bold text-lg">
+                      ₹{activity.price}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-[#E51A4B] transition">
+                    {activity.name}
+                  </h3>
+                  <p className="text-gray-600">Duration: {activity.duration}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
         {/* No Trips available */}
-        {activeTab === "Trips" && (
+        {!hasTrips && activeTab === "Trips" && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center text-gray-700 mt-12 md:mt-20 px-4 max-w-2xl mx-auto"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center py-16 bg-white/70 backdrop-blur-sm rounded-3xl shadow-xl max-w-2xl mx-auto"
           >
-            <p className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 md:mb-6 text-gray-900 leading-snug">
+            <FaCarSide className="text-6xl text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
               No trip packages available for this destination right now
+            </h2>
+            <p className="text-gray-600 mb-6">
+              We're designing perfect itineraries. For personalized trip
+              planning, reach out to our support team.
             </p>
-            <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed">
-              We're designing perfect itineraries. For personalized trip planning, reach out to our support team.
-            </p>
-            <a
-              href="https://wa.me/919876543210"
+            <motion.a
+              href="https://wa.me/1234567890"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 md:gap-3 bg-green-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg hover:bg-green-600 transition-all text-sm md:text-base font-semibold hover:shadow-xl"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:bg-green-600 transition"
             >
-              <FaWhatsapp className="text-lg md:text-xl" /> Chat with us on WhatsApp
-            </a>
+              <FaWhatsapp className="text-xl" />
+              Chat with us on WhatsApp
+            </motion.a>
           </motion.div>
         )}
+
+        {/* Show trips if available */}
+        {hasTrips && activeTab === "Trips" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {trips.map((trip, index) => (
+              <motion.div
+                key={trip.id}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                onClick={() => handleItemClick(trip.id)}
+                className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
+              >
+                <div className="relative h-64 overflow-hidden">
+                  <Image
+                    src={trip.coverImage}
+                    alt={trip.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <p className="text-[#E51A4B] font-bold text-lg">
+                      ₹{trip.price}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-[#E51A4B] transition">
+                    {trip.name}
+                  </h3>
+                  <p className="text-gray-600">Duration: {trip.duration}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
-    </section>
+    </div>
   );
 }
 
 export default function StayListingsPage() {
   return (
-    <Suspense fallback={<div className="text-center py-20 text-base md:text-lg text-gray-500">Loading...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <StayListingsContent />
     </Suspense>
   );
