@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { destinations as fallbackDestinations } from '@/data/destinations';
+import { Destination } from '@/types/destination';
 
 export const metadata: Metadata = {
   title: 'Destinations',
@@ -22,7 +23,7 @@ async function fetchDestinations() {
 }
 
 export default async function DestinationsPage() {
-  const destinations = await fetchDestinations();
+  const destinations : Destination[] = await fetchDestinations();
 
   return (
     <div className="container py-16 mt-8">
