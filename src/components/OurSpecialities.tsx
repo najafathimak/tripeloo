@@ -11,7 +11,7 @@ const specialities = [
   {
     icon: Map,
     title: 'Customised Itineraries',
-    description: 'Every traveler is unique so is every Navigo trip. We design your journey around your interests, pace, and preferences.'
+    description: 'Every traveler is unique so is every Tripeloo trip. We design your journey around your interests, pace, and preferences.'
   },
   {
     icon: BookOpen,
