@@ -95,3 +95,79 @@ html {
 }
 .animate-slide-out-left { animation: slide-out-left 240ms ease-in both; }
 
+/* fade in up animation for stats */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeInUp {
+  animation: fadeInUp 600ms ease-out both;
+}
+
+/* testimonial animations */
+@keyframes testimonial-image-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes testimonial-image-exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+.testimonial-image-enter {
+  animation: testimonial-image-enter 600ms ease-out both;
+}
+
+.testimonial-image-exit {
+  animation: testimonial-image-exit 300ms ease-in both;
+}
+
+@keyframes testimonial-content-enter {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes testimonial-content-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+.testimonial-content-enter {
+  animation: testimonial-content-enter 500ms ease-out both;
+}
+
+.testimonial-content-exit {
+  animation: testimonial-content-exit 300ms ease-in both;
+}
+

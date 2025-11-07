@@ -4,7 +4,7 @@ import ContactSection from "@/components/Contact";
 
 const About = () => {
   return (
-    <div className="text-black min-h-screen">
+    <div className="text-black min-h-screen  mt-8">
       <div className="relative px-8 py-16 overflow-hidden">
         <Image
           src={assets.about}
