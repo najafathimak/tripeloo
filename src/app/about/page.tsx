@@ -4,7 +4,7 @@ import ContactSection from "@/components/Contact";
 
 const About = () => {
   return (
-    <div className="text-black min-h-screen">
+    <div className="text-black min-h-screen ">
       {/* ---------- About Section ---------- */}
       <section className="relative px-6 sm:px-10 py-16 overflow-hidden">
         {/* Background Image with subtle overlay */}
@@ -17,7 +17,7 @@ const About = () => {
           className="absolute inset-0 object-cover opacity-10"
         />
 
-        <div className="relative z-10 max-w-6xl mx-auto">
+        <div className="relative mt-5 z-10 max-w-6xl mx-auto">
           <h2 className="text-center text-3xl sm:text-4xl font-semibold text-[#E51A4B] mb-12">
             About <span className="text-red-400 font-bold">Us</span>
           </h2>
