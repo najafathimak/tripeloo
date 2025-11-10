@@ -64,18 +64,46 @@ const ListingDetails = () => {
             <div className="px-4 sm:px-6 mb-5">
               <RoomsSection />
             </div>
+
             <div className=" mb-5">
               <PriceSection />
             </div>
-            {/* <div className="px-4 sm:px-6 mb-5">
+            <div className="w-full lg:w-[350px] border  shadow-md p-6 h-fit md:hidden top-20">
+              <h2 className="text-gray-800 font-semibold text-lg">
+                Highlights Of Iceland | Tracing City Sights And Northern Lights
+              </h2>
+              <div className="flex items-center justify-between mt-3">
+                <p className="text-xl font-bold text-gray-900">INR 2,27,683</p>
+                <span className="line-through text-gray-500 text-sm">
+                  INR 3,02,818
+                </span>
+              </div>
+              <p className="text-emerald-600 text-sm mt-1">SAVE INR 75,135</p>
+
+              <form className="mt-6 flex flex-col gap-3">
+                <p>Number of Adults</p>
+                <input
+                  type="number"
+                  placeholder="0"
+                  className="border  px-3 py-2"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#E51A4B] hover:bg-red-700 transition text-white font-semibold py-2 rounded-lg"
+                >
+                  Book Now
+                </button>
+              </form>
+            </div>
+            <div className="px-4 sm:px-6 mb-5">
               <LocationSection />
-            </div> */}
+            </div>
             <div className="px-4 sm:px-6 mb-5">
               <ReviewsSection />
             </div>
           </div>
 
-          <div className="w-full lg:w-[350px] border  shadow-md p-6 h-fit sticky top-20">
+          <div className="w-full lg:w-[350px] border  shadow-md p-6 h-fit hidden md:block sticky top-20">
             <h2 className="text-gray-800 font-semibold text-lg">
               Highlights Of Iceland | Tracing City Sights And Northern Lights
             </h2>
