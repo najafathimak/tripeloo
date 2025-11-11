@@ -36,7 +36,7 @@ export default function IncludeItemSection() {
         </h2>
         <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
           {includes.map((item) => (
-            <div className="flex items-start gap-2">
+            <div key={item.id} className="flex items-start gap-2">
               <Dot size={20} className="text-red-500  " />
               <p className="text-sm text-gray-700 leading-snug">{item.title}</p>
             </div>
@@ -50,7 +50,7 @@ export default function IncludeItemSection() {
         </h2>
         <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
           {excludes.map((item) => (
-            <div className="flex items-start gap-3">
+            <div key={item.id} className="flex items-start gap-3">
               <Dot size={20} className="text-red-500 mt-1 shrink-0" />
               <p className="text-sm text-gray-700 leading-snug">{item.title}</p>
             </div>
