@@ -12,12 +12,12 @@ const rooms = [
   {
     id: 1,
     name: "Deluxe Room",
+    rate: "₹12,500 / night",
     thumb:
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=80",
     images: [
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80",
       "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80",
-      "https://images.unsplash.com/photo-1600585154351-527701b73f11?w=1200&q=80",
     ],
     features: [
       "King-size bed",
@@ -25,12 +25,12 @@ const rooms = [
       "Air conditioning",
       "Complimentary breakfast",
       "High-speed Wi-Fi",
-      "Flat-screen TV",
     ],
   },
   {
     id: 2,
     name: "Suite Room",
+    rate: "₹18,900 / night",
     thumb:
       "https://images.unsplash.com/photo-1600585154154-1c5b1b2253a1?w=400&q=80",
     images: [
@@ -43,91 +43,48 @@ const rooms = [
       "Mini bar & coffee maker",
       "Luxury bath amenities",
       "24/7 room service",
-      "Free airport pickup",
     ],
   },
   {
     id: 3,
     name: "Luxury Villa",
+    rate: "₹28,500 / night",
     thumb:
       "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=400&q=80",
     images: [
       "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=1200&q=80",
       "https://images.unsplash.com/photo-1600607687352-cf1f879e6b1e?w=1200&q=80",
-      "https://images.unsplash.com/photo-1600585154370-7c8f1b2c6b9c?w=1200&q=80",
     ],
     features: [
       "Private pool",
       "Jacuzzi bath",
       "Outdoor dining area",
       "Personal butler service",
-      "Private garden view",
-      "Smart home control system",
-    ],
-  },
-  {
-    id: 4,
-    name: "Luxury Villa",
-    thumb:
-      "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=400&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=1200&q=80",
-      "https://images.unsplash.com/photo-1600607687352-cf1f879e6b1e?w=1200&q=80",
-      "https://images.unsplash.com/photo-1600585154370-7c8f1b2c6b9c?w=1200&q=80",
-    ],
-    features: [
-      "Private pool",
-      "Jacuzzi bath",
-      "Outdoor dining area",
-      "Personal butler service",
-      "Private garden view",
-      "Smart home control system",
-    ],
-  },
-  {
-    id: 5,
-    name: "Luxury Villa",
-    thumb:
-      "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=400&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=1200&q=80",
-      "https://images.unsplash.com/photo-1600607687352-cf1f879e6b1e?w=1200&q=80",
-      "https://images.unsplash.com/photo-1600585154370-7c8f1b2c6b9c?w=1200&q=80",
-    ],
-    features: [
-      "Private pool",
-      "Jacuzzi bath",
-      "Outdoor dining area",
-      "Personal butler service",
-      "Private garden view",
-      "Smart home control system",
-    ],
-  },
-  {
-    id: 6,
-    name: "Luxury Villa",
-    thumb:
-      "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=400&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1600585154364-29893d53f5b1?w=1200&q=80",
-      "https://images.unsplash.com/photo-1600607687352-cf1f879e6b1e?w=1200&q=80",
-      "https://images.unsplash.com/photo-1600585154370-7c8f1b2c6b9c?w=1200&q=80",
-    ],
-    features: [
-      "Private pool",
-      "Jacuzzi bath",
-      "Outdoor dining area",
-      "Personal butler service",
-      "Private garden view",
       "Smart home control system",
     ],
   },
 ];
 
-export default function RoomsSection() {
+export default function RoomsSection({
+  onRoomSelect,
+}: {
+  onRoomSelect: (rooms: any[]) => void;
+}) {
   const [selectedRoom, setSelectedRoom] = useState<null | (typeof rooms)[0]>(
     null
   );
+  const [selectedRooms, setSelectedRooms] = useState<any[]>([]);
+
+  const handleRoomToggle = (room: any) => {
+    let updated;
+    if (selectedRooms.find((r) => r.id === room.id)) {
+      updated = selectedRooms.filter((r) => r.id !== room.id);
+    } else {
+      updated = [...selectedRooms, room];
+    }
+    setSelectedRooms(updated);
+    onRoomSelect(updated);
+  };
 
   return (
     <div className="mt-12">
@@ -135,12 +92,15 @@ export default function RoomsSection() {
         Rooms
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3  gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
         {rooms.map((room) => (
           <div
             key={room.id}
-            onClick={() => setSelectedRoom(room)}
-            className="cursor-pointer rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-red-500 w-[180px]"
+            className={`cursor-pointer rounded-xl overflow-hidden shadow-md border transition-all duration-200 hover:shadow-lg hover:border-red-500 ${
+              selectedRooms.find((r) => r.id === room.id)
+                ? "border-red-500 ring-1 ring-red-300"
+                : "border-gray-200"
+            }`}
           >
             <Image
               src={room.thumb}
@@ -148,38 +108,57 @@ export default function RoomsSection() {
               width={180}
               height={120}
               className="h-[120px] w-full object-cover"
+              onClick={() => setSelectedRoom(room)}
             />
-            <div className="p-3">
-              <h3 className="font-semibold text-sm text-gray-800">
-                {room.name}
-              </h3>
+            <div className="p-3 flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sm text-gray-800 flex items-center gap-1">
+                  {room.name}
+                </h3>
+                <input
+                  type="checkbox"
+                  checked={!!selectedRooms.find((r) => r.id === room.id)}
+                  onChange={() => handleRoomToggle(room)}
+                  className="accent-red-500 w-4 h-4"
+                />
+              </div>
+
+              {/* 🔥 Highlighted Price */}
+              <p className="text-[15px] font-semibold text-red-600 mt-1">
+                {room.rate}
+              </p>
             </div>
           </div>
         ))}
       </div>
 
+      {/* Room modal view */}
       {selectedRoom && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="relative bg-white rounded-2xl max-w-3xl w-full p-4">
+          <div className="relative bg-white rounded-2xl max-w-3xl w-full p-4 shadow-lg">
             <button
               onClick={() => setSelectedRoom(null)}
-              className="absolute top-3 right-3 text-gray-700 hover:text-red-500"
+              className="absolute top-3 right-3 text-gray-700 hover:text-red-500 transition-colors"
             >
               <X size={24} />
             </button>
 
-            <h3 className="text-xl font-semibold mb-4 text-center">
-              {selectedRoom.name}
-            </h3>
+            <div className="text-center mb-5">
+              <h3 className="text-xl font-semibold text-gray-900">
+                {selectedRoom.name}
+              </h3>
+              <p className="text-sm font-medium text-red-600 mt-1">
+                {selectedRoom.rate}
+              </p>
+            </div>
 
             <Swiper
               spaceBetween={10}
               slidesPerView={1}
               modules={[Navigation]}
               navigation
-              className="rounded-xl"
             >
-              {selectedRoom.images.map((img: string, i: number) => (
+              {selectedRoom.images.map((img, i) => (
                 <SwiperSlide key={i}>
                   <Image
                     src={img}
@@ -194,13 +173,8 @@ export default function RoomsSection() {
 
             <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-2 text-gray-700">
               {selectedRoom.features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 text-sm  px-3 py-2 rounded-lg"
-                >
-                  <ul>
-                    <li>{feature}</li>
-                  </ul>
+                <div key={index} className="text-sm px-3 py-1">
+                  • {feature}
                 </div>
               ))}
             </div>

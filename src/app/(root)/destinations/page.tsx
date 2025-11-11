@@ -30,7 +30,7 @@ export default async function DestinationsPage() {
   const destinations: Destination[] = await fetchDestinations();
 
   return (
-    <div className="container py-16 mt-8">
+    <div className="container py-32">
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold tracking-tight">
           Popular Destinations

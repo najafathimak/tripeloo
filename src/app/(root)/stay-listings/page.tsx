@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function StayListingsPage() {
   return (
-    <main>
+    <main className="mb-16">
       <Suspense fallback={<div>Loading...</div>}>
         <StayListingsContent />
       </Suspense>

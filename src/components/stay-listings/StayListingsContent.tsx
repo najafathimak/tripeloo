@@ -40,24 +40,28 @@ function StayListingsContent() {
 
   const handleItemClick = (itemId: string) => {
     if (!rawDestination) return;
-
+  
     const destination = encodeURIComponent(rawDestination);
     let queryParam = "";
-
+    let targetPage = "";
+  
     if (activeTab === "Stays") {
       queryParam = `stay=${itemId}`;
+      targetPage = "/item-details";
     } else if (activeTab === "Things to Do") {
       queryParam = `things-to-do=${itemId}`;
+      targetPage = "/things-to-do";
     } else if (activeTab === "Trips") {
       queryParam = `trips=${itemId}`;
+      targetPage = "/trips";
     }
-
-    router.push(`/item-details?destination=${destination}&${queryParam}`);
-  };
+  
+    router.push(`${targetPage}?destination=${destination}&${queryParam}`);
+  }; 
 
   if (!rawDestination) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-orange-50 flex items-center justify-center p-4">
+      <div className="min-h-screen  bg-gradient-to-br from-pink-50 via-white to-orange-50 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

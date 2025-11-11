@@ -13,7 +13,7 @@ function TentIcon() {
 export function Hero() {
   const onNav = (hash: string) => {
     if (typeof window !== 'undefined') {
-      window.location.hash = hash;
+      window.location.href = hash;
       const el = document.getElementById('explore');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -46,11 +46,11 @@ export function Hero() {
             <div className="marquee__track">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="marquee__item text-[15vw] sm:text-[8vw] leading-none tracking-tight">
-                  <button onClick={() => onNav('stays')} className="hover:text-brand transition-colors">Stays</button>
+                  <button onClick={() => onNav('destinations')} className="hover:text-brand transition-colors">Stays</button>
                   <span className="px-6 align-middle"><TentIcon /></span>
-                  <button onClick={() => onNav('things-to-do')} className="hover:text-brand transition-colors">Things to Do</button>
+                  <button onClick={() => onNav('destinations')} className="hover:text-brand transition-colors">Things to Do</button>
                   <span className="px-6 align-middle"><TentIcon /></span>
-                  <button onClick={() => onNav('trips')} className="hover:text-brand transition-colors">Trips</button>
+                  <button onClick={() => onNav('destinations')} className="hover:text-brand transition-colors">Trips</button>
                   <span className="px-6 align-middle"><TentIcon /></span>
                 </div>
               ))}
