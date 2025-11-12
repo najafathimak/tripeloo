@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
-
-  // Detect if we're on stay-listings route
+  const pathname = usePathname();
 
   const openMenu = () => {
     setClosing(false);
@@ -22,10 +22,19 @@ export function Header() {
     }, 280);
   };
 
+  // Define all links in one place for cleaner mapping
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/admin", label: "Carousal" },
+    { href: "/admin/stay", label: "Stay" },
+    { href: "/admin/things", label: "Things-to-do" },
+    { href: "/admin/trips", label: "Trips" },
+  ];
+
   return (
-    <header className="font-semibold font-sans absolute top-0 z-30 w-full bg-gray-50/20 transition-colors duration-300 ">
-      <div className="container flex  items-center justify-between py-4">
-        {/* Logo and Menu Button */}
+    <header className="font-semibold font-sans absolute top-0 z-30 w-full bg-gray-50/20 transition-colors duration-300">
+      <div className="container flex items-center justify-between py-4">
+        {/* Logo */}
         <div className="flex items-center gap-3">
           <button
             aria-label="Open Menu"
@@ -48,35 +57,28 @@ export function Header() {
             </svg>
           </button>
 
-          <Link
-            href="/"
-            className="font-extrabold text-xl tracking-tight text-white"
-          >
+          <Link href="/" className="font-extrabold text-xl tracking-tight">
             <span className="text-[#E51A4B]">Trip</span>
             <span className="text-black">eloo</span>
           </Link>
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden  md:flex items-center gap-6 text-sm ">
-          <Link href="/" className=" hover:text-[#E51A4B]">
-            Home
-          </Link>
-          <Link href="/admin" className="hover:text-[#E51A4B]">
-            Carousal
-          </Link>
-          <Link href="/admin/stay" className="hover:text-[#E51A4B]">
-            Stay
-          </Link>
-          <Link href="/admin/things" className="hover:text-[#E51A4B]">
-            Things-to-do
-          </Link>
-          <Link href="/admin/trips" className="hover:text-[#E51A4B]">
-            Trips
-          </Link>
+        <nav className="hidden md:flex items-center gap-6 text-sm">
+          {navLinks.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`transition-colors ${
+                pathname === href ? "text-[#E51A4B]" : "hover:text-[#E51A4B]"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
         </nav>
 
-        {/* Login Button */}
+        {/* Right Side */}
         <div className="flex items-center gap-2">
           <p>Admin</p>
         </div>
@@ -121,42 +123,23 @@ export function Header() {
                 </svg>
               </button>
             </div>
+
+            {/* Mobile nav links */}
             <nav className="grid gap-2 p-4 text-sm">
-              <Link
-                href="/"
-                className="py-2 hover:text-[#E51A4B]"
-                onClick={closeMenu}
-              >
-                Home
-              </Link>
-              <Link
-                href="/admin"
-                className="py-2 hover:text-[#E51A4B]"
-                onClick={closeMenu}
-              >
-                Carousal
-              </Link>
-              <Link
-                href="/admin/stay"
-                className="py-2 hover:text-[#E51A4B]"
-                onClick={closeMenu}
-              >
-                Stay
-              </Link>
-              <Link
-                href="/admin/things"
-                className="py-2 hover:text-[#E51A4B]"
-                onClick={closeMenu}
-              >
-                Things-to-do
-              </Link>
-              <Link
-                href="/admin/trips"
-                className="py-2 hover:text-[#E51A4B]"
-                onClick={closeMenu}
-              >
-                Trips
-              </Link>
+              {navLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={closeMenu}
+                  className={`py-2 transition-colors ${
+                    pathname === href
+                      ? "text-[#E51A4B]"
+                      : "hover:text-[#E51A4B]"
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
             </nav>
           </div>
         </div>
