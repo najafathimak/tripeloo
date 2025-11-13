@@ -1,0 +1,31 @@
+import { getDb } from '@/server/db/client';
+import type { Activity } from '@/components/stay-listings/DestinationData';
+
+const COLLECTION = 'activities';
+
+export async function findActivitiesByDestination(destinationSlugOrName: string): Promise<Activity[]> {
+  const db = await getDb();
+  const normalized = destinationSlugOrName.toLowerCase().trim();
+  
+  // Query with case-insensitive match for destinationSlug
+  const rows = await db.collection<any>(COLLECTION)
+    .find({
+      $or: [
+        { destinationSlug: { $regex: new RegExp(`^${normalized}$`, 'i') } },
+        { destinationSlug: normalized },
+        // Also try matching if destinationSlug contains the normalized value
+        { destinationSlug: { $regex: new RegExp(normalized, 'i') } }
+      ]
+    })
+    .toArray();
+  
+  return rows.map((r) => ({
+    id: r._id?.toString() || r.id || '',
+    name: r.name || '',
+    coverImage: r.coverImage || r.image || '',
+    duration: r.duration || '',
+    price: r.price || 0,
+    category: r.category || 'General', // Map category from DB or default
+  }));
+}
+

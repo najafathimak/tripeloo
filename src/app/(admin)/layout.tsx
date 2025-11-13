@@ -8,7 +8,6 @@ export default function AdminLayout({
 }) {
   return (
     <div className="bg-gradient-to-b from-red-400/80 to-red-100 min-h-screen">
-      <Header />
       <main className="p-4">{children}</main>
     </div>
   );
