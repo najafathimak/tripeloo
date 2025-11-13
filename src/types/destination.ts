@@ -8,6 +8,8 @@ export type Destination = {
   currency: string;
   summary: string;
   tags: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 

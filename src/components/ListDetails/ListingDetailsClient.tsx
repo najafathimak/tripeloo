@@ -9,6 +9,7 @@ interface BookingSidebarProps {
   savings: string;
   className?: string;
   isMobile?: boolean;
+  isPackage?: boolean;
 }
 
 const BookingSidebar = ({
@@ -19,6 +20,7 @@ const BookingSidebar = ({
   savings,
   className = "",
   isMobile = false,
+  isPackage = false,
 }: BookingSidebarProps) => {
   return (
     <div
@@ -38,7 +40,7 @@ const BookingSidebar = ({
       <p className="text-emerald-600 text-sm mt-1">SAVE {savings}</p>
 
       <div className="mt-4">
-        <WhatsAppBookingForm selectedRooms={selectedRooms} />
+        <WhatsAppBookingForm selectedRooms={selectedRooms} isPackage={isPackage} />
       </div>
     </div>
   );

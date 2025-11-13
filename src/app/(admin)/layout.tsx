@@ -1,4 +1,6 @@
-import { Header } from "@/components/AdminPanel/Header";
+import { AdminHeader } from "@/components/AdminPanel/AdminHeader";
+import AdminAuth from "@/components/AdminPanel/AdminAuth";
+import AnimatedBackground from "@/components/AdminPanel/AnimatedBackground";
 import React from "react";
 
 export default function AdminLayout({
@@ -7,8 +9,14 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-gradient-to-b from-red-400/80 to-red-100 min-h-screen">
-      <main className="p-4">{children}</main>
+    <div className="min-h-screen relative">
+      <AnimatedBackground />
+      <div className="relative z-10">
+        <AdminAuth>
+          <AdminHeader />
+          <main className="p-4">{children}</main>
+        </AdminAuth>
+      </div>
     </div>
   );
 }

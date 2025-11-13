@@ -3,16 +3,19 @@ import { useState } from "react";
 import dayjs from "dayjs";
 
 interface Room {
-  id: number;
+  id: number | string;
   name: string;
-  rate: string;
+  rate?: string;
+  price?: number;
+  duration?: string;
 }
 
 interface WhatsAppBookingFormProps {
   selectedRooms: Room[];
+  isPackage?: boolean;
 }
 
-export const WhatsAppBookingForm = ({ selectedRooms }: WhatsAppBookingFormProps) => {
+export const WhatsAppBookingForm = ({ selectedRooms, isPackage = false }: WhatsAppBookingFormProps) => {
   const [adults, setAdults] = useState(1);
   const [kids, setKids] = useState(0);
   const [checkIn, setCheckIn] = useState("");
@@ -23,43 +26,59 @@ export const WhatsAppBookingForm = ({ selectedRooms }: WhatsAppBookingFormProps)
   const handleBooking = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!checkIn || !checkOut) {
-      alert("Please select both check-in and check-out dates.");
-      return;
+    if (isPackage) {
+      // For packages, only travel date is required
+      if (!checkIn) {
+        alert("Please select your travel date.");
+        return;
+      }
+      const today = dayjs().startOf("day");
+      const travelDate = dayjs(checkIn);
+      if (travelDate.isBefore(today)) {
+        alert("Past dates are not allowed.");
+        return;
+      }
+    } else {
+      // For stays, both check-in and check-out are required
+      if (!checkIn || !checkOut) {
+        alert("Please select both check-in and check-out dates.");
+        return;
+      }
+      const today = dayjs().startOf("day");
+      const checkInDate = dayjs(checkIn);
+      const checkOutDate = dayjs(checkOut);
+
+      if (checkInDate.isBefore(today) || checkOutDate.isBefore(today)) {
+        alert("Past dates are not allowed.");
+        return;
+      }
+
+      if (checkOutDate.isBefore(checkInDate)) {
+        alert("Check-out date must be after check-in date.");
+        return;
+      }
     }
 
-    const today = dayjs().startOf("day");
-    const checkInDate = dayjs(checkIn);
-    const checkOutDate = dayjs(checkOut);
-
-    if (checkInDate.isBefore(today) || checkOutDate.isBefore(today)) {
-      alert("Past dates are not allowed.");
-      return;
-    }
-
-    if (checkOutDate.isBefore(checkInDate)) {
-      alert("Check-out date must be after check-in date.");
-      return;
-    }
-
-    const selectedRoomText =
+    const selectedItemText =
       selectedRooms.length > 0
         ? selectedRooms
-            .map(
-              (r, i) => `${i + 1}. ${r.name} - ₹${r.rate.replace(/[^\d]/g, "")}`
-            )
+            .map((r, i) => {
+              const price = r.price || (r.rate ? parseInt(r.rate.replace(/[^\d]/g, "")) : 0);
+              const duration = r.duration ? ` (${r.duration})` : "";
+              return `${i + 1}. ${r.name}${duration} - ₹${price.toLocaleString()}`;
+            })
             .join("\n")
-        : "No specific room selected";
+        : isPackage ? "No specific package selected" : "No specific room selected";
 
-    const message = `Hello! I would like to book "Highlights of Iceland | Tracing City Sights and Northern Lights"
+    const itemType = isPackage ? "Package(s)" : "Room(s)";
+    const message = `Hello! I would like to book this ${isPackage ? "trip" : "stay"}
     
-Selected Room(s):
-${selectedRoomText}
+Selected ${itemType}:
+${selectedItemText}
 
 Adults: ${adults}
 Kids: ${kids}
-Check-in: ${checkIn}
-Check-out: ${checkOut}
+${!isPackage ? `Check-in: ${checkIn}\nCheck-out: ${checkOut}` : `Travel Date: ${checkIn || "To be selected"}`}
 
 Please confirm availability and total price.`;
 
@@ -77,19 +96,23 @@ Please confirm availability and total price.`;
       onSubmit={handleBooking}
       className="mt-3 flex flex-col gap-3 p-3 bg-white rounded-xl shadow-sm border border-gray-200"
     >
-      {/* Selected Rooms Summary */}
+      {/* Selected Rooms/Packages Summary */}
       {selectedRooms.length > 0 && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
           <h4 className="text-gray-800 font-medium text-sm mb-2">
-            Selected Room(s)
+            Selected {isPackage ? "Package(s)" : "Room(s)"}
           </h4>
           <ul className="space-y-1 text-sm text-gray-700">
-            {selectedRooms.map((r) => (
-              <li key={r.id} className="flex justify-between">
-                <span>{r.name}</span>
-                <span className="font-semibold">₹{r.rate}</span>
-              </li>
-            ))}
+            {selectedRooms.map((r) => {
+              const price = r.price || (r.rate ? parseInt(r.rate.replace(/[^\d]/g, "")) : 0);
+              const duration = r.duration ? ` (${r.duration})` : "";
+              return (
+                <li key={r.id} className="flex justify-between">
+                  <span>{r.name}{duration}</span>
+                  <span className="font-semibold">₹{price.toLocaleString()}</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -119,9 +142,9 @@ Please confirm availability and total price.`;
       </div>
 
       {/* Dates – improved for mobile */}
-      <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:items-center sm:gap-3">
-        <div className="flex flex-col flex-1">
-          <label className="text-gray-700 font-medium text-sm">Check-in</label>
+      {isPackage ? (
+        <div className="flex flex-col">
+          <label className="text-gray-700 font-medium text-sm">Travel Date</label>
           <input
             type="date"
             min={todayDate}
@@ -130,18 +153,31 @@ Please confirm availability and total price.`;
             className="border px-2 py-1.5 rounded-lg w-full text-sm"
           />
         </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:items-center sm:gap-3">
+          <div className="flex flex-col flex-1">
+            <label className="text-gray-700 font-medium text-sm">Check-in</label>
+            <input
+              type="date"
+              min={todayDate}
+              value={checkIn}
+              onChange={(e) => setCheckIn(e.target.value)}
+              className="border px-2 py-1.5 rounded-lg w-full text-sm"
+            />
+          </div>
 
-        <div className="flex flex-col flex-1">
-          <label className="text-gray-700 font-medium text-sm">Check-out</label>
-          <input
-            type="date"
-            min={todayDate}
-            value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
-            className="border px-2 py-1.5 rounded-lg w-full text-sm"
-          />
+          <div className="flex flex-col flex-1">
+            <label className="text-gray-700 font-medium text-sm">Check-out</label>
+            <input
+              type="date"
+              min={todayDate}
+              value={checkOut}
+              onChange={(e) => setCheckOut(e.target.value)}
+              className="border px-2 py-1.5 rounded-lg w-full text-sm"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Buttons */}
       <div className="flex flex-col sm:flex-row gap-3 mt-2">
