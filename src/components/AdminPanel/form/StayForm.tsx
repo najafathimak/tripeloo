@@ -86,6 +86,7 @@ export default function StayForm() {
   const [excludeInput, setExcludeInput] = useState("");
   const [propertyInput, setPropertyInput] = useState("");
   const [pointInputs, setPointInputs] = useState<Record<string, string>>({});
+  const [roomFeatureInputs, setRoomFeatureInputs] = useState<Record<string, string>>({});
 
   // Fetch destinations
   useEffect(() => {
@@ -279,9 +280,11 @@ export default function StayForm() {
 
   const addRoomFeature = (roomIndex: number) => {
     const room = formData.rooms[roomIndex];
-    const feature = prompt("Enter feature:");
-    if (feature?.trim()) {
-      updateRoom(roomIndex, "features", [...room.features, feature.trim()]);
+    const inputKey = room.id;
+    const feature = roomFeatureInputs[inputKey]?.trim();
+    if (feature && !room.features.includes(feature)) {
+      updateRoom(roomIndex, "features", [...room.features, feature]);
+      setRoomFeatureInputs({ ...roomFeatureInputs, [inputKey]: "" });
     }
   };
 
@@ -1029,13 +1032,28 @@ export default function StayForm() {
                         </span>
                       ))}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => addRoomFeature(roomIndex)}
-                      className="text-sm text-[#E51A4B] hover:underline"
-                    >
-                      + Add Feature
-                    </button>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={roomFeatureInputs[room.id] || ""}
+                        onChange={(e) => setRoomFeatureInputs({ ...roomFeatureInputs, [room.id]: e.target.value })}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addRoomFeature(roomIndex);
+                          }
+                        }}
+                        placeholder="Enter feature and press Enter"
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => addRoomFeature(roomIndex)}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

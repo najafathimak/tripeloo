@@ -154,8 +154,8 @@ Please confirm availability and total price.`;
           />
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:items-center sm:gap-3">
-          <div className="flex flex-col flex-1">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col flex-1 min-w-0">
             <label className="text-gray-700 font-medium text-sm">Check-in</label>
             <input
               type="date"
@@ -166,7 +166,7 @@ Please confirm availability and total price.`;
             />
           </div>
 
-          <div className="flex flex-col flex-1">
+          <div className="flex flex-col flex-1 min-w-0">
             <label className="text-gray-700 font-medium text-sm">Check-out</label>
             <input
               type="date"

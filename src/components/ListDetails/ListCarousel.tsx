@@ -6,27 +6,50 @@ import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import { assets } from "../../assets/assets";
 
-const ThingsCarousel = () => {
-  const slides = [
-    {
-      id: 1,
-      image: assets.staysfeatures,
-      title: "Explore the World with Tripeloo",
-      subtitle: "Discover breathtaking destinations and unforgettable stays",
-    },
-    {
-      id: 2,
-      image: assets.img,
-      title: "Luxury Stays, Unbeatable Prices",
-      subtitle: "Find handpicked hotels, resorts, and villas tailored for you",
-    },
-    {
-      id: 3,
-      image: assets.about,
-      title: "Your Journey Starts Here",
-      subtitle: "Plan your dream vacation effortlessly with Tripeloo",
-    },
-  ];
+interface ListCarouselProps {
+  carouselImages?: Array<{ url: string }>;
+  coverImage?: string;
+}
+
+const ThingsCarousel = ({ carouselImages = [], coverImage }: ListCarouselProps) => {
+  // Use carouselImages if provided, otherwise fallback to default slides
+  const slides = carouselImages.length > 0
+    ? carouselImages.map((img, index) => ({
+        id: index + 1,
+        image: img.url,
+        title: "",
+        subtitle: "",
+      }))
+    : [
+        {
+          id: 1,
+          image: assets.staysfeatures,
+          title: "Explore the World with Tripeloo",
+          subtitle: "Discover breathtaking destinations and unforgettable stays",
+        },
+        {
+          id: 2,
+          image: assets.img,
+          title: "Luxury Stays, Unbeatable Prices",
+          subtitle: "Find handpicked hotels, resorts, and villas tailored for you",
+        },
+        {
+          id: 3,
+          image: assets.about,
+          title: "Your Journey Starts Here",
+          subtitle: "Plan your dream vacation effortlessly with Tripeloo",
+        },
+      ];
+
+  // If only coverImage is provided, use it as the first slide
+  if (coverImage && carouselImages.length === 0) {
+    slides.unshift({
+      id: 0,
+      image: coverImage,
+      title: "",
+      subtitle: "",
+    });
+  }
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, align: "center", skipSnaps: false },
@@ -52,19 +75,21 @@ const ThingsCarousel = () => {
             >
               <Image
                 src={slide.image}
-                alt={slide.title}
+                alt={slide.title || "Carousel image"}
                 fill
                 className="object-cover brightness-75 rounded-sm sm:rounded-3xl"
                 priority
               />
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-6">
-                <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-                  {slide.title}
-                </h1>
-                <p className="text-lg md:text-xl max-w-2xl drop-shadow-md">
-                  {slide.subtitle}
-                </p>
-              </div>
+              {slide.title && slide.subtitle && (
+                <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-6">
+                  <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+                    {slide.title}
+                  </h1>
+                  <p className="text-lg md:text-xl max-w-2xl drop-shadow-md">
+                    {slide.subtitle}
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -8,7 +8,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
 
-const rooms = [
+const defaultRooms = [
   {
     id: 1,
     name: "Deluxe Room",
@@ -66,10 +66,24 @@ const rooms = [
 ];
 
 export default function RoomsSection({
+  rooms: roomsProp,
   onRoomSelect,
 }: {
+  rooms?: any[];
   onRoomSelect: (rooms: any[]) => void;
 }) {
+  // Map database rooms to component format
+  const rooms = roomsProp && roomsProp.length > 0
+    ? roomsProp.map((room, index) => ({
+        id: room.id || index + 1,
+        name: room.name || `Room ${index + 1}`,
+        rate: room.rate || "Price on request",
+        thumb: room.thumb || room.images?.[0] || "",
+        images: room.images || [room.thumb || ""],
+        features: room.features || [],
+      }))
+    : defaultRooms;
+
   const [selectedRoom, setSelectedRoom] = useState<null | (typeof rooms)[0]>(
     null
   );
@@ -158,7 +172,7 @@ export default function RoomsSection({
               modules={[Navigation]}
               navigation
             >
-              {selectedRoom.images.map((img, i) => (
+              {selectedRoom.images.map((img: string, i: number) => (
                 <SwiperSlide key={i}>
                   <Image
                     src={img}
@@ -172,7 +186,7 @@ export default function RoomsSection({
             </Swiper>
 
             <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-2 text-gray-700">
-              {selectedRoom.features.map((feature, index) => (
+              {selectedRoom.features.map((feature: string, index: number) => (
                 <div key={index} className="text-sm px-3 py-1">
                   • {feature}
                 </div>
