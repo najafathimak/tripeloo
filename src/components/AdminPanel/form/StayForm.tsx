@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Upload, X, CheckCircle, AlertCircle, Loader2, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 
@@ -38,6 +39,7 @@ interface AdditionalDetail {
 
 interface FormData {
   name: string;
+  propertyName: string;
   destinationSlug: string;
   category: string;
   coverImage: string;
@@ -56,9 +58,16 @@ interface FormData {
   additionalDetails: AdditionalDetail[];
 }
 
-export default function StayForm() {
+interface StayFormProps {
+  initialData?: any;
+  isEdit?: boolean;
+}
+
+export default function StayForm({ initialData, isEdit = false }: StayFormProps = {}) {
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     name: "",
+    propertyName: "",
     destinationSlug: "",
     category: "",
     coverImage: "",
@@ -109,6 +118,49 @@ export default function StayForm() {
     };
     fetchDestinations();
   }, []);
+
+  // Populate form with initialData if editing
+  useEffect(() => {
+    if (initialData && isEdit) {
+      setFormData({
+        name: initialData.name || "",
+        propertyName: initialData.propertyName || "",
+        destinationSlug: initialData.destinationSlug || "",
+        category: initialData.category || "",
+        coverImage: initialData.coverImage || "",
+        carouselImages: (initialData.carouselImages || []).map((img: any) => ({
+          url: typeof img === 'string' ? img : img.url || "",
+          title: typeof img === 'string' ? "" : img.title || "",
+        })),
+        startingPrice: initialData.startingPrice?.toString() || "",
+        originalPrice: initialData.originalPrice?.toString() || "",
+        currency: initialData.currency || "INR",
+        summary: initialData.summary || "",
+        includes: initialData.includes || [],
+        excludes: initialData.excludes || [],
+        properties: initialData.properties || [],
+        rooms: (initialData.rooms || []).map((room: any, idx: number) => ({
+          id: room.id || `room-${idx}`,
+          name: room.name || "",
+          rate: room.rate?.toString() || "",
+          thumb: room.thumb || "",
+          images: room.images || [],
+          features: room.features || [],
+        })),
+        location: initialData.location || "",
+        contactNumber: initialData.contactNumber || "",
+        address: initialData.address || "",
+        additionalDetails: (initialData.additionalDetails || []).map((detail: any, idx: number) => ({
+          id: detail.id || `detail-${idx}`,
+          heading: detail.heading || "",
+          type: detail.type || "description",
+          description: detail.description || "",
+          points: detail.points || [],
+        })),
+      });
+      setImagePreview(initialData.coverImage || "");
+    }
+  }, [initialData, isEdit]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -425,8 +477,13 @@ export default function StayForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/stays/create", {
-        method: "POST",
+      const url = isEdit && initialData?.id 
+        ? `/api/admin/stays/${initialData.id}`
+        : "/api/stays/create";
+      const method = isEdit ? "PUT" : "POST";
+      
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name.trim(),
@@ -445,6 +502,7 @@ export default function StayForm() {
           location: formData.location.trim(),
           contactNumber: formData.contactNumber.trim(),
           address: formData.address.trim(),
+          propertyName: formData.propertyName.trim(),
           additionalDetails: formData.additionalDetails,
         }),
       });
@@ -455,35 +513,22 @@ export default function StayForm() {
         if (data.errors) {
           setErrors(data.errors);
         } else {
-          setErrors({ general: data.error || "Failed to create stay" });
+          setErrors({ general: data.error || `Failed to ${isEdit ? 'update' : 'create'} stay` });
         }
+        setIsSubmitting(false);
         return;
       }
 
-      setSuccessMessage("Stay created successfully!");
-      // Reset form
-      setFormData({
-        name: "",
-        destinationSlug: "",
-        category: "",
-        coverImage: "",
-        carouselImages: [],
-        startingPrice: "",
-        originalPrice: "",
-        currency: "INR",
-        summary: "",
-        includes: [],
-        excludes: [],
-        properties: [],
-        rooms: [],
-        location: "",
-        contactNumber: "",
-        address: "",
-        additionalDetails: [],
-      });
-      setImagePreview("");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      setTimeout(() => setSuccessMessage(""), 5000);
+      setSuccessMessage(`Stay ${isEdit ? 'updated' : 'created'} successfully!`);
+      setIsSubmitting(false);
+      
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Redirect to list page after edit or create
+      setTimeout(() => {
+        router.push('/admin/stays');
+      }, 1500);
     } catch (error) {
       setErrors({ general: "An error occurred. Please try again." });
     } finally {
@@ -495,10 +540,10 @@ export default function StayForm() {
     <div className="mt-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
       <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-          Add New Stay
+          {isEdit ? 'Edit Stay' : 'Add New Stay'}
       </h2>
         <p className="text-gray-600 mb-8">
-          Fill in the details below to add a new stay under a destination.
+          {isEdit ? 'Update the stay details below.' : 'Fill in the details below to add a new stay under a destination.'}
         </p>
 
         {successMessage && (
@@ -1091,6 +1136,24 @@ export default function StayForm() {
             />
           </div>
 
+          {/* Property Name (Admin Only) */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Property Name <span className="text-gray-500 text-xs">(Optional - Admin Only)</span>
+            </label>
+            <input
+              type="text"
+              name="propertyName"
+              value={formData.propertyName}
+              onChange={handleInputChange}
+              placeholder="e.g., Hotel ABC, Resort XYZ (for admin identification)"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Internal property name for admin identification. Users will see the regular "Name" field.
+            </p>
+          </div>
+
           {/* Contact Number */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1270,10 +1333,10 @@ export default function StayForm() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="animate-spin" size={20} />
-                  Creating...
+                  {isEdit ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                "Create Stay"
+                isEdit ? "Update Stay" : "Create Stay"
               )}
             </button>
             <button
@@ -1281,6 +1344,7 @@ export default function StayForm() {
               onClick={() => {
                 setFormData({
                   name: "",
+                  propertyName: "",
                   destinationSlug: "",
                   category: "",
                   coverImage: "",
@@ -1312,3 +1376,4 @@ export default function StayForm() {
     </div>
   );
 }
+

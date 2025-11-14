@@ -5,7 +5,10 @@ const COLLECTION = 'destinations';
 
 export async function findAllDestinations(): Promise<Destination[]> {
   const db = await getDb();
-  const rows = await db.collection<Destination>(COLLECTION).find({}).limit(100).toArray();
+  const rows = await db.collection<Destination>(COLLECTION)
+    .find({ isHidden: { $ne: true } })
+    .limit(100)
+    .toArray();
   return rows.map((r) => ({ ...r, _id: r._id?.toString() }));
 }
 
@@ -13,22 +16,31 @@ export async function findDestinationBySlugOrName(slugOrName: string): Promise<D
   const db = await getDb();
   const normalized = slugOrName.toLowerCase().trim();
   
-  // Try to find by slug first
+  // Try to find by slug first (exclude hidden)
   let destination = await db.collection<Destination>(COLLECTION).findOne({
-    slug: { $regex: new RegExp(`^${normalized}$`, 'i') }
+    $and: [
+      { slug: { $regex: new RegExp(`^${normalized}$`, 'i') } },
+      { isHidden: { $ne: true } }
+    ]
   });
   
-  // If not found, try by name
+  // If not found, try by name (exclude hidden)
   if (!destination) {
     destination = await db.collection<Destination>(COLLECTION).findOne({
-      name: { $regex: new RegExp(normalized, 'i') }
+      $and: [
+        { name: { $regex: new RegExp(normalized, 'i') } },
+        { isHidden: { $ne: true } }
+      ]
     });
   }
   
-  // If still not found, try by location
+  // If still not found, try by location (exclude hidden)
   if (!destination) {
     destination = await db.collection<Destination>(COLLECTION).findOne({
-      location: { $regex: new RegExp(normalized, 'i') }
+      $and: [
+        { location: { $regex: new RegExp(normalized, 'i') } },
+        { isHidden: { $ne: true } }
+      ]
     });
   }
   

@@ -8,6 +8,7 @@ export type Destination = {
   currency: string;
   summary: string;
   tags: string[];
+  isHidden?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 };

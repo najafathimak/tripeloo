@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Lock, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 
 export default function AdminAuth({ children }: { children: React.ReactNode }) {
@@ -82,14 +83,17 @@ export default function AdminAuth({ children }: { children: React.ReactNode }) {
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-gray-200">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#E51A4B]/10 rounded-full mb-4">
-              <Lock className="text-[#E51A4B]" size={32} />
+            <div className="flex justify-center mb-4">
+              <Image
+                src="/assets/logo_new.png"
+                alt="Tripeloo Logo"
+                width={200}
+                height={67}
+                className="h-16 sm:h-20 w-auto"
+                priority
+              />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              <span className="text-[#E51A4B]">Trip</span>
-              <span className="text-gray-900">eloo</span>
-            </h1>
-            <p className="text-gray-600">Admin Panel Access</p>
+            <p className="text-gray-600 text-sm">Admin Panel Access</p>
           </div>
 
           {/* Error Message */}

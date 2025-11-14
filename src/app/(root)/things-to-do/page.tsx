@@ -341,7 +341,12 @@ Please confirm availability and provide booking details.`;
             </div>
 
             <div className="px-4 sm:px-3 mb-5">
-              <ReviewsSection />
+              {activityData && (
+                <ReviewsSection
+                  itemId={activityData._id?.toString() || activityData.id || activityId || ""}
+                  itemType="activity"
+                />
+              )}
             </div>
           </div>
 

@@ -1,12 +1,12 @@
-import ActivityForm from "@/components/AdminPanel/form/ActivityForm";
-import React from "react";
+import AdminListPage from "@/components/AdminPanel/AdminListPage";
 
-const page = () => {
+export default function ThingsPage() {
   return (
-    <div>
-      <ActivityForm />
-    </div>
+    <AdminListPage
+      title="Things to Do"
+      type="activities"
+      addRoute="/admin/things/add"
+      editRoutePrefix="/admin/things/edit"
+    />
   );
-};
-
-export default page;
+}

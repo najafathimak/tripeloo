@@ -7,14 +7,19 @@ export async function findStaysByDestination(destinationSlugOrName: string): Pro
   const db = await getDb();
   const normalized = destinationSlugOrName.toLowerCase().trim();
   
-  // Query with case-insensitive match for destinationSlug
+  // Query with case-insensitive match for destinationSlug and exclude hidden items
   const rows = await db.collection<any>(COLLECTION)
     .find({
-      $or: [
-        { destinationSlug: { $regex: new RegExp(`^${normalized}$`, 'i') } },
-        { destinationSlug: normalized },
-        // Also try matching if destinationSlug contains the normalized value
-        { destinationSlug: { $regex: new RegExp(normalized, 'i') } }
+      $and: [
+        {
+          $or: [
+            { destinationSlug: { $regex: new RegExp(`^${normalized}$`, 'i') } },
+            { destinationSlug: normalized },
+            // Also try matching if destinationSlug contains the normalized value
+            { destinationSlug: { $regex: new RegExp(normalized, 'i') } }
+          ]
+        },
+        { isHidden: { $ne: true } }
       ]
     })
     .toArray();
@@ -29,7 +34,7 @@ export async function findStaysByDestination(destinationSlugOrName: string): Pro
   }));
 }
 
-export async function findStayById(stayId: string): Promise<any | null> {
+export async function findStayById(stayId: string, includeHidden: boolean = false): Promise<any | null> {
   const db = await getDb();
   
   try {
@@ -49,7 +54,11 @@ export async function findStayById(stayId: string): Promise<any | null> {
     if (cleanStayId && ObjectId.isValid(cleanStayId)) {
       try {
         const objectId = new ObjectId(cleanStayId);
-        stay = await db.collection(COLLECTION).findOne({ _id: objectId });
+        const query: any = { _id: objectId };
+        if (!includeHidden) {
+          query.isHidden = { $ne: true }; // Exclude hidden items for user-facing queries
+        }
+        stay = await db.collection(COLLECTION).findOne(query);
         if (stay) {
           console.log('[findStayById] ✓ Found by ObjectId');
           return mapStayData(stay);
@@ -65,7 +74,11 @@ export async function findStayById(stayId: string): Promise<any | null> {
     // This handles the case where ID is passed as string from frontend
     if (!stay) {
       console.log('[findStayById] Trying string comparison method...');
-      const allStays = await db.collection(COLLECTION).find({}).toArray();
+      const query: any = {};
+      if (!includeHidden) {
+        query.isHidden = { $ne: true }; // Exclude hidden items
+      }
+      const allStays = await db.collection(COLLECTION).find(query).toArray();
       console.log('[findStayById] Total stays in DB:', allStays.length);
       
       stay = allStays.find((s: any) => {
@@ -85,7 +98,11 @@ export async function findStayById(stayId: string): Promise<any | null> {
     
     // Strategy 3: Try finding by id field (if stored separately)
     if (!stay) {
-      stay = await db.collection(COLLECTION).findOne({ id: cleanStayId });
+      const query: any = { id: cleanStayId };
+      if (!includeHidden) {
+        query.isHidden = { $ne: true }; // Exclude hidden items
+      }
+      stay = await db.collection(COLLECTION).findOne(query);
       if (stay) {
         console.log('[findStayById] ✓ Found by id field');
         return mapStayData(stay);

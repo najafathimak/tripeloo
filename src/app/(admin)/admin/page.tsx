@@ -1,9 +1,9 @@
-import CarouselForm from "@/components/AdminPanel/form/CarouselForm";
+import HomePageForm from "@/components/AdminPanel/form/HomePageForm";
 
 const page = () => {
   return (
     <div>
-      <CarouselForm />
+      <HomePageForm />
     </div>
   );
 };

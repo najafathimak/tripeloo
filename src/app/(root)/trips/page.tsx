@@ -330,7 +330,12 @@ const TripDetailsContent = () => {
               />
             </div>
             <div className="px-4 sm:px-6 mb-5">
-              <ReviewsSection />
+              {tripData && (
+                <ReviewsSection
+                  itemId={tripData._id?.toString() || tripData.id || tripId || ""}
+                  itemType="trip"
+                />
+              )}
             </div>
           </div>
 

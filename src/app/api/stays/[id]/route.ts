@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findStayById } from '@/server/repositories/staysRepository';
+import { getDb } from '@/server/db/client';
 
 export async function GET(
   request: NextRequest,
@@ -19,6 +20,7 @@ export async function GET(
     const decodedStayId = decodeURIComponent(stayId);
     console.log('[api/stays/[id]] Decoded stayId:', decodedStayId);
     
+    // User-facing: exclude hidden items
     const stay = await findStayById(decodedStayId);
     
     if (!stay) {

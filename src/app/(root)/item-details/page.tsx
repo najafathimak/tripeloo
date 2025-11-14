@@ -339,9 +339,14 @@ const ListingDetailsContent = () => {
             </div>
 
             {/* Reviews */}
-            <div className="px-4 sm:px-6 mb-5">
-              <ReviewsSection />
-            </div>
+            {stayData && (
+              <div className="px-4 sm:px-6 mb-5">
+                <ReviewsSection
+                  itemId={stayData._id?.toString() || stayData.id || stayId || ""}
+                  itemType="stay"
+                />
+              </div>
+            )}
           </div>
 
           {/* Desktop Sidebar */}

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Image, MapPin, Hotel, Activity, Plane, Menu, X } from "lucide-react";
+import { LayoutDashboard, Image as ImageIcon, MapPin, Hotel, Activity, Plane, Menu, X, MessageSquare } from "lucide-react";
 
 export function AdminHeader() {
   const [open, setOpen] = useState(false);
@@ -25,11 +26,12 @@ export function AdminHeader() {
 
   // Admin-specific navigation links
   const adminNavLinks = [
-    { href: "/admin", label: "Carousel", icon: Image },
+    { href: "/admin", label: "Home Page", icon: ImageIcon },
     { href: "/admin/destinations", label: "Destinations", icon: MapPin },
-    { href: "/admin/stay", label: "Stays", icon: Hotel },
+    { href: "/admin/stays", label: "Stays", icon: Hotel },
     { href: "/admin/things", label: "Things to Do", icon: Activity },
     { href: "/admin/trips", label: "Trips", icon: Plane },
+    { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
   ];
 
   return (
@@ -47,16 +49,15 @@ export function AdminHeader() {
             </button>
 
             <Link href="/admin" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#E51A4B] rounded-lg flex items-center justify-center">
-                <LayoutDashboard className="text-white" size={20} />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-lg leading-tight">
-                  <span className="text-[#E51A4B]">Trip</span>
-                  <span className="text-gray-900">eloo</span>
-                </span>
-                <span className="text-xs text-gray-500 font-normal">Admin Panel</span>
-              </div>
+              <Image
+                src="/assets/logo_new.png"
+                alt="Tripeloo Logo"
+                width={130}
+                height={43}
+                className="h-10 sm:h-12 w-auto"
+                priority
+              />
+              <span className="text-xs text-gray-500 font-normal hidden sm:inline">Admin Panel</span>
             </Link>
           </div>
 
@@ -105,10 +106,13 @@ export function AdminHeader() {
           >
             <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-[#E51A4B]">
               <div className="flex items-center gap-2">
-                <LayoutDashboard className="text-white" size={24} />
-                <div className="font-extrabold text-lg text-white">
-                  Admin Panel
-                </div>
+                <Image
+                  src="/assets/logo_new.png"
+                  alt="Tripeloo Logo"
+                  width={130}
+                  height={43}
+                  className="h-10 w-auto"
+                />
               </div>
               <button
                 aria-label="Close Menu"

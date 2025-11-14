@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Upload, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
 
@@ -26,7 +27,13 @@ interface FormData {
   tags: string[];
 }
 
-export default function DestinationForm() {
+interface DestinationFormProps {
+  initialData?: any;
+  isEdit?: boolean;
+}
+
+export default function DestinationForm({ initialData, isEdit = false }: DestinationFormProps = {}) {
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     name: "",
     slug: "",
@@ -46,6 +53,23 @@ export default function DestinationForm() {
   const [tagInput, setTagInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+
+  // Populate form with initialData if editing
+  useEffect(() => {
+    if (initialData && isEdit) {
+      setFormData({
+        name: initialData.name || "",
+        slug: initialData.slug || "",
+        location: initialData.location || "",
+        coverImage: initialData.coverImage || "",
+        startingPrice: initialData.startingPrice?.toString() || "",
+        currency: initialData.currency || "INR",
+        summary: initialData.summary || "",
+        tags: initialData.tags || [],
+      });
+      setImagePreview(initialData.coverImage || "");
+    }
+  }, [initialData, isEdit]);
 
   // Generate slug from name
   const generateSlug = (name: string) => {
@@ -204,8 +228,13 @@ export default function DestinationForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/destinations/create", {
-        method: "POST",
+      const url = isEdit && initialData?.id 
+        ? `/api/admin/destinations/${initialData.id}`
+        : "/api/destinations/create";
+      const method = isEdit ? "PUT" : "POST";
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -227,30 +256,23 @@ export default function DestinationForm() {
         if (data.errors) {
           setErrors(data.errors);
         } else {
-          setErrors({ general: data.error || "Failed to create destination" });
+          setErrors({ general: data.error || `Failed to ${isEdit ? 'update' : 'create'} destination` });
         }
+        setIsSubmitting(false);
         return;
       }
 
       // Success
-      setSuccessMessage("Destination created successfully!");
-      setFormData({
-        name: "",
-        slug: "",
-        location: "",
-        coverImage: "",
-        startingPrice: "",
-        currency: "INR",
-        summary: "",
-        tags: [],
-      });
-      setImagePreview("");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
-      // Clear success message after 5 seconds
-      setTimeout(() => setSuccessMessage(""), 5000);
+      setSuccessMessage(`Destination ${isEdit ? 'updated' : 'created'} successfully!`);
+      setIsSubmitting(false);
+      
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Redirect to list page after edit or create
+      setTimeout(() => {
+        router.push('/admin/destinations');
+      }, 1500);
     } catch (error) {
       setErrors({
         general: "An error occurred. Please try again.",
@@ -264,10 +286,10 @@ export default function DestinationForm() {
     <div className="mt-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
       <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-          Add New Destination
+          {isEdit ? 'Edit Destination' : 'Add New Destination'}
         </h2>
         <p className="text-gray-600 mb-8">
-          Fill in the details below to add a new destination to the platform.
+          {isEdit ? 'Update the destination details below.' : 'Fill in the details below to add a new destination to the platform.'}
         </p>
 
         {/* Success Message */}
@@ -573,10 +595,10 @@ export default function DestinationForm() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="animate-spin" size={20} />
-                  Creating...
+                  {isEdit ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                "Create Destination"
+                isEdit ? "Update Destination" : "Create Destination"
               )}
             </button>
             <button

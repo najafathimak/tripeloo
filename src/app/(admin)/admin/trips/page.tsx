@@ -1,12 +1,12 @@
-import TripForm from "@/components/AdminPanel/form/TripForm";
-import React from "react";
+import AdminListPage from "@/components/AdminPanel/AdminListPage";
 
-const page = () => {
+export default function TripsPage() {
   return (
-    <div>
-      <TripForm />
-    </div>
+    <AdminListPage
+      title="Trips"
+      type="trips"
+      addRoute="/admin/trips/add"
+      editRoutePrefix="/admin/trips/edit"
+    />
   );
-};
-
-export default page;
+}

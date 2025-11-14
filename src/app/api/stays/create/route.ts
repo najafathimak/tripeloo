@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       name,
+      propertyName,
       destinationSlug,
       category,
       coverImage,
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
     const db = await getDb();
     const result = await db.collection(COLLECTION).insertOne({
       name: name.trim(),
+      propertyName: propertyName?.trim() || '',
       destinationSlug: destinationSlug.trim().toLowerCase(),
       category: category.trim(),
       coverImage: coverImage.trim(),
@@ -95,6 +97,7 @@ export async function POST(request: NextRequest) {
         description: detail.type === 'description' ? (detail.description?.trim() || '') : undefined,
         points: detail.type === 'points' ? (detail.points?.filter((p: string) => p.trim()) || []) : undefined,
       })),
+      isHidden: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

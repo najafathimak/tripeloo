@@ -71,6 +71,51 @@ html {
   to { transform: translateX(-50%); }
 }
 
+/* Stay types marquee for AboutBand */
+.marquee-stay-types {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  padding: 1rem 0;
+}
+
+.marquee-stay-types__track {
+  display: flex;
+  white-space: nowrap;
+  will-change: transform;
+  animation: marquee-stay-types-scroll 30s linear infinite;
+}
+
+.marquee-stay-types__item {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  color: #E51A4B;
+  padding: 0 1rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.marquee-stay-types__icon {
+  flex-shrink: 0;
+  color: #E51A4B;
+}
+
+@media (min-width: 768px) {
+  .marquee-stay-types__item {
+    font-size: 0.875rem;
+    padding: 0 1.25rem;
+    gap: 1rem;
+  }
+}
+
+@keyframes marquee-stay-types-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
 /* slow spin for circular text */
 @keyframes spin-slower {
   from { transform: rotate(0deg); }
@@ -256,6 +301,230 @@ html {
 
 .testimonial-content-enter {
   animation: testimonial-content-enter 500ms ease-out both;
+}
+
+/* Statistics section background animations */
+@keyframes float-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(30px, -30px) scale(1.1);
+    opacity: 0.5;
+  }
+}
+@keyframes float-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-40px, 40px) scale(1.15);
+    opacity: 0.5;
+  }
+}
+@keyframes float-3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(50px, -20px) scale(1.05);
+    opacity: 0.5;
+  }
+}
+@keyframes float-4 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-30px, -40px) scale(1.2);
+    opacity: 0.5;
+  }
+}
+
+.animate-float-1 {
+  animation: float-1 8s ease-in-out infinite;
+}
+.animate-float-2 {
+  animation: float-2 10s ease-in-out infinite;
+  animation-delay: 1s;
+}
+.animate-float-3 {
+  animation: float-3 12s ease-in-out infinite;
+  animation-delay: 2s;
+}
+.animate-float-4 {
+  animation: float-4 9s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 6s ease-in-out infinite;
+}
+.animate-pulse-slow-delayed {
+  animation: pulse-slow 7s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+@keyframes particle-1 {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate(100px, -150px);
+    opacity: 0.8;
+  }
+}
+@keyframes particle-2 {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-120px, 180px);
+    opacity: 0.8;
+  }
+}
+@keyframes particle-3 {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate(150px, 100px);
+    opacity: 0.8;
+  }
+}
+@keyframes particle-4 {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-80px, -120px);
+    opacity: 0.8;
+  }
+}
+
+.animate-particle-1 {
+  animation: particle-1 15s ease-in-out infinite;
+}
+.animate-particle-2 {
+  animation: particle-2 18s ease-in-out infinite;
+  animation-delay: 3s;
+}
+.animate-particle-3 {
+  animation: particle-3 20s ease-in-out infinite;
+  animation-delay: 6s;
+}
+.animate-particle-4 {
+  animation: particle-4 16s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+.animate-particle-5 {
+  animation: particle-1 17s ease-in-out infinite;
+  animation-delay: 4s;
+}
+.animate-particle-6 {
+  animation: particle-2 19s ease-in-out infinite;
+  animation-delay: 5s;
+}
+
+@keyframes float-5 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-50px, 30px) scale(1.12);
+    opacity: 0.5;
+  }
+}
+@keyframes float-6 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(35px, -35px) scale(1.08);
+    opacity: 0.5;
+  }
+}
+
+.animate-float-5 {
+  animation: float-5 11s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+.animate-float-6 {
+  animation: float-6 13s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+.animate-pulse-slow-delayed-2 {
+  animation: pulse-slow 8s ease-in-out infinite;
+  animation-delay: 4s;
+}
+
+@keyframes rotate-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rotate-slow-reverse {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-rotate-slow {
+  animation: rotate-slow 20s linear infinite;
+}
+.animate-rotate-slow-reverse {
+  animation: rotate-slow-reverse 25s linear infinite;
 }
 
 .testimonial-content-exit {

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
   return (
@@ -6,8 +7,14 @@ export function Footer() {
       <div className="container py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
-            <div className="font-extrabold text-lg"><span className="text-brand">Trip</span>eloo</div>
-            <p className="mt-2 text-sm text-gray-600">India’s travel platform for stays, activities, and curated trips.</p>
+            <Image
+              src="/assets/logo_new.png"
+              alt="Tripeloo Logo"
+              width={150}
+              height={50}
+              className="h-10 sm:h-12 w-auto mb-2"
+            />
+            <p className="mt-2 text-sm text-gray-600">India's travel platform for stays, activities, and curated trips.</p>
           </div>
           <div>
             <div className="font-semibold">Quick Links</div>

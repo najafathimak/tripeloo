@@ -10,7 +10,12 @@ function TentIcon() {
   );
 }
 
-export function Hero() {
+interface HeroProps {
+  desktopImage?: string;
+  mobileImage?: string;
+}
+
+export function Hero({ desktopImage, mobileImage }: HeroProps) {
   const onNav = (hash: string) => {
     if (typeof window !== 'undefined') {
       window.location.href = hash;
@@ -19,30 +24,36 @@ export function Hero() {
     }
   };
 
+  const defaultMobileImage = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.1.0&auto=format&fit=crop&q=100&w=1080&h=1920";
+  const defaultDesktopImage = "https://images.unsplash.com/photo-1610520814919-467f10b43486?ixlib=rb-4.1.0&auto=format&fit=crop&q=100&w=3840";
 
   return (
     <section className="relative">
       <div className="relative h-[100svh] sm:h-[100vh] w-full overflow-hidden rounded-none bg-gray-100">
         {/* Mobile background image - Portrait 4K quality */}
-        <Image
-          src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.1.0&auto=format&fit=crop&q=100&w=1080&h=1920"
-          alt="Beautiful nature landscape background"
-          fill
-          priority
-          quality={100}
-          sizes="100vw"
-          className="object-cover sm:hidden"
-        />
+        {(mobileImage || defaultMobileImage) && (
+          <Image
+            src={mobileImage || defaultMobileImage}
+            alt="Beautiful nature landscape background"
+            fill
+            priority
+            quality={100}
+            sizes="100vw"
+            className="object-cover sm:hidden"
+          />
+        )}
         {/* Desktop background image - 4K quality */}
-        <Image
-          src="https://images.unsplash.com/photo-1610520814919-467f10b43486?ixlib=rb-4.1.0&auto=format&fit=crop&q=100&w=3840"
-          alt="Lush green hills background"
-          fill
-          priority
-          quality={100}
-          sizes="100vw"
-          className="hidden sm:block object-cover"
-        />
+        {(desktopImage || defaultDesktopImage) && (
+          <Image
+            src={desktopImage || defaultDesktopImage}
+            alt="Lush green hills background"
+            fill
+            priority
+            quality={100}
+            sizes="100vw"
+            className="hidden sm:block object-cover"
+          />
+        )}
         <div className="absolute inset-0 bg-black/40" />
 
         {/* Desktop: Stable titles with glow animation */}

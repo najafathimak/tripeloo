@@ -7,14 +7,19 @@ export async function findActivitiesByDestination(destinationSlugOrName: string)
   const db = await getDb();
   const normalized = destinationSlugOrName.toLowerCase().trim();
   
-  // Query with case-insensitive match for destinationSlug
+  // Query with case-insensitive match for destinationSlug and exclude hidden items
   const rows = await db.collection<any>(COLLECTION)
     .find({
-      $or: [
-        { destinationSlug: { $regex: new RegExp(`^${normalized}$`, 'i') } },
-        { destinationSlug: normalized },
-        // Also try matching if destinationSlug contains the normalized value
-        { destinationSlug: { $regex: new RegExp(normalized, 'i') } }
+      $and: [
+        {
+          $or: [
+            { destinationSlug: { $regex: new RegExp(`^${normalized}$`, 'i') } },
+            { destinationSlug: normalized },
+            // Also try matching if destinationSlug contains the normalized value
+            { destinationSlug: { $regex: new RegExp(normalized, 'i') } }
+          ]
+        },
+        { isHidden: { $ne: true } }
       ]
     })
     .toArray();
