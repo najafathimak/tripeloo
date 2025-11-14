@@ -120,46 +120,101 @@ export default function PackagesSection({
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {packages.map((pkg) => (
-          <div
-            key={pkg.id}
-            className={`cursor-pointer rounded-xl overflow-hidden shadow-md border transition-all duration-200 hover:shadow-lg hover:border-red-500 ${
-              selectedPackages.find((p) => p.id === pkg.id)
-                ? "border-red-500 ring-1 ring-red-300"
-                : "border-gray-200"
-            }`}
-          >
-            <Image
-              src={pkg.thumb}
-              alt={pkg.name}
-              width={400}
-              height={200}
-              className="h-[200px] w-full object-cover"
-              onClick={() => setSelectedPackage(pkg)}
-            />
-            <div className="p-4 flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-base text-gray-800">
-                    {pkg.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1">{pkg.duration}</p>
+        {packages.map((pkg) => {
+          // Use images array if available, otherwise fallback to thumb
+          const displayImages = pkg.images && pkg.images.length > 0 ? pkg.images : [pkg.thumb];
+          
+          return (
+            <div
+              key={pkg.id}
+              className={`cursor-pointer rounded-xl overflow-hidden shadow-md border transition-all duration-200 hover:shadow-lg hover:border-red-500 ${
+                selectedPackages.find((p) => p.id === pkg.id)
+                  ? "border-red-500 ring-1 ring-red-300"
+                  : "border-gray-200"
+              }`}
+            >
+              {/* Carousel for package images */}
+              {displayImages.length > 1 ? (
+                <div className="relative h-[200px] w-full" onClick={() => setSelectedPackage(pkg)}>
+                  <Swiper
+                    spaceBetween={0}
+                    slidesPerView={1}
+                    modules={[Navigation]}
+                    navigation
+                    className="h-full w-full"
+                  >
+                    {displayImages.map((img, i) => (
+                      <SwiperSlide key={i}>
+                        <Image
+                          src={img}
+                          alt={`${pkg.name} - Image ${i + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={!!selectedPackages.find((p) => p.id === pkg.id)}
-                  onChange={() => handlePackageToggle(pkg)}
-                  className="accent-red-500 w-5 h-5"
+              ) : (
+                <Image
+                  src={pkg.thumb}
+                  alt={pkg.name}
+                  width={400}
+                  height={200}
+                  className="h-[200px] w-full object-cover"
+                  onClick={() => setSelectedPackage(pkg)}
                 />
-              </div>
+              )}
+              
+              <div className="p-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-base text-gray-800">
+                      {pkg.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">{pkg.duration}</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={!!selectedPackages.find((p) => p.id === pkg.id)}
+                    onChange={() => handlePackageToggle(pkg)}
+                    className="accent-red-500 w-5 h-5"
+                  />
+                </div>
 
-              {/* 🔥 Highlighted Price */}
-              <p className="text-lg font-bold text-red-600 mt-1">
-                ₹{pkg.price.toLocaleString()}
-              </p>
+                {/* 🔥 Highlighted Price */}
+                <p className="text-lg font-bold text-red-600 mt-1">
+                  ₹{pkg.price.toLocaleString()}
+                </p>
+
+                {/* Package Highlights - Visible on card */}
+                {pkg.highlights && pkg.highlights.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <h4 className="text-xs font-semibold text-gray-700 mb-2">
+                      Highlights:
+                    </h4>
+                    <div className="space-y-1">
+                      {pkg.highlights.slice(0, 3).map((highlight, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start gap-2 text-gray-600 text-xs"
+                        >
+                          <span className="text-red-500 font-bold mt-0.5 flex-shrink-0">•</span>
+                          <span className="line-clamp-1">{highlight}</span>
+                        </div>
+                      ))}
+                      {pkg.highlights.length > 3 && (
+                        <p className="text-xs text-gray-500 italic">
+                          +{pkg.highlights.length - 3} more
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Package modal view */}

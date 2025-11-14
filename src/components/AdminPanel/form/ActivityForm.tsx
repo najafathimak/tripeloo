@@ -10,22 +10,23 @@ interface FormErrors {
   category?: string;
   coverImage?: string;
   startingPrice?: string;
-  summary?: string;
+  about?: string;
   general?: string;
-}
-
-interface Room {
-  id: string;
-  name: string;
-  rate: string;
-  thumb: string;
-  images: string[];
-  features: string[];
 }
 
 interface CarouselImage {
   url: string;
   title: string;
+}
+
+interface ActivityDetails {
+  ages?: string;
+  duration?: string;
+  startTime?: string;
+  mobileTicket?: boolean;
+  animalWelfare?: boolean;
+  liveGuide?: string;
+  maxGroupSize?: string;
 }
 
 interface AdditionalDetail {
@@ -45,18 +46,15 @@ interface FormData {
   startingPrice: string;
   originalPrice: string;
   currency: string;
-  summary: string;
+  about: string;
   includes: string[];
   excludes: string[];
-  properties: string[];
-  rooms: Room[];
   location: string;
-  contactNumber: string;
-  address: string;
+  activityDetails: ActivityDetails;
   additionalDetails: AdditionalDetail[];
 }
 
-export default function StayForm() {
+export default function ActivityForm() {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     destinationSlug: "",
@@ -66,14 +64,19 @@ export default function StayForm() {
     startingPrice: "",
     originalPrice: "",
     currency: "INR",
-    summary: "",
+    about: "",
     includes: [],
     excludes: [],
-    properties: [],
-    rooms: [],
     location: "",
-    contactNumber: "",
-    address: "",
+    activityDetails: {
+      ages: "",
+      duration: "",
+      startTime: "",
+      mobileTicket: false,
+      animalWelfare: false,
+      liveGuide: "",
+      maxGroupSize: "",
+    },
     additionalDetails: [],
   });
 
@@ -88,9 +91,7 @@ export default function StayForm() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [includeInput, setIncludeInput] = useState("");
   const [excludeInput, setExcludeInput] = useState("");
-  const [propertyInput, setPropertyInput] = useState("");
   const [pointInputs, setPointInputs] = useState<Record<string, string>>({});
-  const [roomFeatureInputs, setRoomFeatureInputs] = useState<Record<string, string>>({});
 
   // Fetch destinations
   useEffect(() => {
@@ -118,6 +119,13 @@ export default function StayForm() {
     if (errors[name as keyof FormErrors]) {
       setErrors({ ...errors, [name]: undefined });
     }
+  };
+
+  const handleActivityDetailChange = (field: keyof ActivityDetails, value: any) => {
+    setFormData({
+      ...formData,
+      activityDetails: { ...formData.activityDetails, [field]: value },
+    });
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isCarousel = false, index?: number) => {
@@ -235,68 +243,6 @@ export default function StayForm() {
     });
   };
 
-  const addProperty = () => {
-    if (propertyInput.trim() && !formData.properties.includes(propertyInput.trim())) {
-      setFormData({
-        ...formData,
-        properties: [...formData.properties, propertyInput.trim()],
-      });
-      setPropertyInput("");
-    }
-  };
-
-  const removeProperty = (index: number) => {
-    setFormData({
-      ...formData,
-      properties: formData.properties.filter((_, i) => i !== index),
-    });
-  };
-
-  const addRoom = () => {
-    setFormData({
-      ...formData,
-      rooms: [
-        ...formData.rooms,
-        {
-          id: Date.now().toString(),
-          name: "",
-          rate: "",
-          thumb: "",
-          images: [],
-          features: [],
-        },
-      ],
-    });
-  };
-
-  const removeRoom = (index: number) => {
-    setFormData({
-      ...formData,
-      rooms: formData.rooms.filter((_, i) => i !== index),
-    });
-  };
-
-  const updateRoom = (index: number, field: keyof Room, value: any) => {
-    const updated = [...formData.rooms];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, rooms: updated });
-  };
-
-  const addRoomFeature = (roomIndex: number) => {
-    const room = formData.rooms[roomIndex];
-    const inputKey = room.id;
-    const feature = roomFeatureInputs[inputKey]?.trim();
-    if (feature && !room.features.includes(feature)) {
-      updateRoom(roomIndex, "features", [...room.features, feature]);
-      setRoomFeatureInputs({ ...roomFeatureInputs, [inputKey]: "" });
-    }
-  };
-
-  const removeRoomFeature = (roomIndex: number, featureIndex: number) => {
-    const room = formData.rooms[roomIndex];
-    updateRoom(roomIndex, "features", room.features.filter((_, i) => i !== featureIndex));
-  };
-
   const addAdditionalDetail = () => {
     setFormData({
       ...formData,
@@ -372,37 +318,6 @@ export default function StayForm() {
     updateAdditionalDetail(detailIndex, "points", detail.points?.filter((_, i) => i !== pointIndex) || []);
   };
 
-  const handleRoomImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, roomIndex: number, isThumb = false) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: uploadFormData,
-      });
-
-      if (!response.ok) throw new Error("Upload failed");
-
-      const data = await response.json();
-      const room = formData.rooms[roomIndex];
-
-      if (isThumb) {
-        updateRoom(roomIndex, "thumb", data.url);
-      } else {
-        updateRoom(roomIndex, "images", [...room.images, data.url]);
-      }
-    } catch (error) {
-      alert("Failed to upload image");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -410,12 +325,12 @@ export default function StayForm() {
 
     const newErrors: FormErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = "Stay name is required";
+    if (!formData.name.trim()) newErrors.name = "Activity name is required";
     if (!formData.destinationSlug) newErrors.destinationSlug = "Destination is required";
     if (!formData.category.trim()) newErrors.category = "Category is required";
     if (!formData.coverImage.trim()) newErrors.coverImage = "Cover image is required";
     if (!formData.startingPrice.trim()) newErrors.startingPrice = "Starting price is required";
-    if (!formData.summary.trim()) newErrors.summary = "Summary is required";
+    if (!formData.about.trim()) newErrors.about = "About/Description is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -425,7 +340,7 @@ export default function StayForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/stays/create", {
+      const response = await fetch("/api/activities/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -437,14 +352,11 @@ export default function StayForm() {
           startingPrice: Number(formData.startingPrice),
           originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
           currency: formData.currency,
-          summary: formData.summary.trim(),
+          about: formData.about.trim(),
           includes: formData.includes,
           excludes: formData.excludes,
-          properties: formData.properties,
-          rooms: formData.rooms,
           location: formData.location.trim(),
-          contactNumber: formData.contactNumber.trim(),
-          address: formData.address.trim(),
+          activityDetails: formData.activityDetails,
           additionalDetails: formData.additionalDetails,
         }),
       });
@@ -455,12 +367,12 @@ export default function StayForm() {
         if (data.errors) {
           setErrors(data.errors);
         } else {
-          setErrors({ general: data.error || "Failed to create stay" });
+          setErrors({ general: data.error || "Failed to create activity" });
         }
         return;
       }
 
-      setSuccessMessage("Stay created successfully!");
+      setSuccessMessage("Activity created successfully!");
       // Reset form
       setFormData({
         name: "",
@@ -471,15 +383,19 @@ export default function StayForm() {
         startingPrice: "",
         originalPrice: "",
         currency: "INR",
-        summary: "",
+        about: "",
         includes: [],
         excludes: [],
-        properties: [],
-        rooms: [],
         location: "",
-        contactNumber: "",
-        address: "",
-        additionalDetails: [],
+        activityDetails: {
+          ages: "",
+          duration: "",
+          startTime: "",
+          mobileTicket: false,
+          animalWelfare: false,
+          liveGuide: "",
+          maxGroupSize: "",
+        },
       });
       setImagePreview("");
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -495,10 +411,10 @@ export default function StayForm() {
     <div className="mt-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
       <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-          Add New Stay
-      </h2>
+          Add New Activity (Things to Do)
+        </h2>
         <p className="text-gray-600 mb-8">
-          Fill in the details below to add a new stay under a destination.
+          Fill in the details below to add a new activity under a destination.
         </p>
 
         {successMessage && (
@@ -517,17 +433,17 @@ export default function StayForm() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Info */}
-        <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Stay Name <span className="text-red-500">*</span>
+                Activity Name <span className="text-red-500">*</span>
               </label>
-          <input
-            type="text"
+              <input
+                type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="e.g., Wayanad Jungle Resort"
+                placeholder="e.g., Discover Rocky Mountain National Park"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent ${
                   errors.name ? "border-red-500" : "border-gray-300"
                 }`}
@@ -567,7 +483,7 @@ export default function StayForm() {
                 </p>
               )}
             </div>
-        </div>
+          </div>
 
           {/* Category */}
           <div>
@@ -583,11 +499,6 @@ export default function StayForm() {
               }`}
             >
               <option value="">Select Category</option>
-              <option value="Resort">Resort</option>
-              <option value="Eco Stay">Eco Stay</option>
-              <option value="Luxury">Luxury</option>
-              <option value="Beach Resort">Beach Resort</option>
-              <option value="Budget">Budget</option>
               <option value="Adventure">Adventure</option>
               <option value="Wildlife">Wildlife</option>
               <option value="Nature">Nature</option>
@@ -602,7 +513,7 @@ export default function StayForm() {
                 {errors.category}
               </p>
             )}
-        </div>
+          </div>
 
           {/* Cover Image */}
           <div>
@@ -649,13 +560,13 @@ export default function StayForm() {
                     Image uploaded
                   </span>
                 )}
-            </div>
+              </div>
 
               {imagePreview && (
                 <div className="relative w-full h-64 rounded-lg overflow-hidden border border-gray-200">
                   <Image src={imagePreview} alt="Cover preview" fill className="object-cover" />
-            <button
-              type="button"
+                  <button
+                    type="button"
                     onClick={() => {
                       setFormData({ ...formData, coverImage: "" });
                       setImagePreview("");
@@ -664,7 +575,7 @@ export default function StayForm() {
                     className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
                   >
                     <X size={16} />
-            </button>
+                  </button>
                 </div>
               )}
 
@@ -700,8 +611,8 @@ export default function StayForm() {
                       )}
                     </div>
                     <div>
-                <input
-                  type="text"
+                      <input
+                        type="text"
                         placeholder="Image Title/Caption"
                         value={img.title}
                         onChange={(e) => updateCarouselImage(index, "title", e.target.value)}
@@ -719,16 +630,16 @@ export default function StayForm() {
                   </div>
                 </div>
               ))}
-            <button
-              type="button"
+              <button
+                type="button"
                 onClick={addCarouselImage}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
-            >
+              >
                 <Plus size={16} />
                 Add Carousel Image
-            </button>
+              </button>
+            </div>
           </div>
-        </div>
 
           {/* Price */}
           <div className="grid md:grid-cols-3 gap-6">
@@ -741,7 +652,7 @@ export default function StayForm() {
                 name="startingPrice"
                 value={formData.startingPrice}
                 onChange={handleInputChange}
-                placeholder="e.g., 3499"
+                placeholder="e.g., 227683"
                 min="0"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] ${
                   errors.startingPrice ? "border-red-500" : "border-gray-300"
@@ -751,7 +662,7 @@ export default function StayForm() {
                 <p className="mt-1 text-sm text-red-600">{errors.startingPrice}</p>
               )}
             </div>
-        <div>
+            <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Original Price <span className="text-gray-500 text-xs">(Optional)</span>
               </label>
@@ -760,7 +671,7 @@ export default function StayForm() {
                 name="originalPrice"
                 value={formData.originalPrice}
                 onChange={handleInputChange}
-                placeholder="e.g., 4999"
+                placeholder="e.g., 302818"
                 min="0"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B]"
               />
@@ -782,24 +693,97 @@ export default function StayForm() {
             </div>
           </div>
 
-          {/* Summary */}
+          {/* About */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Summary/Description <span className="text-red-500">*</span>
+              About/Description <span className="text-red-500">*</span>
             </label>
             <textarea
-              name="summary"
-              value={formData.summary}
+              name="about"
+              value={formData.about}
               onChange={handleInputChange}
               rows={4}
-              placeholder="Brief description of the stay..."
+              placeholder="Describe the activity in detail..."
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] resize-none ${
-                errors.summary ? "border-red-500" : "border-gray-300"
+                errors.about ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.summary && (
-              <p className="mt-1 text-sm text-red-600">{errors.summary}</p>
+            {errors.about && (
+              <p className="mt-1 text-sm text-red-600">{errors.about}</p>
             )}
+          </div>
+
+          {/* Activity Details */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-4">
+              Activity Details <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">Ages & Group Size</label>
+                <input
+                  type="text"
+                  value={formData.activityDetails.ages || ""}
+                  onChange={(e) => handleActivityDetailChange("ages", e.target.value)}
+                  placeholder="e.g., Ages 8-99, max of 50 per group"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">Duration</label>
+                <input
+                  type="text"
+                  value={formData.activityDetails.duration || ""}
+                  onChange={(e) => handleActivityDetailChange("duration", e.target.value)}
+                  placeholder="e.g., 8h"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">Start Time</label>
+                <input
+                  type="text"
+                  value={formData.activityDetails.startTime || ""}
+                  onChange={(e) => handleActivityDetailChange("startTime", e.target.value)}
+                  placeholder="e.g., Check availability"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">Live Guide Language</label>
+                <input
+                  type="text"
+                  value={formData.activityDetails.liveGuide || ""}
+                  onChange={(e) => handleActivityDetailChange("liveGuide", e.target.value)}
+                  placeholder="e.g., English"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="mobileTicket"
+                  checked={formData.activityDetails.mobileTicket || false}
+                  onChange={(e) => handleActivityDetailChange("mobileTicket", e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="mobileTicket" className="text-sm text-gray-600">
+                  Mobile Ticket Available
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="animalWelfare"
+                  checked={formData.activityDetails.animalWelfare || false}
+                  onChange={(e) => handleActivityDetailChange("animalWelfare", e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="animalWelfare" className="text-sm text-gray-600">
+                  Meets Animal Welfare Guidelines
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* Includes */}
@@ -818,7 +802,7 @@ export default function StayForm() {
                     addInclude();
                   }
                 }}
-                placeholder="e.g., Transfer Included"
+                placeholder="e.g., Expert Tour Guide"
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
               />
               <button
@@ -837,27 +821,27 @@ export default function StayForm() {
                     className="inline-flex items-center gap-1 px-3 py-1 bg-[#E51A4B]/10 text-[#E51A4B] rounded-full text-sm"
                   >
                     {inc}
-          <button
-            type="button"
+                    <button
+                      type="button"
                       onClick={() => removeInclude(index)}
                       className="hover:text-red-700"
-          >
+                    >
                       <X size={14} />
-          </button>
+                    </button>
                   </span>
                 ))}
               </div>
             )}
-        </div>
+          </div>
 
           {/* Excludes */}
-        <div>
+          <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Excludes <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
+              <input
+                type="text"
                 value={excludeInput}
                 onChange={(e) => setExcludeInput(e.target.value)}
                 onKeyPress={(e) => {
@@ -866,7 +850,7 @@ export default function StayForm() {
                     addExclude();
                   }
                 }}
-                placeholder="e.g., Personal Expenses"
+                placeholder="e.g., Gratuities"
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
               />
               <button
@@ -898,184 +882,6 @@ export default function StayForm() {
             )}
           </div>
 
-          {/* Properties */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Resort Properties <span className="text-gray-500 text-xs">(Optional)</span>
-            </label>
-            <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                value={propertyInput}
-                onChange={(e) => setPropertyInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addProperty();
-                  }
-                }}
-                placeholder="e.g., Swimming Pool"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-              />
-              <button
-                type="button"
-                onClick={addProperty}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-            {formData.properties.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {formData.properties.map((prop, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm"
-                  >
-                    {prop}
-                    <button
-                      type="button"
-                      onClick={() => removeProperty(index)}
-                      className="hover:text-red-700"
-                    >
-                      <X size={14} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Rooms */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Rooms <span className="text-gray-500 text-xs">(Optional)</span>
-            </label>
-            <div className="space-y-4">
-              {formData.rooms.map((room, roomIndex) => (
-                <div key={room.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-semibold">Room {roomIndex + 1}</h4>
-                    <button
-                      type="button"
-                      onClick={() => removeRoom(roomIndex)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4 mb-4">
-                    <input
-                      type="text"
-                      placeholder="Room Name"
-                      value={room.name}
-                      onChange={(e) => updateRoom(roomIndex, "name", e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Rate (e.g., ₹12,500 / night)"
-                      value={room.rate}
-                      onChange={(e) => updateRoom(roomIndex, "rate", e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm text-gray-600 mb-2">Thumbnail Image</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleRoomImageUpload(e, roomIndex, true)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                    />
-                    {room.thumb && (
-                      <div className="mt-2 relative w-32 h-20 rounded overflow-hidden">
-                        <Image src={room.thumb} alt="Room thumb" fill className="object-cover" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm text-gray-600 mb-2">Room Images</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleRoomImageUpload(e, roomIndex, false)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm mb-2"
-                    />
-                    {room.images.length > 0 && (
-                      <div className="flex gap-2 flex-wrap">
-                        {room.images.map((img, imgIndex) => (
-                          <div key={imgIndex} className="relative w-24 h-16 rounded overflow-hidden">
-                            <Image src={img} alt={`Room image ${imgIndex}`} fill className="object-cover" />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                updateRoom(roomIndex, "images", room.images.filter((_, i) => i !== imgIndex));
-                              }}
-                              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl"
-                            >
-                              <X size={12} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-2">Features</label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {room.features.map((feature, featureIndex) => (
-                        <span
-                          key={featureIndex}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
-                        >
-                          {feature}
-                          <button
-                            type="button"
-                            onClick={() => removeRoomFeature(roomIndex, featureIndex)}
-                            className="text-red-600"
-                          >
-                            <X size={12} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={roomFeatureInputs[room.id] || ""}
-                        onChange={(e) => setRoomFeatureInputs({ ...roomFeatureInputs, [room.id]: e.target.value })}
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addRoomFeature(roomIndex);
-                          }
-                        }}
-                        placeholder="Enter feature and press Enter"
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => addRoomFeature(roomIndex)}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
-                      >
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addRoom}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                <Plus size={16} />
-                Add Room
-              </button>
-            </div>
-          </div>
-
           {/* Location */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1086,45 +892,9 @@ export default function StayForm() {
               name="location"
               value={formData.location}
               onChange={handleInputChange}
-              placeholder="e.g., Wayanad, Kerala"
+              placeholder="e.g., Denver, Colorado"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             />
-          </div>
-
-          {/* Contact Number */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Contact Number <span className="text-gray-500 text-xs">(Optional - Admin Only)</span>
-            </label>
-            <input
-              type="tel"
-              name="contactNumber"
-              value={formData.contactNumber}
-              onChange={handleInputChange}
-              placeholder="e.g., +91 9876543210"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              This field is only visible in the admin panel and will not be displayed to users.
-            </p>
-          </div>
-
-          {/* Address */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Address <span className="text-gray-500 text-xs">(Optional - Admin Only)</span>
-            </label>
-            <textarea
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              rows={3}
-              placeholder="e.g., 123 Main Street, Wayanad, Kerala 673121"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              This field is only visible in the admin panel and will not be displayed to users.
-            </p>
           </div>
 
           {/* Additional Details */}
@@ -1140,20 +910,20 @@ export default function StayForm() {
                 <div key={detail.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="font-semibold text-gray-800">Detail Section {index + 1}</h4>
-          <button
-            type="button"
+                    <button
+                      type="button"
                       onClick={() => removeAdditionalDetail(index)}
                       className="text-red-600 hover:text-red-700"
-          >
+                    >
                       <Trash2 size={18} />
-          </button>
-        </div>
+                    </button>
+                  </div>
 
                   {/* Heading */}
                   <div className="mb-4">
                     <label className="block text-sm text-gray-600 mb-2">Heading</label>
-          <input
-            type="text"
+                    <input
+                      type="text"
                       value={detail.heading}
                       onChange={(e) => updateAdditionalDetail(index, "heading", e.target.value)}
                       placeholder="e.g., Cancellation Policy, Terms & Conditions"
@@ -1258,12 +1028,12 @@ export default function StayForm() {
                 <span className="font-medium">Add Additional Detail Section</span>
               </button>
             </div>
-        </div>
+          </div>
 
-        {/* Submit */}
+          {/* Submit */}
           <div className="pt-4 flex gap-4">
-          <button
-            type="submit"
+            <button
+              type="submit"
               disabled={isSubmitting || isUploading}
               className="flex-1 bg-[#E51A4B] hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-8 rounded-lg shadow-md transition-all flex items-center justify-center gap-2"
             >
@@ -1273,7 +1043,7 @@ export default function StayForm() {
                   Creating...
                 </>
               ) : (
-                "Create Stay"
+                "Create Activity"
               )}
             </button>
             <button
@@ -1288,27 +1058,34 @@ export default function StayForm() {
                   startingPrice: "",
                   originalPrice: "",
                   currency: "INR",
-                  summary: "",
+                  about: "",
                   includes: [],
                   excludes: [],
-                  properties: [],
-                  rooms: [],
                   location: "",
-                  contactNumber: "",
-                  address: "",
+                  activityDetails: {
+                    ages: "",
+                    duration: "",
+                    startTime: "",
+                    mobileTicket: false,
+                    animalWelfare: false,
+                    liveGuide: "",
+                    maxGroupSize: "",
+                  },
                   additionalDetails: [],
                 });
                 setImagePreview("");
+                setPointInputs({});
                 setErrors({});
                 setSuccessMessage("");
               }}
               className="px-6 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50"
             >
               Reset
-          </button>
-        </div>
-      </form>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 }
+

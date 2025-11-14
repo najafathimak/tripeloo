@@ -24,7 +24,7 @@ export async function findTripsByDestination(destinationSlugOrName: string): Pro
     name: r.name || '',
     coverImage: r.coverImage || r.image || '',
     duration: r.duration || '',
-    price: r.price || 0,
+    price: r.startingPrice || r.price || 0, // Use startingPrice from DB
     category: r.category || 'General', // Map category from DB or default
   }));
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/server/db/client';
 
-const COLLECTION = 'stays';
+const COLLECTION = 'trips';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,10 +19,8 @@ export async function POST(request: NextRequest) {
       includes = [],
       excludes = [],
       properties = [],
-      rooms = [],
+      packages = [],
       location,
-      contactNumber,
-      address,
       additionalDetails = [],
     } = body;
 
@@ -30,7 +28,7 @@ export async function POST(request: NextRequest) {
     const errors: Record<string, string> = {};
 
     if (!name || name.trim().length === 0) {
-      errors.name = 'Stay name is required';
+      errors.name = 'Trip name is required';
     }
 
     if (!destinationSlug || destinationSlug.trim().length === 0) {
@@ -63,8 +61,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ errors }, { status: 400 });
     }
 
-    // Insert stay
-    // Note: rating and reviewCount will be calculated from reviews collection, not stored here
+    // Insert trip
     const db = await getDb();
     const result = await db.collection(COLLECTION).insertOne({
       name: name.trim(),
@@ -79,16 +76,15 @@ export async function POST(request: NextRequest) {
       includes: includes.filter((inc: string) => inc.trim().length > 0),
       excludes: excludes.filter((exc: string) => exc.trim().length > 0),
       properties: properties.filter((prop: string) => prop.trim().length > 0),
-      rooms: rooms.map((room: any) => ({
-        name: room.name?.trim() || '',
-        rate: room.rate?.trim() || '',
-        thumb: room.thumb?.trim() || '',
-        images: Array.isArray(room.images) ? room.images.filter((img: string) => img.trim()) : [],
-        features: Array.isArray(room.features) ? room.features.filter((f: string) => f.trim()) : [],
+      packages: packages.map((pkg: any) => ({
+        name: pkg.name?.trim() || '',
+        duration: pkg.duration?.trim() || '',
+        price: Number(pkg.price) || 0,
+        thumb: pkg.thumb?.trim() || '',
+        images: Array.isArray(pkg.images) ? pkg.images.filter((img: string) => img && img.trim()) : [],
+        highlights: Array.isArray(pkg.highlights) ? pkg.highlights.filter((h: string) => h && h.trim()) : [],
       })),
       location: location?.trim() || '',
-      contactNumber: contactNumber?.trim() || '',
-      address: address?.trim() || '',
       additionalDetails: additionalDetails.map((detail: any) => ({
         heading: detail.heading?.trim() || '',
         type: detail.type || 'description',
@@ -102,12 +98,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       id: result.insertedId.toString(),
-      message: 'Stay created successfully',
+      message: 'Trip created successfully',
     });
   } catch (error) {
-    console.error('[api/stays/create] error', error);
+    console.error('[api/trips/create] error', error);
     return NextResponse.json(
-      { error: 'Failed to create stay' },
+      { error: 'Failed to create trip' },
       { status: 500 }
     );
   }

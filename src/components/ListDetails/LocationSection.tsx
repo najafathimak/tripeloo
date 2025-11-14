@@ -2,9 +2,17 @@
 
 import { MapPin } from "lucide-react";
 
-export default function LocationSection() {
-  const location = {
-    name: "Warsaw, Poland",
+interface LocationSectionProps {
+  location?: string;
+  destinationName?: string;
+}
+
+export default function LocationSection({ location, destinationName }: LocationSectionProps = {}) {
+  // Use provided location, or fallback to destination name, or default
+  const displayLocation = location?.trim() || destinationName?.trim() || "Warsaw, Poland";
+  
+  const locationData = {
+    name: displayLocation,
     latitude: 52.2298,
     longitude: 21.0118,
   };
@@ -41,7 +49,7 @@ export default function LocationSection() {
             </h3>
           </div>
 
-          <p className="text-gray-700 mb-6">{location.name}</p>
+          <p className="text-gray-700 mb-6">{locationData.name}</p>
 
           {/* Decorative circles */}
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-sky-200 rounded-full blur-3xl opacity-50" />

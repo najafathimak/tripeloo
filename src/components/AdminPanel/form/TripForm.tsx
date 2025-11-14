@@ -14,13 +14,14 @@ interface FormErrors {
   general?: string;
 }
 
-interface Room {
+interface Package {
   id: string;
   name: string;
-  rate: string;
+  duration: string;
+  price: string;
   thumb: string;
   images: string[];
-  features: string[];
+  highlights: string[];
 }
 
 interface CarouselImage {
@@ -49,14 +50,12 @@ interface FormData {
   includes: string[];
   excludes: string[];
   properties: string[];
-  rooms: Room[];
+  packages: Package[];
   location: string;
-  contactNumber: string;
-  address: string;
   additionalDetails: AdditionalDetail[];
 }
 
-export default function StayForm() {
+export default function TripForm() {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     destinationSlug: "",
@@ -70,10 +69,8 @@ export default function StayForm() {
     includes: [],
     excludes: [],
     properties: [],
-    rooms: [],
+    packages: [],
     location: "",
-    contactNumber: "",
-    address: "",
     additionalDetails: [],
   });
 
@@ -90,7 +87,7 @@ export default function StayForm() {
   const [excludeInput, setExcludeInput] = useState("");
   const [propertyInput, setPropertyInput] = useState("");
   const [pointInputs, setPointInputs] = useState<Record<string, string>>({});
-  const [roomFeatureInputs, setRoomFeatureInputs] = useState<Record<string, string>>({});
+  const [packageHighlightInputs, setPackageHighlightInputs] = useState<Record<string, string>>({});
 
   // Fetch destinations
   useEffect(() => {
@@ -120,7 +117,7 @@ export default function StayForm() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isCarousel = false, index?: number) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isCarousel = false, index?: number, isPackage = false, packageIndex?: number, isPackageThumb = false) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -161,7 +158,18 @@ export default function StayForm() {
 
       const data = await response.json();
       
-      if (isCarousel && index !== undefined) {
+      if (isPackage && packageIndex !== undefined) {
+        const updatedPackages = [...formData.packages];
+        if (isPackageThumb) {
+          updatedPackages[packageIndex] = { ...updatedPackages[packageIndex], thumb: data.url };
+        } else {
+          updatedPackages[packageIndex] = { 
+            ...updatedPackages[packageIndex], 
+            images: [...updatedPackages[packageIndex].images, data.url] 
+          };
+        }
+        setFormData({ ...formData, packages: updatedPackages });
+      } else if (isCarousel && index !== undefined) {
         const updatedCarousel = [...formData.carouselImages];
         updatedCarousel[index] = { ...updatedCarousel[index], url: data.url };
         setFormData({ ...formData, carouselImages: updatedCarousel });
@@ -252,49 +260,50 @@ export default function StayForm() {
     });
   };
 
-  const addRoom = () => {
+  const addPackage = () => {
     setFormData({
       ...formData,
-      rooms: [
-        ...formData.rooms,
+      packages: [
+        ...formData.packages,
         {
           id: Date.now().toString(),
           name: "",
-          rate: "",
+          duration: "",
+          price: "",
           thumb: "",
           images: [],
-          features: [],
+          highlights: [],
         },
       ],
     });
   };
 
-  const removeRoom = (index: number) => {
+  const removePackage = (index: number) => {
     setFormData({
       ...formData,
-      rooms: formData.rooms.filter((_, i) => i !== index),
+      packages: formData.packages.filter((_, i) => i !== index),
     });
   };
 
-  const updateRoom = (index: number, field: keyof Room, value: any) => {
-    const updated = [...formData.rooms];
+  const updatePackage = (index: number, field: keyof Package, value: any) => {
+    const updated = [...formData.packages];
     updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, rooms: updated });
+    setFormData({ ...formData, packages: updated });
   };
 
-  const addRoomFeature = (roomIndex: number) => {
-    const room = formData.rooms[roomIndex];
-    const inputKey = room.id;
-    const feature = roomFeatureInputs[inputKey]?.trim();
-    if (feature && !room.features.includes(feature)) {
-      updateRoom(roomIndex, "features", [...room.features, feature]);
-      setRoomFeatureInputs({ ...roomFeatureInputs, [inputKey]: "" });
+  const addPackageHighlight = (packageIndex: number) => {
+    const pkg = formData.packages[packageIndex];
+    const inputKey = pkg.id;
+    const highlight = packageHighlightInputs[inputKey]?.trim();
+    if (highlight && !pkg.highlights.includes(highlight)) {
+      updatePackage(packageIndex, "highlights", [...pkg.highlights, highlight]);
+      setPackageHighlightInputs({ ...packageHighlightInputs, [inputKey]: "" });
     }
   };
 
-  const removeRoomFeature = (roomIndex: number, featureIndex: number) => {
-    const room = formData.rooms[roomIndex];
-    updateRoom(roomIndex, "features", room.features.filter((_, i) => i !== featureIndex));
+  const removePackageHighlight = (packageIndex: number, highlightIndex: number) => {
+    const pkg = formData.packages[packageIndex];
+    updatePackage(packageIndex, "highlights", pkg.highlights.filter((_, i) => i !== highlightIndex));
   };
 
   const addAdditionalDetail = () => {
@@ -329,21 +338,18 @@ export default function StayForm() {
   const setDetailType = (index: number, type: "description" | "points") => {
     setFormData((prevFormData) => {
       const detail = prevFormData.additionalDetails[index];
-      // Only update if type is different
       if (detail.type === type) {
-        return prevFormData; // No change needed
+        return prevFormData;
       }
       
       const updated = [...prevFormData.additionalDetails];
       updated[index] = {
         ...updated[index],
         type: type,
-        // Preserve existing values, ensure correct type has proper structure
         description: type === "description" ? (detail.description || "") : "",
         points: type === "points" ? (detail.points || []) : [],
       };
       
-      // Clear point inputs when switching away from points
       if (type === "description") {
         const inputKey = detail.id;
         setPointInputs((prev) => {
@@ -372,37 +378,6 @@ export default function StayForm() {
     updateAdditionalDetail(detailIndex, "points", detail.points?.filter((_, i) => i !== pointIndex) || []);
   };
 
-  const handleRoomImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, roomIndex: number, isThumb = false) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: uploadFormData,
-      });
-
-      if (!response.ok) throw new Error("Upload failed");
-
-      const data = await response.json();
-      const room = formData.rooms[roomIndex];
-
-      if (isThumb) {
-        updateRoom(roomIndex, "thumb", data.url);
-      } else {
-        updateRoom(roomIndex, "images", [...room.images, data.url]);
-      }
-    } catch (error) {
-      alert("Failed to upload image");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -410,7 +385,7 @@ export default function StayForm() {
 
     const newErrors: FormErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = "Stay name is required";
+    if (!formData.name.trim()) newErrors.name = "Trip name is required";
     if (!formData.destinationSlug) newErrors.destinationSlug = "Destination is required";
     if (!formData.category.trim()) newErrors.category = "Category is required";
     if (!formData.coverImage.trim()) newErrors.coverImage = "Cover image is required";
@@ -425,7 +400,7 @@ export default function StayForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/stays/create", {
+      const response = await fetch("/api/trips/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -441,10 +416,15 @@ export default function StayForm() {
           includes: formData.includes,
           excludes: formData.excludes,
           properties: formData.properties,
-          rooms: formData.rooms,
+          packages: formData.packages.map((pkg) => ({
+            name: pkg.name?.trim() || '',
+            duration: pkg.duration?.trim() || '',
+            price: Number(pkg.price) || 0,
+            thumb: pkg.thumb?.trim() || '',
+            images: Array.isArray(pkg.images) ? pkg.images.filter((img: string) => img && img.trim()) : [],
+            highlights: Array.isArray(pkg.highlights) ? pkg.highlights.filter((h: string) => h && h.trim()) : [],
+          })),
           location: formData.location.trim(),
-          contactNumber: formData.contactNumber.trim(),
-          address: formData.address.trim(),
           additionalDetails: formData.additionalDetails,
         }),
       });
@@ -455,12 +435,12 @@ export default function StayForm() {
         if (data.errors) {
           setErrors(data.errors);
         } else {
-          setErrors({ general: data.error || "Failed to create stay" });
+          setErrors({ general: data.error || "Failed to create trip" });
         }
         return;
       }
 
-      setSuccessMessage("Stay created successfully!");
+      setSuccessMessage("Trip created successfully!");
       // Reset form
       setFormData({
         name: "",
@@ -475,13 +455,12 @@ export default function StayForm() {
         includes: [],
         excludes: [],
         properties: [],
-        rooms: [],
+        packages: [],
         location: "",
-        contactNumber: "",
-        address: "",
         additionalDetails: [],
       });
       setImagePreview("");
+      setPointInputs({});
       if (fileInputRef.current) fileInputRef.current.value = "";
       setTimeout(() => setSuccessMessage(""), 5000);
     } catch (error) {
@@ -495,10 +474,10 @@ export default function StayForm() {
     <div className="mt-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
       <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-          Add New Stay
-      </h2>
+          Add New Trip
+        </h2>
         <p className="text-gray-600 mb-8">
-          Fill in the details below to add a new stay under a destination.
+          Fill in the details below to add a new trip under a destination.
         </p>
 
         {successMessage && (
@@ -517,17 +496,17 @@ export default function StayForm() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Info */}
-        <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Stay Name <span className="text-red-500">*</span>
+                Trip Name <span className="text-red-500">*</span>
               </label>
-          <input
-            type="text"
+              <input
+                type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="e.g., Wayanad Jungle Resort"
+                placeholder="e.g., Forest Camping Experience"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent ${
                   errors.name ? "border-red-500" : "border-gray-300"
                 }`}
@@ -567,7 +546,7 @@ export default function StayForm() {
                 </p>
               )}
             </div>
-        </div>
+          </div>
 
           {/* Category */}
           <div>
@@ -583,17 +562,12 @@ export default function StayForm() {
               }`}
             >
               <option value="">Select Category</option>
-              <option value="Resort">Resort</option>
-              <option value="Eco Stay">Eco Stay</option>
-              <option value="Luxury">Luxury</option>
-              <option value="Beach Resort">Beach Resort</option>
-              <option value="Budget">Budget</option>
               <option value="Adventure">Adventure</option>
               <option value="Wildlife">Wildlife</option>
               <option value="Nature">Nature</option>
               <option value="Cultural">Cultural</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Relaxation">Relaxation</option>
+              <option value="Beach">Beach</option>
+              <option value="Mountain">Mountain</option>
               <option value="General">General</option>
             </select>
             {errors.category && (
@@ -602,7 +576,7 @@ export default function StayForm() {
                 {errors.category}
               </p>
             )}
-        </div>
+          </div>
 
           {/* Cover Image */}
           <div>
@@ -649,13 +623,13 @@ export default function StayForm() {
                     Image uploaded
                   </span>
                 )}
-            </div>
+              </div>
 
               {imagePreview && (
                 <div className="relative w-full h-64 rounded-lg overflow-hidden border border-gray-200">
                   <Image src={imagePreview} alt="Cover preview" fill className="object-cover" />
-            <button
-              type="button"
+                  <button
+                    type="button"
                     onClick={() => {
                       setFormData({ ...formData, coverImage: "" });
                       setImagePreview("");
@@ -664,7 +638,7 @@ export default function StayForm() {
                     className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
                   >
                     <X size={16} />
-            </button>
+                  </button>
                 </div>
               )}
 
@@ -700,8 +674,8 @@ export default function StayForm() {
                       )}
                     </div>
                     <div>
-                <input
-                  type="text"
+                      <input
+                        type="text"
                         placeholder="Image Title/Caption"
                         value={img.title}
                         onChange={(e) => updateCarouselImage(index, "title", e.target.value)}
@@ -719,16 +693,16 @@ export default function StayForm() {
                   </div>
                 </div>
               ))}
-            <button
-              type="button"
+              <button
+                type="button"
                 onClick={addCarouselImage}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
-            >
+              >
                 <Plus size={16} />
                 Add Carousel Image
-            </button>
+              </button>
+            </div>
           </div>
-        </div>
 
           {/* Price */}
           <div className="grid md:grid-cols-3 gap-6">
@@ -741,7 +715,7 @@ export default function StayForm() {
                 name="startingPrice"
                 value={formData.startingPrice}
                 onChange={handleInputChange}
-                placeholder="e.g., 3499"
+                placeholder="e.g., 50000"
                 min="0"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] ${
                   errors.startingPrice ? "border-red-500" : "border-gray-300"
@@ -751,7 +725,7 @@ export default function StayForm() {
                 <p className="mt-1 text-sm text-red-600">{errors.startingPrice}</p>
               )}
             </div>
-        <div>
+            <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Original Price <span className="text-gray-500 text-xs">(Optional)</span>
               </label>
@@ -760,7 +734,7 @@ export default function StayForm() {
                 name="originalPrice"
                 value={formData.originalPrice}
                 onChange={handleInputChange}
-                placeholder="e.g., 4999"
+                placeholder="e.g., 60000"
                 min="0"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B]"
               />
@@ -792,13 +766,61 @@ export default function StayForm() {
               value={formData.summary}
               onChange={handleInputChange}
               rows={4}
-              placeholder="Brief description of the stay..."
+              placeholder="Describe the trip in detail..."
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] resize-none ${
                 errors.summary ? "border-red-500" : "border-gray-300"
               }`}
             />
             {errors.summary && (
               <p className="mt-1 text-sm text-red-600">{errors.summary}</p>
+            )}
+          </div>
+
+          {/* Properties */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Trip Properties/Features <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={propertyInput}
+                onChange={(e) => setPropertyInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addProperty();
+                  }
+                }}
+                placeholder="e.g., Guided Tours"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+              />
+              <button
+                type="button"
+                onClick={addProperty}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
+            {formData.properties.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {formData.properties.map((prop, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm"
+                  >
+                    {prop}
+                    <button
+                      type="button"
+                      onClick={() => removeProperty(index)}
+                      className="hover:text-red-700"
+                    >
+                      <X size={14} />
+                    </button>
+                  </span>
+                ))}
+              </div>
             )}
           </div>
 
@@ -837,27 +859,27 @@ export default function StayForm() {
                     className="inline-flex items-center gap-1 px-3 py-1 bg-[#E51A4B]/10 text-[#E51A4B] rounded-full text-sm"
                   >
                     {inc}
-          <button
-            type="button"
+                    <button
+                      type="button"
                       onClick={() => removeInclude(index)}
                       className="hover:text-red-700"
-          >
+                    >
                       <X size={14} />
-          </button>
+                    </button>
                   </span>
                 ))}
               </div>
             )}
-        </div>
+          </div>
 
           {/* Excludes */}
-        <div>
+          <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Excludes <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
+              <input
+                type="text"
                 value={excludeInput}
                 onChange={(e) => setExcludeInput(e.target.value)}
                 onKeyPress={(e) => {
@@ -898,121 +920,143 @@ export default function StayForm() {
             )}
           </div>
 
-          {/* Properties */}
+          {/* Packages */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Resort Properties <span className="text-gray-500 text-xs">(Optional)</span>
+              Packages <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
-            <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                value={propertyInput}
-                onChange={(e) => setPropertyInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addProperty();
-                  }
-                }}
-                placeholder="e.g., Swimming Pool"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-              />
-              <button
-                type="button"
-                onClick={addProperty}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-            {formData.properties.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {formData.properties.map((prop, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm"
-                  >
-                    {prop}
-                    <button
-                      type="button"
-                      onClick={() => removeProperty(index)}
-                      className="hover:text-red-700"
-                    >
-                      <X size={14} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Rooms */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Rooms <span className="text-gray-500 text-xs">(Optional)</span>
-            </label>
-            <div className="space-y-4">
-              {formData.rooms.map((room, roomIndex) => (
-                <div key={room.id} className="border border-gray-200 rounded-lg p-4">
+            <p className="text-xs text-gray-500 mb-4">
+              Add different package options (e.g., 7 days, 5 days) with their own prices and highlights
+            </p>
+            <div className="space-y-6">
+              {formData.packages.map((pkg, pkgIndex) => (
+                <div key={pkg.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-semibold">Room {roomIndex + 1}</h4>
+                    <h4 className="font-semibold text-gray-800">Package {pkgIndex + 1}</h4>
                     <button
                       type="button"
-                      onClick={() => removeRoom(roomIndex)}
+                      onClick={() => removePackage(pkgIndex)}
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 size={18} />
                     </button>
                   </div>
+
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
-                    <input
-                      type="text"
-                      placeholder="Room Name"
-                      value={room.name}
-                      onChange={(e) => updateRoom(roomIndex, "name", e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Rate (e.g., ₹12,500 / night)"
-                      value={room.rate}
-                      onChange={(e) => updateRoom(roomIndex, "rate", e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg"
-                    />
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Package Name</label>
+                      <input
+                        type="text"
+                        value={pkg.name}
+                        onChange={(e) => updatePackage(pkgIndex, "name", e.target.value)}
+                        placeholder="e.g., 7 Days Package"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Duration</label>
+                      <input
+                        type="text"
+                        value={pkg.duration}
+                        onChange={(e) => updatePackage(pkgIndex, "duration", e.target.value)}
+                        placeholder="e.g., 7 days / 6 nights"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Price</label>
+                      <input
+                        type="number"
+                        value={pkg.price}
+                        onChange={(e) => updatePackage(pkgIndex, "price", e.target.value)}
+                        placeholder="e.g., 50000"
+                        min="0"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Thumbnail Image</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, false, undefined, true, pkgIndex, true)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                      {pkg.thumb && (
+                        <div className="mt-2 relative w-full h-32 rounded overflow-hidden">
+                          <Image src={pkg.thumb} alt="Package thumb" fill className="object-cover" />
+                        </div>
+                      )}
+                    </div>
                   </div>
+
                   <div className="mb-4">
-                    <label className="block text-sm text-gray-600 mb-2">Thumbnail Image</label>
+                    <label className="block text-sm text-gray-600 mb-2">Package Images</label>
                     <input
                       type="file"
-                      accept="image/*"
-                      onChange={(e) => handleRoomImageUpload(e, roomIndex, true)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      multiple
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length === 0) return;
+
+                        setIsUploading(true);
+                        try {
+                          const uploadedUrls: string[] = [];
+                          
+                          for (const file of files) {
+                            const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+                            if (!allowedTypes.includes(file.type)) {
+                              continue;
+                            }
+
+                            if (file.size > 10 * 1024 * 1024) {
+                              continue;
+                            }
+
+                            const uploadFormData = new FormData();
+                            uploadFormData.append("file", file);
+
+                            const response = await fetch("/api/upload", {
+                              method: "POST",
+                              body: uploadFormData,
+                            });
+
+                            if (response.ok) {
+                              const data = await response.json();
+                              uploadedUrls.push(data.url);
+                            }
+                          }
+
+                          if (uploadedUrls.length > 0) {
+                            updatePackage(pkgIndex, "images", [...pkg.images, ...uploadedUrls]);
+                          }
+                        } catch (error) {
+                          console.error("Error uploading package images:", error);
+                        } finally {
+                          setIsUploading(false);
+                          // Reset input
+                          e.target.value = "";
+                        }
+                      }}
+                      disabled={isUploading}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     />
-                    {room.thumb && (
-                      <div className="mt-2 relative w-32 h-20 rounded overflow-hidden">
-                        <Image src={room.thumb} alt="Room thumb" fill className="object-cover" />
-                      </div>
+                    {isUploading && (
+                      <p className="mt-1 text-xs text-blue-600 flex items-center gap-1">
+                        <Loader2 className="animate-spin" size={12} />
+                        Uploading images...
+                      </p>
                     )}
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm text-gray-600 mb-2">Room Images</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleRoomImageUpload(e, roomIndex, false)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm mb-2"
-                    />
-                    {room.images.length > 0 && (
-                      <div className="flex gap-2 flex-wrap">
-                        {room.images.map((img, imgIndex) => (
-                          <div key={imgIndex} className="relative w-24 h-16 rounded overflow-hidden">
-                            <Image src={img} alt={`Room image ${imgIndex}`} fill className="object-cover" />
+                    {pkg.images.length > 0 && (
+                      <div className="mt-2 grid grid-cols-3 gap-2">
+                        {pkg.images.map((img, imgIndex) => (
+                          <div key={imgIndex} className="relative h-24 rounded overflow-hidden border border-gray-200">
+                            <Image src={img} alt={`Package ${pkgIndex + 1} image ${imgIndex + 1}`} fill className="object-cover" />
                             <button
                               type="button"
-                              onClick={() => {
-                                updateRoom(roomIndex, "images", room.images.filter((_, i) => i !== imgIndex));
-                              }}
-                              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl"
+                              onClick={() => updatePackage(pkgIndex, "images", pkg.images.filter((_, i) => i !== imgIndex))}
+                              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
                             >
                               <X size={12} />
                             </button>
@@ -1020,58 +1064,64 @@ export default function StayForm() {
                         ))}
                       </div>
                     )}
+                    <p className="mt-1 text-xs text-gray-500">
+                      Upload multiple images for this package. They will be displayed in a carousel on the package card.
+                    </p>
                   </div>
+
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">Features</label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {room.features.map((feature, featureIndex) => (
-                        <span
-                          key={featureIndex}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
-                        >
-                          {feature}
-                          <button
-                            type="button"
-                            onClick={() => removeRoomFeature(roomIndex, featureIndex)}
-                            className="text-red-600"
-                          >
-                            <X size={12} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
+                    <label className="block text-sm text-gray-600 mb-2">Highlights</label>
+                    <div className="flex gap-2 mb-2">
                       <input
                         type="text"
-                        value={roomFeatureInputs[room.id] || ""}
-                        onChange={(e) => setRoomFeatureInputs({ ...roomFeatureInputs, [room.id]: e.target.value })}
+                        value={packageHighlightInputs[pkg.id] || ""}
+                        onChange={(e) => setPackageHighlightInputs({ ...packageHighlightInputs, [pkg.id]: e.target.value })}
                         onKeyPress={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
-                            addRoomFeature(roomIndex);
+                            addPackageHighlight(pkgIndex);
                           }
                         }}
-                        placeholder="Enter feature and press Enter"
+                        placeholder="Enter highlight and press Enter"
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm"
                       />
                       <button
                         type="button"
-                        onClick={() => addRoomFeature(roomIndex)}
+                        onClick={() => addPackageHighlight(pkgIndex)}
                         className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
                       >
                         <Plus size={16} />
                       </button>
                     </div>
+                    {pkg.highlights.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {pkg.highlights.map((highlight, highlightIndex) => (
+                          <span
+                            key={highlightIndex}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm"
+                          >
+                            {highlight}
+                            <button
+                              type="button"
+                              onClick={() => removePackageHighlight(pkgIndex, highlightIndex)}
+                              className="hover:text-red-700"
+                            >
+                              <X size={14} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
               <button
                 type="button"
-                onClick={addRoom}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                onClick={addPackage}
+                className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#E51A4B] hover:bg-[#E51A4B]/5 transition-all w-full justify-center"
               >
-                <Plus size={16} />
-                Add Room
+                <Plus size={20} />
+                <span className="font-medium">Add Package</span>
               </button>
             </div>
           </div>
@@ -1091,42 +1141,6 @@ export default function StayForm() {
             />
           </div>
 
-          {/* Contact Number */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Contact Number <span className="text-gray-500 text-xs">(Optional - Admin Only)</span>
-            </label>
-            <input
-              type="tel"
-              name="contactNumber"
-              value={formData.contactNumber}
-              onChange={handleInputChange}
-              placeholder="e.g., +91 9876543210"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              This field is only visible in the admin panel and will not be displayed to users.
-            </p>
-          </div>
-
-          {/* Address */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Address <span className="text-gray-500 text-xs">(Optional - Admin Only)</span>
-            </label>
-            <textarea
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              rows={3}
-              placeholder="e.g., 123 Main Street, Wayanad, Kerala 673121"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              This field is only visible in the admin panel and will not be displayed to users.
-            </p>
-          </div>
-
           {/* Additional Details */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1140,20 +1154,20 @@ export default function StayForm() {
                 <div key={detail.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="font-semibold text-gray-800">Detail Section {index + 1}</h4>
-          <button
-            type="button"
+                    <button
+                      type="button"
                       onClick={() => removeAdditionalDetail(index)}
                       className="text-red-600 hover:text-red-700"
-          >
+                    >
                       <Trash2 size={18} />
-          </button>
-        </div>
+                    </button>
+                  </div>
 
                   {/* Heading */}
                   <div className="mb-4">
                     <label className="block text-sm text-gray-600 mb-2">Heading</label>
-          <input
-            type="text"
+                    <input
+                      type="text"
                       value={detail.heading}
                       onChange={(e) => updateAdditionalDetail(index, "heading", e.target.value)}
                       placeholder="e.g., Cancellation Policy, Terms & Conditions"
@@ -1258,12 +1272,12 @@ export default function StayForm() {
                 <span className="font-medium">Add Additional Detail Section</span>
               </button>
             </div>
-        </div>
+          </div>
 
-        {/* Submit */}
+          {/* Submit */}
           <div className="pt-4 flex gap-4">
-          <button
-            type="submit"
+            <button
+              type="submit"
               disabled={isSubmitting || isUploading}
               className="flex-1 bg-[#E51A4B] hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-8 rounded-lg shadow-md transition-all flex items-center justify-center gap-2"
             >
@@ -1273,7 +1287,7 @@ export default function StayForm() {
                   Creating...
                 </>
               ) : (
-                "Create Stay"
+                "Create Trip"
               )}
             </button>
             <button
@@ -1292,23 +1306,23 @@ export default function StayForm() {
                   includes: [],
                   excludes: [],
                   properties: [],
-                  rooms: [],
+                  packages: [],
                   location: "",
-                  contactNumber: "",
-                  address: "",
                   additionalDetails: [],
                 });
                 setImagePreview("");
+                setPointInputs({});
                 setErrors({});
                 setSuccessMessage("");
               }}
               className="px-6 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50"
             >
               Reset
-          </button>
-        </div>
-      </form>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 }
+

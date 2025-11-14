@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/server/db/client';
 
-const COLLECTION = 'stays';
+const COLLECTION = 'activities';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,14 +15,11 @@ export async function POST(request: NextRequest) {
       startingPrice,
       originalPrice,
       currency = 'INR',
-      summary,
+      about,
       includes = [],
       excludes = [],
-      properties = [],
-      rooms = [],
       location,
-      contactNumber,
-      address,
+      activityDetails = {},
       additionalDetails = [],
     } = body;
 
@@ -30,7 +27,7 @@ export async function POST(request: NextRequest) {
     const errors: Record<string, string> = {};
 
     if (!name || name.trim().length === 0) {
-      errors.name = 'Stay name is required';
+      errors.name = 'Activity name is required';
     }
 
     if (!destinationSlug || destinationSlug.trim().length === 0) {
@@ -55,16 +52,15 @@ export async function POST(request: NextRequest) {
       errors.startingPrice = 'Starting price must be a positive number';
     }
 
-    if (!summary || summary.trim().length === 0) {
-      errors.summary = 'Summary is required';
+    if (!about || about.trim().length === 0) {
+      errors.about = 'About/Description is required';
     }
 
     if (Object.keys(errors).length > 0) {
       return NextResponse.json({ errors }, { status: 400 });
     }
 
-    // Insert stay
-    // Note: rating and reviewCount will be calculated from reviews collection, not stored here
+    // Insert activity
     const db = await getDb();
     const result = await db.collection(COLLECTION).insertOne({
       name: name.trim(),
@@ -75,20 +71,19 @@ export async function POST(request: NextRequest) {
       startingPrice: Number(startingPrice),
       originalPrice: originalPrice ? Number(originalPrice) : null,
       currency: currency.trim().toUpperCase(),
-      summary: summary.trim(),
+      about: about.trim(),
       includes: includes.filter((inc: string) => inc.trim().length > 0),
       excludes: excludes.filter((exc: string) => exc.trim().length > 0),
-      properties: properties.filter((prop: string) => prop.trim().length > 0),
-      rooms: rooms.map((room: any) => ({
-        name: room.name?.trim() || '',
-        rate: room.rate?.trim() || '',
-        thumb: room.thumb?.trim() || '',
-        images: Array.isArray(room.images) ? room.images.filter((img: string) => img.trim()) : [],
-        features: Array.isArray(room.features) ? room.features.filter((f: string) => f.trim()) : [],
-      })),
       location: location?.trim() || '',
-      contactNumber: contactNumber?.trim() || '',
-      address: address?.trim() || '',
+      activityDetails: {
+        ages: activityDetails.ages?.trim() || '',
+        duration: activityDetails.duration?.trim() || '',
+        startTime: activityDetails.startTime?.trim() || '',
+        mobileTicket: activityDetails.mobileTicket || false,
+        animalWelfare: activityDetails.animalWelfare || false,
+        liveGuide: activityDetails.liveGuide?.trim() || '',
+        maxGroupSize: activityDetails.maxGroupSize?.trim() || '',
+      },
       additionalDetails: additionalDetails.map((detail: any) => ({
         heading: detail.heading?.trim() || '',
         type: detail.type || 'description',
@@ -102,12 +97,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       id: result.insertedId.toString(),
-      message: 'Stay created successfully',
+      message: 'Activity created successfully',
     });
   } catch (error) {
-    console.error('[api/stays/create] error', error);
+    console.error('[api/activities/create] error', error);
     return NextResponse.json(
-      { error: 'Failed to create stay' },
+      { error: 'Failed to create activity' },
       { status: 500 }
     );
   }

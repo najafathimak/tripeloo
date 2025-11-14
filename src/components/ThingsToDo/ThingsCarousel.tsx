@@ -6,8 +6,14 @@ import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import { assets } from "../../assets/assets";
 
-const ThingsCarousel = () => {
-  const slides = [
+interface ThingsCarouselProps {
+  carouselImages?: Array<{ url: string; title: string }>;
+  coverImage?: string;
+}
+
+const ThingsCarousel = ({ carouselImages = [], coverImage = "" }: ThingsCarouselProps) => {
+  // Default slides fallback
+  const defaultSlides = [
     {
       id: 1,
       image: assets.staysfeatures,
@@ -27,6 +33,25 @@ const ThingsCarousel = () => {
       subtitle: "Plan your dream vacation effortlessly with Tripeloo",
     },
   ];
+
+  // Use dynamic carousel images if available, otherwise use default
+  const slides = carouselImages.length > 0
+    ? carouselImages.map((img, index) => ({
+        id: index + 1,
+        image: img.url,
+        title: img.title || "",
+        subtitle: "",
+      }))
+    : coverImage
+    ? [
+        {
+          id: 1,
+          image: coverImage,
+          title: "",
+          subtitle: "",
+        },
+      ]
+    : defaultSlides;
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, align: "center", skipSnaps: false },
@@ -52,19 +77,25 @@ const ThingsCarousel = () => {
             >
               <Image
                 src={slide.image}
-                alt={slide.title}
+                alt={slide.title || "Activity image"}
                 fill
                 className="object-cover brightness-75 rounded-sm sm:rounded-3xl"
                 priority
               />
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-6">
-                <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-                  {slide.title}
-                </h1>
-                <p className="text-lg md:text-xl max-w-2xl drop-shadow-md">
-                  {slide.subtitle}
-                </p>
-              </div>
+              {(slide.title || slide.subtitle) && (
+                <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-6">
+                  {slide.title && (
+                    <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+                      {slide.title}
+                    </h1>
+                  )}
+                  {slide.subtitle && (
+                    <p className="text-lg md:text-xl max-w-2xl drop-shadow-md">
+                      {slide.subtitle}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
