@@ -116,14 +116,20 @@ export default function RoomsSection({
                 : "border-gray-200"
             }`}
           >
-            <Image
-              src={room.thumb}
-              alt={room.name}
-              width={180}
-              height={120}
-              className="h-[120px] w-full object-cover"
-              onClick={() => setSelectedRoom(room)}
-            />
+            {room.thumb ? (
+              <Image
+                src={room.thumb}
+                alt={room.name}
+                width={180}
+                height={120}
+                className="h-[120px] w-full object-cover"
+                onClick={() => setSelectedRoom(room)}
+              />
+            ) : (
+              <div className="h-[120px] w-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-400 text-sm">No Image</span>
+              </div>
+            )}
             <div className="p-3 flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-sm text-gray-800 flex items-center gap-1">
@@ -172,7 +178,7 @@ export default function RoomsSection({
               modules={[Navigation]}
               navigation
             >
-              {selectedRoom.images.map((img: string, i: number) => (
+              {selectedRoom.images.filter((img: string) => img && img.trim() !== "").map((img: string, i: number) => (
                 <SwiperSlide key={i}>
                   <Image
                     src={img}

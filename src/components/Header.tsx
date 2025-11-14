@@ -2,15 +2,24 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { Phone } from 'lucide-react';
+import { Phone, User, LogOut } from 'lucide-react';
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  const { data: session, status } = useSession();
+
+  // Prevent hydration mismatch by only rendering session-dependent content after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const openMenu = () => {
     setClosing(false);
@@ -70,7 +79,61 @@ export function Header() {
             <Phone size={20} />
           </a>
           
-          <Link href="/login" className={`inline-flex items-center justify-center rounded-full border ${isHomePage ? 'border-white/60 text-white hover:bg-white/10' : 'border-gray-300 text-gray-900 hover:bg-gray-50'} px-4 py-2 text-sm font-semibold transition`}>Login</Link>
+          {mounted && session?.user ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className={`inline-flex items-center gap-2 rounded-full border ${isHomePage ? 'border-white/60 text-white hover:bg-white/10' : 'border-gray-300 text-gray-900 hover:bg-gray-50'} px-4 py-2 text-sm font-semibold transition`}
+              >
+                {session.user.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name || "User"}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <User size={16} />
+                )}
+                <span className="hidden sm:inline">{session.user.name?.split(' ')[0] || 'User'}</span>
+              </button>
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <div className="px-4 py-2 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900">{session.user.name}</p>
+                    <p className="text-xs text-gray-500">{session.user.email}</p>
+                    {(session.user as any).loyaltyPoints !== undefined && (
+                      <p className="text-xs text-[#E51A4B] font-semibold mt-1">
+                        {((session.user as any).loyaltyPoints || 0)} Loyalty Points
+                      </p>
+                    )}
+                  </div>
+                  <Link
+                    href="/loyalty-points"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    View Loyalty Points
+                  </Link>
+                  <button
+                    onClick={() => {
+                      signOut({ callbackUrl: '/' });
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <LogOut size={14} />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : mounted ? (
+            <Link href="/login" className={`inline-flex items-center justify-center rounded-full border ${isHomePage ? 'border-white/60 text-white hover:bg-white/10' : 'border-gray-300 text-gray-900 hover:bg-gray-50'} px-4 py-2 text-sm font-semibold transition`}>Login</Link>
+          ) : (
+            <div className={`inline-flex items-center justify-center rounded-full border ${isHomePage ? 'border-white/60 text-white' : 'border-gray-300 text-gray-900'} px-4 py-2 text-sm font-semibold opacity-0`}>Login</div>
+          )}
         </div>
       </div>
 
@@ -103,7 +166,38 @@ export function Header() {
                 <Phone size={18} />
                 <span>Call Assistance</span>
               </a>
-              <Link href="/login" className="flex-1 inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition" onClick={closeMenu}>Login</Link>
+              {mounted && session?.user ? (
+                <div className="space-y-2">
+                  <div className="px-4 py-2 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-semibold text-gray-900">{session.user.name}</p>
+                    <p className="text-xs text-gray-500">{session.user.email}</p>
+                    {(session.user as any).loyaltyPoints !== undefined && (
+                      <p className="text-xs text-[#E51A4B] font-semibold mt-1">
+                        {((session.user as any).loyaltyPoints || 0)} Loyalty Points
+                      </p>
+                    )}
+                  </div>
+                  <Link
+                    href="/loyalty-points"
+                    className="block text-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition"
+                    onClick={closeMenu}
+                  >
+                    View Loyalty Points
+                  </Link>
+                  <button
+                    onClick={() => {
+                      signOut({ callbackUrl: '/' });
+                      closeMenu();
+                    }}
+                    className="w-full rounded-full border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 transition flex items-center justify-center gap-2"
+                  >
+                    <LogOut size={14} />
+                    Logout
+                  </button>
+                </div>
+              ) : mounted ? (
+                <Link href="/login" className="flex-1 inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition" onClick={closeMenu}>Login</Link>
+              ) : null}
             </div>
           </div>
         </div>

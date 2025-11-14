@@ -89,7 +89,7 @@ html {
 
 .marquee-stay-types__item {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 0.75rem;
+  font-size: 1.275rem; /* Increased from 0.75rem for better readability */
   color: #E51A4B;
   padding: 0 1rem;
   font-weight: 500;
@@ -105,7 +105,7 @@ html {
 
 @media (min-width: 768px) {
   .marquee-stay-types__item {
-    font-size: 0.875rem;
+    font-size: 1.525rem; /* Increased from 0.875rem for better readability on desktop */
     padding: 0 1.25rem;
     gap: 1rem;
   }

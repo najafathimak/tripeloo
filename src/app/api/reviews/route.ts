@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/server/db/client';
+import { updateUserLoyaltyPoints } from '@/server/repositories/usersRepository';
 
 const COLLECTION = 'reviews';
 
@@ -66,6 +67,30 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+    // Add 10 loyalty points for review
+    try {
+      await updateUserLoyaltyPoints(userEmail.trim().toLowerCase(), 10);
+      
+      // Record point history
+      const db = await getDb();
+      await db.collection('users').updateOne(
+        { email: userEmail.trim().toLowerCase() },
+        {
+          $push: {
+            pointHistory: {
+              type: 'earned',
+              points: 10,
+              note: `Earned for submitting a review on ${itemType}`,
+              createdAt: new Date(),
+            } as any,
+          } as any,
+        }
+      );
+    } catch (error) {
+      console.error("Error updating loyalty points:", error);
+      // Don't fail the review submission if loyalty points update fails
+    }
 
     return NextResponse.json({
       success: true,

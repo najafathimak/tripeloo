@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import dayjs from "dayjs";
 
 interface Room {
@@ -16,12 +17,22 @@ interface WhatsAppBookingFormProps {
 }
 
 export const WhatsAppBookingForm = ({ selectedRooms, isPackage = false }: WhatsAppBookingFormProps) => {
+  const { data: session } = useSession();
   const [adults, setAdults] = useState(1);
   const [kids, setKids] = useState(0);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
+  const [loyaltyLink, setLoyaltyLink] = useState("");
 
   const todayDate = dayjs().format("YYYY-MM-DD");
+
+  useEffect(() => {
+    // Generate loyalty points link
+    if (typeof window !== "undefined") {
+      const baseUrl = window.location.origin;
+      setLoyaltyLink(`${baseUrl}/loyalty-points`);
+    }
+  }, []);
 
   const handleBooking = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +82,9 @@ export const WhatsAppBookingForm = ({ selectedRooms, isPackage = false }: WhatsA
         : isPackage ? "No specific package selected" : "No specific room selected";
 
     const itemType = isPackage ? "Package(s)" : "Room(s)";
+    const userEmail = session?.user?.email ? `\nEmail: ${session.user.email}` : "";
+    const loyaltyPointsInfo = session?.user ? `\n\n💎 Check your loyalty points: ${loyaltyLink}` : "";
+    
     const message = `Hello! I would like to book this ${isPackage ? "trip" : "stay"}
     
 Selected ${itemType}:
@@ -78,7 +92,7 @@ ${selectedItemText}
 
 Adults: ${adults}
 Kids: ${kids}
-${!isPackage ? `Check-in: ${checkIn}\nCheck-out: ${checkOut}` : `Travel Date: ${checkIn || "To be selected"}`}
+${!isPackage ? `Check-in: ${checkIn}\nCheck-out: ${checkOut}` : `Travel Date: ${checkIn || "To be selected"}`}${userEmail}${loyaltyPointsInfo}
 
 Please confirm availability and total price.`;
 

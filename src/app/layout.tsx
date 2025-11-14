@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ConditionalLayout } from '@/components/ConditionalLayout';
+import { AuthProvider } from '@/components/AuthProvider';
 import { siteConfig } from '@/config/site';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -44,7 +45,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head />
       <body className={inter.className}>
-        <ConditionalLayout>{children}</ConditionalLayout>
+        <AuthProvider>
+          <ConditionalLayout>{children}</ConditionalLayout>
+        </AuthProvider>
       </body>
     </html>
   );

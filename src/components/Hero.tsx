@@ -59,7 +59,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
         {/* Desktop: Stable titles with glow animation */}
         <div className="hidden sm:flex absolute inset-0 items-center font-serif justify-center">
           <div className="select-none w-full flex items-center justify-center">
-            <div className="flex items-center gap-6 sm:gap-8 text-[8vw] leading-none tracking-tight">
+            <div className="flex items-center gap-6 sm:gap-8 text-[7vw] leading-none tracking-tight">
               <button 
                 onClick={() => onNav('destinations')} 
                 className="hero-title-desktop hero-title-1 text-white/95 hover:text-brand transition-colors"

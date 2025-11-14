@@ -14,7 +14,21 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 # Admin Panel Password (required for accessing admin routes)
 ADMIN_PASSWORD=your_secure_password_here
+
+# Google OAuth Configuration (for user authentication)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_random_secret_string
 ```
+
+### Setting up Google Authentication
+
+See [GOOGLE_AUTH_SETUP.md](./GOOGLE_AUTH_SETUP.md) for detailed instructions on:
+- Creating Google OAuth credentials
+- Setting up environment variables
+- Testing authentication
+- Production deployment
 
 ### Setting up Cloudinary
 

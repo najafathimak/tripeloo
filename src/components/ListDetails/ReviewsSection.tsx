@@ -213,32 +213,43 @@ export default function ReviewsSection({ itemId, itemType }: ReviewsSectionProps
           </div>
 
           {/* Reviews List */}
-          <div className="space-y-6">
+          <div className="space-y-3 sm:space-y-6">
             {displayedReviews.map((r) => (
               <div
                 key={r.id}
-                className="border rounded-xl p-5 shadow-sm hover:shadow-md transition bg-white"
+                className="border rounded-xl p-2.5 sm:p-5 shadow-sm hover:shadow-md transition bg-white"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E51A4B] to-[#FF6B6B] flex items-center justify-center text-white font-semibold text-lg">
+                <div className="flex justify-between items-start mb-1.5 sm:mb-3">
+                  <div className="flex items-center gap-1.5 sm:gap-3">
+                    <div className="w-7 h-7 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#E51A4B] to-[#FF6B6B] flex items-center justify-center text-white font-semibold text-xs sm:text-lg">
                       {getInitials(r.userName)}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-800">{r.userName}</h3>
-                      <p className="text-sm text-gray-500">
+                      <h3 className="font-semibold text-gray-800 text-xs sm:text-base">{r.userName}</h3>
+                      <p className="text-[10px] sm:text-sm text-gray-500">
                         {formatDate(r.createdAt)}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    {renderStars(r.rating, "sm")}
-                    <span className="text-sm font-semibold text-gray-700 ml-1">
+                  <div className="flex items-center gap-0.5 sm:gap-1">
+                    <div className="flex items-center gap-0">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-3 h-3 sm:w-4 sm:h-4 ${
+                            star <= r.rating
+                              ? "text-yellow-400 fill-yellow-400"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[10px] sm:text-sm font-semibold text-gray-700 ml-0.5 sm:ml-1">
                       {r.rating.toFixed(1)}
                     </span>
                   </div>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{r.review}</p>
+                <p className="text-gray-700 leading-relaxed text-xs sm:text-base">{r.review}</p>
               </div>
             ))}
           </div>

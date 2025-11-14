@@ -451,7 +451,16 @@ function StayListingsContent() {
         {/* Mobile Search and Filter Bar - Top */}
         <div className="md:hidden mb-4 space-y-3">
           {/* Search Bar */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              // Blur the active element to close the keyboard on mobile
+              if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+              }
+            }}
+            className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3"
+          >
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-base" />
               <input
@@ -463,7 +472,15 @@ function StayListingsContent() {
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSearchQuery("");
+                    // Blur to close keyboard
+                    if (document.activeElement instanceof HTMLElement) {
+                      document.activeElement.blur();
+                    }
+                  }}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E51A4B] p-1"
                   aria-label="Clear search"
                 >
@@ -471,7 +488,7 @@ function StayListingsContent() {
                 </button>
               )}
             </div>
-          </div>
+          </form>
 
           {/* Filter Button */}
           <button

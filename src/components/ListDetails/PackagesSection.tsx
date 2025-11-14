@@ -143,7 +143,7 @@ export default function PackagesSection({
                     navigation
                     className="h-full w-full"
                   >
-                    {displayImages.map((img, i) => (
+                    {displayImages.filter((img) => img && img.trim() !== "").map((img, i) => (
                       <SwiperSlide key={i}>
                         <Image
                           src={img}
@@ -155,7 +155,7 @@ export default function PackagesSection({
                     ))}
                   </Swiper>
                 </div>
-              ) : (
+              ) : pkg.thumb ? (
                 <Image
                   src={pkg.thumb}
                   alt={pkg.name}
@@ -164,6 +164,10 @@ export default function PackagesSection({
                   className="h-[200px] w-full object-cover"
                   onClick={() => setSelectedPackage(pkg)}
                 />
+              ) : (
+                <div className="h-[200px] w-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-400 text-sm">No Image</span>
+                </div>
               )}
               
               <div className="p-4 flex flex-col gap-2">
@@ -247,7 +251,7 @@ export default function PackagesSection({
               navigation
               className="mb-5"
             >
-              {selectedPackage.images.map((img, i) => (
+              {selectedPackage.images.filter((img) => img && img.trim() !== "").map((img, i) => (
                 <SwiperSlide key={i}>
                   <Image
                     src={img}
