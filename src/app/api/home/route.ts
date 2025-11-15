@@ -3,6 +3,8 @@ import { getDb } from '@/server/db/client';
 
 const COLLECTION = 'homepage';
 
+export const revalidate = 3600;
+
 export async function GET() {
   try {
     const db = await getDb();
@@ -36,7 +38,11 @@ export async function GET() {
       testimonials: homeData.testimonials || [],
     };
 
-    return NextResponse.json({ data: mappedData });
+    return NextResponse.json({ data: mappedData }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (error) {
     console.error('[api/home] GET error', error);
     return NextResponse.json(

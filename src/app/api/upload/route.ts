@@ -71,9 +71,21 @@ export async function POST(request: NextRequest) {
               )
             );
           } else if (result) {
+            // Add f_auto,q_auto to the URL for automatic format and quality optimization
+            let optimizedUrl = result.secure_url;
+            const uploadIndex = optimizedUrl.indexOf('/upload/');
+            if (uploadIndex !== -1) {
+              const beforeUpload = optimizedUrl.substring(0, uploadIndex + 8);
+              const afterUpload = optimizedUrl.substring(uploadIndex + 8);
+              // Check if transformations already exist
+              if (!afterUpload.includes('/f_auto') && !afterUpload.includes('/q_auto')) {
+                optimizedUrl = `${beforeUpload}f_auto,q_auto/${afterUpload}`;
+              }
+            }
+            
             resolve(
               NextResponse.json({
-                url: result.secure_url,
+                url: optimizedUrl,
                 publicId: result.public_id,
                 width: result.width,
                 height: result.height,

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { listTripsByDestination } from '@/server/services/tripsService';
 import { findDestinationBySlugOrName } from '@/server/repositories/destinationsRepository';
 
+export const revalidate = 1800;
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -16,7 +18,11 @@ export async function GET(request: NextRequest) {
     const destinationSlug = destination?.slug || destinationParam.toLowerCase().trim();
     
     const data = await listTripsByDestination(destinationSlug);
-    return NextResponse.json({ data });
+    return NextResponse.json({ data }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
+      },
+    });
   } catch (error) {
     console.error('[api/trips] error', error);
     return NextResponse.json({ error: 'Failed to load trips' }, { status: 500 });

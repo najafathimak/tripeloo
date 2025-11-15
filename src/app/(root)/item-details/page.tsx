@@ -9,6 +9,7 @@ import { Star, Car, Hotel, Utensils, Mountain, ChevronDown, ChevronUp } from "lu
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { siteConfig } from "@/config/site";
 
 // Expandable Additional Detail Component
 const AdditionalDetailItem = ({ detail }: { detail: any }) => {
@@ -76,15 +77,11 @@ const ListingDetailsContent = () => {
       }
 
       try {
-        console.log('[item-details] Fetching stay with ID:', stayId);
         const encodedStayId = encodeURIComponent(stayId);
         const res = await fetch(`/api/stays/${encodedStayId}`);
         
-        console.log('[item-details] Response status:', res.status);
-        
         if (res.ok) {
           const data = await res.json();
-          console.log('[item-details] Stay data received:', data);
           setStayData(data.data);
         } else {
           const errorData = await res.json();
@@ -202,7 +199,7 @@ const ListingDetailsContent = () => {
     }).format(price);
   };
 
-  const savings = stayData.originalPrice 
+  const savings = stayData?.originalPrice 
     ? stayData.originalPrice - stayData.startingPrice 
     : 0;
 
@@ -324,7 +321,10 @@ const ListingDetailsContent = () => {
 
             {/* Location */}
             <div className="px-4 sm:px-6 mb-5">
-              <LocationSection />
+              <LocationSection 
+                location={stayData.location} 
+                destinationName={stayData.destinationName || stayData.destinationSlug} 
+              />
             </div>
 
             {/* Mobile Booking Sidebar - Above Reviews */}

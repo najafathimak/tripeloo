@@ -1,80 +1,91 @@
-"use client";
-
+import type { Metadata } from 'next';
 import { Hero } from '@/components/Hero';
 import { FeaturedDestinations } from '@/components/FeaturedDestinations';
 import { AboutBand } from '@/components/AboutBand';
 import OurSpecialities from '@/components/OurSpecialities';
 import StatisticsSection from '@/components/StatisticsSection';
 import TestimonialsCarousel from '@/components/TestimonialsCarousel';
-import { useEffect, useState } from 'react';
+import { siteConfig } from '@/config/site';
+import HomePageClient from './HomePageClient';
 
-interface HomePageData {
-  heroDesktopImage: string;
-  heroMobileImage: string;
-  discoverTitle: string;
-  discoverContent: string;
-  discoverButtonText: string;
-  discoverButtonLink: string;
-  testimonialsHeading: string;
-  testimonials: Array<{
-    id: string;
-    image: string;
-    title: string;
-    experience: string;
-    name: string;
-    location: string;
-  }>;
-}
+export const metadata: Metadata = {
+  title: 'Home',
+  description: 'Tripeloo: Discover and book curated stays, activities, and trips across top destinations in India. Find the best hotels, resorts, and experiences in Wayanad, Munnar, Coorg, and more.',
+  keywords: [
+    'travel booking',
+    'hotel booking',
+    'resort booking',
+    'things to do',
+    'travel packages',
+    'Wayanad hotels',
+    'Munnar resorts',
+    'Coorg stays',
+    'Kerala tourism',
+    'Karnataka tourism',
+    'India travel',
+  ],
+  openGraph: {
+    title: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
+    description: 'Discover and book curated stays, activities, and trips across top destinations in India.',
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Tripeloo - Travel Booking Platform',
+      }
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
+    description: 'Discover and book curated stays, activities, and trips across top destinations in India.',
+    images: [siteConfig.ogImage],
+  },
+  alternates: {
+    canonical: siteConfig.url,
+  },
+};
 
 export default function Page() {
-  const [homeData, setHomeData] = useState<HomePageData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchHomeData();
-  }, []);
-
-  const fetchHomeData = async () => {
-    try {
-      const res = await fetch('/api/home');
-      if (res.ok) {
-        const data = await res.json();
-        setHomeData(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching home data:', error);
-    } finally {
-      setLoading(false);
-    }
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TravelAgency',
+    name: siteConfig.name,
+    url: siteConfig.url,
+    description: siteConfig.description,
+    logo: `${siteConfig.url}/assets/Logo.png`,
+    sameAs: [
+      // Add social media links when available
+    ],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'Customer Service',
+      availableLanguage: ['English', 'Hindi', 'Malayalam'],
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'India',
+    },
+    offers: {
+      '@type': 'Offer',
+      category: 'Travel Services',
+    },
   };
 
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E51A4B]"></div>
-      </main>
-    );
-  }
-
   return (
-    <main>
-      <Hero 
-        desktopImage={homeData?.heroDesktopImage}
-        mobileImage={homeData?.heroMobileImage}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <AboutBand 
-        title={homeData?.discoverTitle}
-        content={homeData?.discoverContent}
-        buttonText={homeData?.discoverButtonText}
-        buttonLink={homeData?.discoverButtonLink}
-      />
-      <FeaturedDestinations />
-      <OurSpecialities />
-      <StatisticsSection />
-      <TestimonialsCarousel 
-        heading={homeData?.testimonialsHeading}
-        testimonials={homeData?.testimonials}
-      />
-    </main>
+      <main>
+        <HomePageClient />
+      </main>
+    </>
   );
 }

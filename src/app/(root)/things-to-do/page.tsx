@@ -2,6 +2,7 @@
 import IncludeItemSection from "@/components/ThingsToDo/IncludeItemSection";
 import ReviewsSection from "@/components/ThingsToDo/ReviewsSection";
 import ThingsCarousel from "@/components/ThingsToDo/ThingsCarousel";
+import LocationSection from "@/components/ListDetails/LocationSection";
 import {
   Star,
   Users,
@@ -82,15 +83,11 @@ const ActivityDetailsContent = () => {
       }
 
       try {
-        console.log('[things-to-do] Fetching activity with ID:', activityId);
         const encodedActivityId = encodeURIComponent(activityId);
         const res = await fetch(`/api/activities/${encodedActivityId}`);
         
-        console.log('[things-to-do] Response status:', res.status);
-        
         if (res.ok) {
           const data = await res.json();
-          console.log('[things-to-do] Activity data received:', data);
           setActivityData(data.data);
         } else {
           const errorData = await res.json();
@@ -292,6 +289,14 @@ Please confirm availability and provide booking details.`;
                 </div>
               ) : null;
             })()}
+
+            {/* Location */}
+            <div className="px-4 sm:px-6 mb-5">
+              <LocationSection 
+                location={activityData.location} 
+                destinationName={activityData.destinationName || activityData.destinationSlug} 
+              />
+            </div>
 
             {/* Mobile Booking Sidebar */}
             <div className="w-full lg:w-[350px] border shadow-md p-6 h-fit md:hidden top-20 mb-5">

@@ -14,17 +14,15 @@ export async function GET(
     
     let stay = null;
     
-    // Try ObjectId first
     if (ObjectId.isValid(id)) {
       try {
         const objectId = new ObjectId(id);
         stay = await db.collection(COLLECTION).findOne({ _id: objectId });
       } catch (err) {
-        console.log('[api/admin/stays/[id]] ObjectId query failed:', err);
+        // Try next strategy
       }
     }
     
-    // Fallback: string comparison
     if (!stay) {
       const allStays = await db.collection(COLLECTION).find({}).toArray();
       stay = allStays.find((s: any) => {
@@ -37,7 +35,6 @@ export async function GET(
       return NextResponse.json({ error: 'Stay not found' }, { status: 404 });
     }
     
-    // Map stay data - include all fields for editing
     const mappedStay = {
       ...stay,
       id: stay._id?.toString() || stay.id || '',

@@ -25,17 +25,15 @@ export async function GET(
     
     let item = null;
     
-    // Try ObjectId first
     if (ObjectId.isValid(id)) {
       try {
         const objectId = new ObjectId(id);
         item = await collection.findOne({ _id: objectId });
       } catch (err) {
-        console.log('[api/admin/[type]/[id]] ObjectId query failed:', err);
+        // Try next strategy
       }
     }
     
-    // Fallback: string comparison
     if (!item) {
       const allItems = await collection.find({}).toArray();
       item = allItems.find((i: any) => {
@@ -48,7 +46,6 @@ export async function GET(
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
     
-    // Map item data - include all fields for editing
     const mappedItem = {
       ...item,
       id: item._id?.toString() || item.id || '',

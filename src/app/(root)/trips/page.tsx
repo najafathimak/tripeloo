@@ -77,15 +77,11 @@ const TripDetailsContent = () => {
       }
 
       try {
-        console.log('[trips] Fetching trip with ID:', tripId);
         const encodedTripId = encodeURIComponent(tripId);
         const res = await fetch(`/api/trips/${encodedTripId}`);
         
-        console.log('[trips] Response status:', res.status);
-        
         if (res.ok) {
           const data = await res.json();
-          console.log('[trips] Trip data received:', data);
           setTripData(data.data);
         } else {
           const errorData = await res.json();

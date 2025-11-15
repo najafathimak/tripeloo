@@ -1,6 +1,7 @@
 "use client";
 
 import Image from 'next/image';
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 function TentIcon() {
   return (
@@ -33,7 +34,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
         {/* Mobile background image - Portrait 4K quality */}
         {(mobileImage || defaultMobileImage) && (
           <Image
-            src={mobileImage || defaultMobileImage}
+            src={optimizeCloudinaryUrl(mobileImage || defaultMobileImage)}
             alt="Beautiful nature landscape background"
             fill
             priority
@@ -45,7 +46,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
         {/* Desktop background image - 4K quality */}
         {(desktopImage || defaultDesktopImage) && (
           <Image
-            src={desktopImage || defaultDesktopImage}
+            src={optimizeCloudinaryUrl(desktopImage || defaultDesktopImage)}
             alt="Lush green hills background"
             fill
             priority

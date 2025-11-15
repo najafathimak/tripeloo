@@ -5,6 +5,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import { assets } from "../../assets/assets";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface ListCarouselProps {
   carouselImages?: Array<{ url: string }>;
@@ -16,7 +17,7 @@ const ThingsCarousel = ({ carouselImages = [], coverImage }: ListCarouselProps) 
   const slides = carouselImages.length > 0
     ? carouselImages.map((img, index) => ({
         id: index + 1,
-        image: img.url,
+        image: optimizeCloudinaryUrl(img.url),
         title: "",
         subtitle: "",
       }))
@@ -45,7 +46,7 @@ const ThingsCarousel = ({ carouselImages = [], coverImage }: ListCarouselProps) 
   if (coverImage && carouselImages.length === 0) {
     slides.unshift({
       id: 0,
-      image: coverImage,
+      image: optimizeCloudinaryUrl(coverImage),
       title: "",
       subtitle: "",
     });

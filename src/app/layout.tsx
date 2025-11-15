@@ -16,7 +16,23 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   keywords: siteConfig.keywords,
   authors: [{ name: 'Tripeloo' }],
-  icons: [{ rel: 'icon', url: '/favicon.ico' }],
+  creator: 'Tripeloo',
+  publisher: 'Tripeloo',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: [
+    { rel: 'icon', url: '/favicon.ico' },
+    { rel: 'apple-touch-icon', url: '/favicon.ico' }
+  ],
   openGraph: {
     title: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
     description: siteConfig.description,
@@ -26,12 +42,28 @@ export const metadata: Metadata = {
       {
         url: siteConfig.ogImage,
         width: 1200,
-        height: 630
+        height: 630,
+        alt: `${siteConfig.name} - Book Stays, Things To Do & Trips`,
       }
     ],
     locale: 'en_IN',
-    type: 'website'
-  }
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+  },
+  alternates: {
+    canonical: siteConfig.url,
+  },
+  verification: {
+    // Add your verification codes here when available
+    // google: 'your-google-verification-code',
+    // yandex: 'your-yandex-verification-code',
+    // yahoo: 'your-yahoo-verification-code',
+  },
 };
 
 export const viewport: Viewport = {
@@ -42,8 +74,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head />
+    <html lang="en-IN">
+      <head>
+        <link rel="canonical" href={siteConfig.url} />
+      </head>
       <body className={inter.className}>
         <AuthProvider>
           <ConditionalLayout>{children}</ConditionalLayout>

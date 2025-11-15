@@ -4,11 +4,22 @@ import { useState, useEffect } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Star, Send, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import Image from "next/image";
+
+interface Review {
+  id: string;
+  userName: string;
+  userEmail: string;
+  userImage?: string | null;
+  rating: number;
+  review: string;
+  createdAt: Date | string;
+}
 
 interface ReviewFormProps {
   itemId: string;
   itemType: "stay" | "activity" | "trip";
-  onReviewSubmitted?: () => void;
+  onReviewSubmitted?: (newReview?: Review) => void;
 }
 
 export default function ReviewForm({ itemId, itemType, onReviewSubmitted }: ReviewFormProps) {
@@ -22,6 +33,7 @@ export default function ReviewForm({ itemId, itemType, onReviewSubmitted }: Revi
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedReview, setSubmittedReview] = useState<Review | null>(null);
 
   // Pre-fill form if user is logged in
   useEffect(() => {
@@ -36,7 +48,7 @@ export default function ReviewForm({ itemId, itemType, onReviewSubmitted }: Revi
     
     // Check if user is logged in
     if (!session?.user) {
-      const shouldLogin = confirm("Please login to submit a review and earn 10 loyalty points! Would you like to login now?");
+      const shouldLogin = confirm("Please login to submit a review and earn 10 loyalty points! On your first login, you'll also get 20 welcome bonus loyalty points. Would you like to login now?");
       if (shouldLogin) {
         await signIn("google", {
           callbackUrl: window.location.href,
@@ -91,6 +103,7 @@ export default function ReviewForm({ itemId, itemType, onReviewSubmitted }: Revi
           itemType,
           userName: userName.trim(),
           userEmail: userEmail.trim(),
+          userImage: session?.user?.image || null,
           rating,
           review: review.trim(),
         }),
@@ -101,28 +114,40 @@ export default function ReviewForm({ itemId, itemType, onReviewSubmitted }: Revi
       if (!response.ok) {
         if (data.errors) {
           setErrors(data.errors);
+        } else if (data.error) {
+          setErrors({ general: data.error });
         } else {
-          setErrors({ general: data.error || "Failed to submit review" });
+          setErrors({ general: "Failed to submit review" });
         }
         setIsSubmitting(false);
         return;
       }
       
-      // Success
+      // Success - pass the new review data to callback
+      const newReview = data.review;
+      
+      // Call callback to add review immediately BEFORE showing success message
+      if (onReviewSubmitted && newReview) {
+        onReviewSubmitted(newReview);
+      }
+      
+      // Store submitted review and show success message
+      setSubmittedReview(newReview);
       setSubmitted(true);
+      
+      // Clear form
       setUserName("");
       setUserEmail("");
       setRating(0);
       setReview("");
       setErrors({});
       
-      // Call callback to refresh reviews
-      if (onReviewSubmitted) {
-        setTimeout(() => {
-          onReviewSubmitted();
-          setSubmitted(false);
-        }, 2000);
-      }
+      // Hide success message after 3 seconds and close form
+      setTimeout(() => {
+        setSubmitted(false);
+        setSubmittedReview(null);
+        // Form will be hidden by parent component
+      }, 3000);
     } catch (error) {
       setErrors({ general: "An error occurred. Please try again." });
     } finally {
@@ -130,15 +155,8 @@ export default function ReviewForm({ itemId, itemType, onReviewSubmitted }: Revi
     }
   };
 
-  if (submitted) {
-    return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-        <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-green-800 mb-2">Thank you for your review!</h3>
-        <p className="text-green-700">Your review has been submitted successfully.</p>
-      </div>
-    );
-  }
+  // Show success message overlay with submitted review (disappears after 3 seconds)
+  // The review itself stays in the list permanently
 
   // Show login prompt if not logged in
   if (!session && status !== "loading") {
@@ -147,8 +165,11 @@ export default function ReviewForm({ itemId, itemType, onReviewSubmitted }: Revi
         <div className="text-center py-8">
           <AlertCircle className="w-12 h-12 text-[#E51A4B] mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Login Required</h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 mb-3">
             Please login to submit a review and earn <span className="font-semibold text-[#E51A4B]">10 loyalty points</span>!
+          </p>
+          <p className="text-sm text-gray-500 mb-4">
+            <span className="font-semibold">Bonus:</span> On your first login, you'll get <span className="font-semibold text-[#E51A4B]">20 welcome bonus loyalty points</span>!
           </p>
           <button
             onClick={() => signIn("google", { callbackUrl: window.location.href })}
@@ -162,7 +183,59 @@ export default function ReviewForm({ itemId, itemType, onReviewSubmitted }: Revi
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-2.5 sm:p-6 shadow-sm">
+    <div className="bg-white border border-gray-200 rounded-lg p-2.5 sm:p-6 shadow-sm relative">
+      {/* Success Message Overlay - disappears after 3 seconds */}
+      {submitted && submittedReview && (
+        <div className="absolute inset-0 bg-green-50 border-2 border-green-300 rounded-lg p-4 sm:p-6 z-10 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-lg max-w-md w-full">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 flex-shrink-0 mt-1" />
+              <div className="flex-1">
+                <h3 className="text-base sm:text-lg font-semibold text-green-800 mb-2">
+                  Thank you for your review!
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-4 border border-green-100 mt-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    {submittedReview.userImage ? (
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex-shrink-0">
+                        <Image
+                          src={submittedReview.userImage}
+                          alt={submittedReview.userName}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#E51A4B] to-[#FF6B6B] flex items-center justify-center text-white font-semibold text-xs sm:text-sm flex-shrink-0">
+                        {submittedReview.userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-800 text-sm sm:text-base">{submittedReview.userName}</p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-3 h-3 sm:w-4 sm:h-4 ${
+                              star <= submittedReview.rating
+                                ? "text-yellow-400 fill-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{submittedReview.review}</p>
+                </div>
+                <p className="text-sm text-green-700 mt-3">Your review has been submitted successfully.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <h3 className="text-base sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">Write a Review</h3>
       
       {session?.user && (

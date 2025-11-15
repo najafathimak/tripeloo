@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -118,7 +119,7 @@ export default function RoomsSection({
           >
             {room.thumb ? (
               <Image
-                src={room.thumb}
+                src={optimizeCloudinaryUrl(room.thumb)}
                 alt={room.name}
                 width={180}
                 height={120}
@@ -181,7 +182,7 @@ export default function RoomsSection({
               {selectedRoom.images.filter((img: string) => img && img.trim() !== "").map((img: string, i: number) => (
                 <SwiperSlide key={i}>
                   <Image
-                    src={img}
+                    src={optimizeCloudinaryUrl(img)}
                     alt={selectedRoom.name}
                     width={800}
                     height={500}

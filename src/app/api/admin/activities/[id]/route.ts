@@ -14,17 +14,15 @@ export async function GET(
     
     let activity = null;
     
-    // Try ObjectId first
     if (ObjectId.isValid(id)) {
       try {
         const objectId = new ObjectId(id);
         activity = await db.collection(COLLECTION).findOne({ _id: objectId });
       } catch (err) {
-        console.log('[api/admin/activities/[id]] ObjectId query failed:', err);
+        // Try next strategy
       }
     }
     
-    // Fallback: string comparison
     if (!activity) {
       const allActivities = await db.collection(COLLECTION).find({}).toArray();
       activity = allActivities.find((a: any) => {
@@ -37,7 +35,6 @@ export async function GET(
       return NextResponse.json({ error: 'Activity not found' }, { status: 404 });
     }
     
-    // Map activity data - include all fields for editing
     const mappedActivity = {
       ...activity,
       id: activity._id?.toString() || activity.id || '',

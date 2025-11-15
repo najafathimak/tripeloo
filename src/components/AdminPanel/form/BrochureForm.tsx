@@ -5,6 +5,7 @@ import { Download, Loader2, FileText, Image as ImageIcon, MapPin, Hotel, Activit
 import Image from "next/image";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface Destination {
   id: string;
@@ -88,7 +89,6 @@ export default function BrochureForm() {
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // Fetch destinations
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
@@ -104,7 +104,6 @@ export default function BrochureForm() {
     fetchDestinations();
   }, []);
 
-  // Fetch items when destination and item type change
   useEffect(() => {
     if (!selectedDestination) {
       setItems([]);
@@ -143,7 +142,6 @@ export default function BrochureForm() {
     fetchItems();
   }, [selectedDestination, itemType, destinations]);
 
-  // Fetch complete item details when item ID changes
   useEffect(() => {
     if (!selectedItemId) {
       setSelectedItem(null);
@@ -166,7 +164,6 @@ export default function BrochureForm() {
         const data = await res.json();
         
         if (data.data) {
-          // Normalize carouselImages - handle both string arrays and object arrays
           const normalizedItem = {
             ...data.data,
             carouselImages: Array.isArray(data.data.carouselImages)
@@ -181,7 +178,6 @@ export default function BrochureForm() {
         }
       } catch (error) {
         console.error("Error fetching item details:", error);
-        // Fallback to basic item from list
         const item = items.find((i) => i.id === selectedItemId);
         setSelectedItem(item || null);
       } finally {
@@ -192,7 +188,6 @@ export default function BrochureForm() {
     fetchItemDetails();
   }, [selectedItemId, itemType, items]);
 
-  // Fetch reviews when item is selected
   useEffect(() => {
     if (!selectedItemId || !itemType) {
       setReviews([]);
@@ -205,7 +200,6 @@ export default function BrochureForm() {
         const res = await fetch(`/api/reviews?itemId=${encodeURIComponent(selectedItemId)}&itemType=${itemType}`);
         if (res.ok) {
           const data = await res.json();
-          // Get maximum 4 most recent reviews
           const reviewsData = (data.data || []).slice(0, 4);
           setReviews(reviewsData);
         }
@@ -225,9 +219,8 @@ export default function BrochureForm() {
 
     setGeneratingPDF(true);
     try {
-      // Create a temporary container with better styling for PDF
       const pdfContainer = document.createElement("div");
-      pdfContainer.style.width = "210mm"; // A4 width
+      pdfContainer.style.width = "210mm";
       pdfContainer.style.padding = "20mm";
       pdfContainer.style.backgroundColor = "#ffffff";
       pdfContainer.style.fontFamily = "Arial, sans-serif";
@@ -237,14 +230,11 @@ export default function BrochureForm() {
       pdfContainer.style.top = "0";
       document.body.appendChild(pdfContainer);
 
-      // Clone and style the preview content
       const clonedContent = previewRef.current.cloneNode(true) as HTMLElement;
       
-      // Remove any scroll-related classes and ensure proper styling
       clonedContent.style.maxHeight = "none";
       clonedContent.style.overflow = "visible";
       
-      // Apply PDF-specific styles
       const style = document.createElement("style");
       style.textContent = `
         * { 
@@ -266,45 +256,37 @@ export default function BrochureForm() {
 
       pdfContainer.appendChild(clonedContent);
 
-          // Wait for images and logo to load
-          await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
-          // Generate PDF with reduced quality for smaller file size
-          const canvas = await html2canvas(pdfContainer, {
-            scale: 1.5, // Good balance between quality and file size
-            useCORS: true,
-            logging: false,
-            backgroundColor: "#ffffff",
-            allowTaint: true,
-            imageTimeout: 10000,
-          });
+      const canvas = await html2canvas(pdfContainer, {
+        scale: 1.5,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        allowTaint: true,
+        imageTimeout: 10000,
+      });
 
-          // Use JPEG format with lower quality for better compression
-          const imgData = canvas.toDataURL("image/jpeg", 0.7);
-          const pdf = new jsPDF("p", "mm", "a4");
-          const imgWidth = 210; // A4 width in mm
-          const pageHeight = 297; // A4 height in mm
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          
-          let heightLeft = imgHeight;
-          let position = 0;
+      const imgData = canvas.toDataURL("image/jpeg", 0.7);
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      let heightLeft = imgHeight;
+      let position = 0;
 
-          // Add first page
-          pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
 
-          // Add additional pages if content exceeds one page
-          while (heightLeft >= 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-          }
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
 
-      // Cleanup
       document.body.removeChild(pdfContainer);
-
-      // Download PDF
       const fileName = selectedItem
         ? `${selectedItem.name.replace(/[^a-z0-9]/gi, "_")}_brochure.pdf`
         : "brochure.pdf";
@@ -523,7 +505,7 @@ export default function BrochureForm() {
               <div className="mb-6">
                 {selectedItem.coverImage && (
                   <Image
-                    src={selectedItem.coverImage}
+                    src={optimizeCloudinaryUrl(selectedItem.coverImage)}
                     alt={selectedItem.name}
                     width={800}
                     height={400}
@@ -547,7 +529,7 @@ export default function BrochureForm() {
                         return (
                           <Image
                             key={idx}
-                            src={imgUrl}
+                            src={optimizeCloudinaryUrl(imgUrl)}
                             alt={`${selectedItem.name} - Image ${idx + 1}`}
                             width={400}
                             height={300}
@@ -716,7 +698,7 @@ export default function BrochureForm() {
                       <div key={idx} className="cursor-pointer rounded-xl overflow-hidden shadow-md border border-gray-200">
                         {room.thumb ? (
                           <Image
-                            src={room.thumb}
+                            src={optimizeCloudinaryUrl(room.thumb)}
                             alt={room.name}
                             width={180}
                             height={120}
@@ -724,7 +706,7 @@ export default function BrochureForm() {
                           />
                         ) : room.images && room.images.length > 0 ? (
                           <Image
-                            src={room.images[0]}
+                            src={optimizeCloudinaryUrl(room.images[0])}
                             alt={room.name}
                             width={180}
                             height={120}
@@ -749,7 +731,7 @@ export default function BrochureForm() {
                                 .map((img: string, imgIdx: number) => (
                                   <Image
                                     key={imgIdx}
-                                    src={img}
+                                    src={optimizeCloudinaryUrl(img)}
                                     alt={`${room.name} - Image ${imgIdx + 1}`}
                                     width={150}
                                     height={100}
@@ -789,7 +771,7 @@ export default function BrochureForm() {
                       <div key={idx} className="cursor-pointer rounded-xl overflow-hidden shadow-md border border-gray-200">
                         {pkg.thumb ? (
                           <Image
-                            src={pkg.thumb}
+                            src={optimizeCloudinaryUrl(pkg.thumb)}
                             alt={pkg.name}
                             width={180}
                             height={120}
@@ -797,7 +779,7 @@ export default function BrochureForm() {
                           />
                         ) : pkg.images && pkg.images.length > 0 ? (
                           <Image
-                            src={pkg.images[0]}
+                            src={optimizeCloudinaryUrl(pkg.images[0])}
                             alt={pkg.name}
                             width={180}
                             height={120}
@@ -825,7 +807,7 @@ export default function BrochureForm() {
                                 .map((img: string, imgIdx: number) => (
                                   <Image
                                     key={imgIdx}
-                                    src={img}
+                                    src={optimizeCloudinaryUrl(img)}
                                     alt={`${pkg.name} - Image ${imgIdx + 1}`}
                                     width={150}
                                     height={100}

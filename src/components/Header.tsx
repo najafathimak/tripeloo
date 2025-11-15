@@ -56,6 +56,7 @@ export function Header() {
         </div>
 
         <nav className={`hidden md:flex items-center gap-6 text-sm ${isHomePage ? 'text-white' : 'text-gray-900 font-semibold'}`}>
+          <Link href="/" className={`${isHomePage ? 'hover:text-brand' : 'hover:text-[#E51A4B] font-semibold'}`}>Home</Link>
           <Link href="/destinations" className={`${isHomePage ? 'hover:text-brand' : 'hover:text-[#E51A4B] font-semibold'}`}>Destinations</Link>
           <Link href="/about" className={`${isHomePage ? 'hover:text-brand' : 'hover:text-[#E51A4B] font-semibold'}`}>About / Contact</Link>
         </nav>
@@ -154,6 +155,7 @@ export function Header() {
               </button>
             </div>
             <nav className="grid gap-2 p-4 text-sm">
+              <Link href="/" className="py-2 hover:text-brand" onClick={closeMenu}>Home</Link>
               <Link href="/destinations" className="py-2 hover:text-brand" onClick={closeMenu}>Destinations</Link>
               <Link href="/about" className="py-2 hover:text-brand" onClick={closeMenu}>About / Contact</Link>
             </nav>

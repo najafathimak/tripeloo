@@ -40,6 +40,9 @@
       ],
       "@/types/*": [
         "src/types/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
       ]
     },
     "plugins": [

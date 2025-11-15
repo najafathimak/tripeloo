@@ -14,17 +14,15 @@ export async function GET(
     
     let destination = null;
     
-    // Try ObjectId first
     if (ObjectId.isValid(id)) {
       try {
         const objectId = new ObjectId(id);
         destination = await db.collection(COLLECTION).findOne({ _id: objectId });
       } catch (err) {
-        console.log('[api/admin/destinations/[id]] ObjectId query failed:', err);
+        // Try next strategy
       }
     }
     
-    // Fallback: string comparison
     if (!destination) {
       const allDestinations = await db.collection(COLLECTION).find({}).toArray();
       destination = allDestinations.find((d: any) => {
@@ -37,7 +35,6 @@ export async function GET(
       return NextResponse.json({ error: 'Destination not found' }, { status: 404 });
     }
     
-    // Map destination data - include all fields for editing
     const mappedDestination = {
       ...destination,
       id: destination._id?.toString() || destination.id || '',

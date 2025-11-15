@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
       itemType, // 'stay', 'activity', 'trip'
       userName,
       userEmail,
+      userImage,
       rating,
       review,
     } = body;
@@ -54,13 +55,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ errors }, { status: 400 });
     }
 
-    // Insert review
     const db = await getDb();
+    const userEmailLower = userEmail.trim().toLowerCase();
+    const itemIdTrimmed = itemId.trim();
+    const itemTypeLower = itemType.trim().toLowerCase();
+
+    // Check if user has already submitted 2 reviews for this item
+    const existingReviewsCount = await db.collection(COLLECTION).countDocuments({
+      itemId: itemIdTrimmed,
+      itemType: itemTypeLower,
+      userEmail: userEmailLower,
+      isHidden: { $ne: true },
+    });
+
+    if (existingReviewsCount >= 2) {
+      return NextResponse.json(
+        { 
+          error: 'You have already submitted the maximum of 2 reviews for this item.',
+          errors: { general: 'You can only submit a maximum of 2 reviews per item.' }
+        },
+        { status: 400 }
+      );
+    }
+
+    // Insert review
     const result = await db.collection(COLLECTION).insertOne({
       itemId: itemId.trim(),
       itemType: itemType.trim().toLowerCase(),
       userName: userName.trim(),
       userEmail: userEmail.trim().toLowerCase(),
+      userImage: userImage || null,
       rating: Number(rating),
       review: review.trim(),
       isHidden: false, // New reviews are visible by default
@@ -70,23 +94,35 @@ export async function POST(request: NextRequest) {
 
     // Add 10 loyalty points for review
     try {
-      await updateUserLoyaltyPoints(userEmail.trim().toLowerCase(), 10);
-      
-      // Record point history
       const db = await getDb();
-      await db.collection('users').updateOne(
-        { email: userEmail.trim().toLowerCase() },
-        {
-          $push: {
-            pointHistory: {
-              type: 'earned',
-              points: 10,
-              note: `Earned for submitting a review on ${itemType}`,
-              createdAt: new Date(),
+      const userEmailLower = userEmail.trim().toLowerCase();
+      
+      // Check if user exists
+      const user = await db.collection('users').findOne({ email: userEmailLower });
+      
+      if (user) {
+        // Update loyalty points
+        await updateUserLoyaltyPoints(userEmailLower, 10);
+        
+        // Record point history - ensure pointHistory array exists
+        const pointHistoryEntry = {
+          type: 'earned',
+          points: 10,
+          note: `Earned for submitting a review on ${itemType}`,
+          createdAt: new Date(),
+        };
+        
+        await db.collection('users').updateOne(
+          { email: userEmailLower },
+          {
+            $push: {
+              pointHistory: pointHistoryEntry as any,
             } as any,
-          } as any,
-        }
-      );
+          }
+        );
+      } else {
+        console.error(`User not found for email: ${userEmailLower}`);
+      }
     } catch (error) {
       console.error("Error updating loyalty points:", error);
       // Don't fail the review submission if loyalty points update fails
@@ -96,6 +132,15 @@ export async function POST(request: NextRequest) {
       success: true,
       id: result.insertedId.toString(),
       message: 'Review submitted successfully',
+      review: {
+        id: result.insertedId.toString(),
+        userName: userName.trim(),
+        userEmail: userEmail.trim().toLowerCase(),
+        userImage: userImage || null,
+        rating: Number(rating),
+        review: review.trim(),
+        createdAt: new Date(),
+      },
     });
   } catch (error) {
     console.error('[api/reviews] POST error', error);
@@ -149,6 +194,7 @@ export async function GET(request: NextRequest) {
       id: r._id?.toString() || r.id || '',
       userName: r.userName || 'Anonymous',
       userEmail: r.userEmail || '',
+      userImage: r.userImage || null,
       rating: r.rating || 0,
       review: r.review || '',
       createdAt: r.createdAt || new Date(),
@@ -160,6 +206,10 @@ export async function GET(request: NextRequest) {
         average: averageRating,
         totalReviews,
         distribution,
+      },
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
       },
     });
   } catch (error) {

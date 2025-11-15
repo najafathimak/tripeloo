@@ -1,6 +1,46 @@
 import { assets } from "../../../assets/assets";
 import Image from "next/image";
 import ContactSection from "@/components/Contact";
+import type { Metadata } from "next";
+import { siteConfig } from "@/config/site";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description:
+    "Learn about Tripeloo - your trusted travel companion for discovering beautiful resorts, holiday destinations, and exclusive travel packages. We make travel planning effortless and enjoyable.",
+  keywords: [
+    'about Tripeloo',
+    'travel company',
+    'travel agency',
+    'resort booking',
+    'holiday packages',
+    'travel services',
+  ],
+  openGraph: {
+    title: "About Us | Tripeloo",
+    description: "Learn about Tripeloo - your trusted travel companion for discovering beautiful resorts, holiday destinations, and exclusive travel packages.",
+    url: `${siteConfig.url}/about`,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'About Tripeloo',
+      }
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "About Us | Tripeloo",
+    description: "Learn about Tripeloo - your trusted travel companion for discovering beautiful resorts, holiday destinations, and exclusive travel packages.",
+  },
+  alternates: {
+    canonical: `${siteConfig.url}/about`,
+  },
+};
 
 const About = () => {
   return (

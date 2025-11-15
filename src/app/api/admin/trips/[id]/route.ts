@@ -14,17 +14,15 @@ export async function GET(
     
     let trip = null;
     
-    // Try ObjectId first
     if (ObjectId.isValid(id)) {
       try {
         const objectId = new ObjectId(id);
         trip = await db.collection(COLLECTION).findOne({ _id: objectId });
       } catch (err) {
-        console.log('[api/admin/trips/[id]] ObjectId query failed:', err);
+        // Try next strategy
       }
     }
     
-    // Fallback: string comparison
     if (!trip) {
       const allTrips = await db.collection(COLLECTION).find({}).toArray();
       trip = allTrips.find((t: any) => {
@@ -37,7 +35,6 @@ export async function GET(
       return NextResponse.json({ error: 'Trip not found' }, { status: 404 });
     }
     
-    // Map trip data - include all fields for editing
     const mappedTrip = {
       ...trip,
       id: trip._id?.toString() || trip.id || '',

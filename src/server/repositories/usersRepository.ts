@@ -49,6 +49,21 @@ export async function updateUserLoyaltyPoints(
   const db = await getDb();
   
   try {
+    // First check if user exists
+    const existingUser = await db.collection(COLLECTION_NAME).findOne<User>({ email });
+    if (!existingUser) {
+      console.error(`User not found for email: ${email}`);
+      return null;
+    }
+
+    // Ensure loyaltyPoints field exists
+    if (existingUser.loyaltyPoints === undefined || existingUser.loyaltyPoints === null) {
+      await db.collection(COLLECTION_NAME).updateOne(
+        { email },
+        { $set: { loyaltyPoints: 0 } }
+      );
+    }
+
     const result = await db.collection(COLLECTION_NAME).findOneAndUpdate(
       { email },
       {

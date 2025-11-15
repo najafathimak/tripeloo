@@ -21,10 +21,11 @@ export const authOptions = {
     async signIn({ user, account, profile }: any) {
       if (account?.provider === "google") {
         try {
-          // Check if user exists
+          // Check if user exists in our custom users collection
           const existingUser = await findUserByEmail(user.email!);
           
           if (!existingUser) {
+            // User doesn't exist - this is their first login
             // Create new user with 20 loyalty points
             await createUser({
               email: user.email!,
@@ -32,6 +33,7 @@ export const authOptions = {
               image: user.image || undefined,
             });
           }
+          // If user already exists, do nothing - they already got their first login bonus
         } catch (error) {
           console.error("Error in signIn callback:", error);
         }

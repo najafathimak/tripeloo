@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 import { useEffect, useState } from "react";
 import { destinations as fallback } from "@/data/destinations";
 
@@ -94,7 +95,7 @@ export function FeaturedDestinations() {
               >
                 <div className="relative h-28 sm:h-40">
                   <Image
-                    src={d.image}
+                    src={optimizeCloudinaryUrl(d.image)}
                     alt={d.name}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"

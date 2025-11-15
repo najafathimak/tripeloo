@@ -8,8 +8,8 @@ interface LocationSectionProps {
 }
 
 export default function LocationSection({ location, destinationName }: LocationSectionProps = {}) {
-  // Use provided location, or fallback to destination name, or default
-  const displayLocation = location?.trim() || destinationName?.trim() || "Warsaw, Poland";
+  // Show location from DB if available, otherwise show destination name
+  const displayLocation = location?.trim() || destinationName?.trim() || "Location not specified";
   
   const locationData = {
     name: displayLocation,
@@ -45,7 +45,7 @@ export default function LocationSection({ location, destinationName }: LocationS
           <div className="flex items-center gap-2 mb-3">
             <MapPin className="w-6 h-6 text-sky-600 animate-bounce" />
             <h3 className="text-2xl font-semibold text-gray-900">
-              Package Location
+              Location
             </h3>
           </div>
 

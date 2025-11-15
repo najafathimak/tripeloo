@@ -40,77 +40,54 @@ export async function findStayById(stayId: string, includeHidden: boolean = fals
   try {
     const ObjectId = require('mongodb').ObjectId;
     
-    console.log('[findStayById] Searching for stay with ID:', stayId);
-    console.log('[findStayById] ID type:', typeof stayId);
-    console.log('[findStayById] ID length:', stayId?.length);
-    
-    // Clean the ID - remove any whitespace
     const cleanStayId = stayId?.trim();
     
-    // Try multiple query strategies
     let stay = null;
     
-    // Strategy 1: Try as ObjectId if valid (most common case)
     if (cleanStayId && ObjectId.isValid(cleanStayId)) {
       try {
         const objectId = new ObjectId(cleanStayId);
         const query: any = { _id: objectId };
         if (!includeHidden) {
-          query.isHidden = { $ne: true }; // Exclude hidden items for user-facing queries
+          query.isHidden = { $ne: true };
         }
         stay = await db.collection(COLLECTION).findOne(query);
         if (stay) {
-          console.log('[findStayById] ✓ Found by ObjectId');
           return mapStayData(stay);
         }
       } catch (err) {
-        console.log('[findStayById] ObjectId query failed:', err);
+        // ObjectId query failed, try next strategy
       }
-    } else {
-      console.log('[findStayById] ID is not a valid ObjectId format');
     }
     
-    // Strategy 2: Try finding by converting all _id to string and comparing
-    // This handles the case where ID is passed as string from frontend
     if (!stay) {
-      console.log('[findStayById] Trying string comparison method...');
       const query: any = {};
       if (!includeHidden) {
-        query.isHidden = { $ne: true }; // Exclude hidden items
+        query.isHidden = { $ne: true };
       }
       const allStays = await db.collection(COLLECTION).find(query).toArray();
-      console.log('[findStayById] Total stays in DB:', allStays.length);
       
       stay = allStays.find((s: any) => {
         const idStr = s._id?.toString() || s.id || '';
-        const match = idStr === cleanStayId || idStr === stayId;
-        if (match) {
-          console.log('[findStayById] ✓ Match found! DB _id:', s._id, 'as string:', idStr, 'matches:', cleanStayId);
-        }
-        return match;
+        return idStr === cleanStayId || idStr === stayId;
       });
       
       if (stay) {
-        console.log('[findStayById] ✓ Found by string comparison');
         return mapStayData(stay);
       }
     }
     
-    // Strategy 3: Try finding by id field (if stored separately)
     if (!stay) {
       const query: any = { id: cleanStayId };
       if (!includeHidden) {
-        query.isHidden = { $ne: true }; // Exclude hidden items
+        query.isHidden = { $ne: true };
       }
       stay = await db.collection(COLLECTION).findOne(query);
       if (stay) {
-        console.log('[findStayById] ✓ Found by id field');
         return mapStayData(stay);
       }
     }
     
-    console.log('[findStayById] ✗ Stay not found after all strategies');
-    console.log('[findStayById] Searched ID:', cleanStayId);
     return null;
   } catch (error) {
     console.error('[findStayById] Error:', error);

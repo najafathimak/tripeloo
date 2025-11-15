@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findStayById } from '@/server/repositories/staysRepository';
 import { getDb } from '@/server/db/client';
+import { findDestinationBySlugOrName } from '@/server/repositories/destinationsRepository';
+
+export const revalidate = 3600;
 
 export async function GET(
   request: NextRequest,
@@ -9,27 +12,36 @@ export async function GET(
   try {
     const { id: stayId } = await params;
     
-    console.log('[api/stays/[id]] Received stayId:', stayId);
-    console.log('[api/stays/[id]] stayId type:', typeof stayId);
-    
     if (!stayId) {
       return NextResponse.json({ error: 'Stay ID is required' }, { status: 400 });
     }
     
-    // Decode URL-encoded ID if needed
     const decodedStayId = decodeURIComponent(stayId);
-    console.log('[api/stays/[id]] Decoded stayId:', decodedStayId);
     
-    // User-facing: exclude hidden items
     const stay = await findStayById(decodedStayId);
     
     if (!stay) {
-      console.log('[api/stays/[id]] Stay not found for ID:', decodedStayId);
       return NextResponse.json({ error: 'Stay not found', stayId: decodedStayId }, { status: 404 });
     }
     
-    console.log('[api/stays/[id]] Stay found:', stay.id);
-    return NextResponse.json({ data: stay });
+    // Get destination name if destinationSlug exists
+    let destinationName = '';
+    if (stay.destinationSlug) {
+      const destination = await findDestinationBySlugOrName(stay.destinationSlug);
+      destinationName = destination?.name || '';
+    }
+    
+    // Add destinationName to stay data
+    const stayWithDestination = {
+      ...stay,
+      destinationName: destinationName,
+    };
+    
+    return NextResponse.json({ data: stayWithDestination }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (error) {
     console.error('[api/stays/[id]] error', error);
     return NextResponse.json(

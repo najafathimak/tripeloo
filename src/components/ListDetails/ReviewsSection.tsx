@@ -3,11 +3,14 @@
 import { Star, MessageSquare, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReviewForm from "./ReviewForm";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 interface Review {
   id: string;
   userName: string;
   userEmail: string;
+  userImage?: string | null;
   rating: number;
   review: string;
   createdAt: Date | string;
@@ -19,6 +22,7 @@ interface ReviewsSectionProps {
 }
 
 export default function ReviewsSection({ itemId, itemType }: ReviewsSectionProps) {
+  const { data: session } = useSession();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [summary, setSummary] = useState({
     average: 0,
@@ -28,35 +32,82 @@ export default function ReviewsSection({ itemId, itemType }: ReviewsSectionProps
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [displayCount, setDisplayCount] = useState(4); // Show 4 reviews initially
+  const [userReviewCount, setUserReviewCount] = useState(0);
 
-  const fetchReviews = async () => {
+  const fetchReviews = async (showLoading = true) => {
     if (!itemId || itemId.trim() === "") {
-      setLoading(false);
+      if (showLoading) setLoading(false);
       setReviews([]);
       setSummary({ average: 0, totalReviews: 0, distribution: [0, 0, 0, 0, 0] });
       return;
     }
 
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const res = await fetch(`/api/reviews?itemId=${encodeURIComponent(itemId)}&itemType=${itemType}`);
       if (res.ok) {
         const data = await res.json();
-        setReviews(data.data || []);
+        // Sort reviews by most recent first (newest at top)
+        const sortedReviews = (data.data || []).sort((a: Review, b: Review) => {
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+          return dateB - dateA; // Most recent first (newest at top)
+        });
+        // Merge with existing reviews to preserve any immediately added ones
+        setReviews((prev) => {
+          // Create a map of existing reviews by ID
+          const existingMap = new Map(prev.map(r => [r.id, r]));
+          // Add all fetched reviews
+          sortedReviews.forEach((review: Review) => {
+            existingMap.set(review.id, review);
+          });
+          // Convert back to array and sort by date (most recent first)
+          const merged = Array.from(existingMap.values()).sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA;
+          });
+          return merged;
+        });
         setSummary(data.summary || { average: 0, totalReviews: 0, distribution: [0, 0, 0, 0, 0] });
+        
+        // Count user's reviews for this item (only if user is logged in)
+        if (session?.user?.email) {
+          const userEmailLower = session.user.email.toLowerCase();
+          const userReviews = sortedReviews.filter((r: Review) => 
+            r.userEmail && r.userEmail.toLowerCase() === userEmailLower
+          );
+          setUserReviewCount(userReviews.length);
+        } else {
+          // If not logged in, reset count
+          setUserReviewCount(0);
+        }
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
       setReviews([]);
       setSummary({ average: 0, totalReviews: 0, distribution: [0, 0, 0, 0, 0] });
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchReviews();
   }, [itemId, itemType]);
+
+  // Update user review count when session or reviews change
+  useEffect(() => {
+    if (session?.user?.email && reviews.length > 0) {
+      const userEmailLower = session.user.email.toLowerCase();
+      const userReviews = reviews.filter((r: Review) => 
+        r.userEmail && r.userEmail.toLowerCase() === userEmailLower
+      );
+      setUserReviewCount(userReviews.length);
+    } else if (!session) {
+      setUserReviewCount(0);
+    }
+  }, [session, reviews]);
 
   const formatDate = (date: Date | string) => {
     const d = typeof date === "string" ? new Date(date) : date;
@@ -128,24 +179,70 @@ export default function ReviewsSection({ itemId, itemType }: ReviewsSectionProps
             </div>
           )}
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="text-sm font-semibold text-[#E51A4B] hover:text-[#c91742] transition-colors flex items-center gap-2 self-start sm:self-auto"
-        >
-          <MessageSquare size={18} />
-          {showForm ? "Cancel" : "Write a Review"}
-        </button>
+        {userReviewCount >= 2 ? (
+          <div className="text-sm text-gray-500 self-start sm:self-auto">
+            You've reached the maximum of 2 reviews for this item
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="text-sm font-semibold text-[#E51A4B] hover:text-[#c91742] transition-colors flex items-center gap-2 self-start sm:self-auto"
+          >
+            <MessageSquare size={18} />
+            {showForm ? "Cancel" : "Write a Review"}
+          </button>
+        )}
       </div>
 
       {/* Review Form */}
-      {showForm && (
+      {showForm && userReviewCount < 2 && (
         <div className="mb-8">
           <ReviewForm
             itemId={itemId}
             itemType={itemType}
-            onReviewSubmitted={() => {
-              fetchReviews();
-              setShowForm(false);
+            onReviewSubmitted={(newReview) => {
+              if (newReview) {
+                // Add review immediately to state - this makes it visible instantly at the top
+                setReviews((prev) => {
+                  // Check if review already exists to avoid duplicates
+                  const exists = prev.some(r => r.id === newReview.id);
+                  if (exists) return prev;
+                  // Add new review at the top (most recent first)
+                  return [newReview, ...prev];
+                });
+                
+                // Update user review count
+                setUserReviewCount((prev) => prev + 1);
+                
+                // Update summary immediately
+                setSummary((prev) => ({
+                  ...prev,
+                  totalReviews: prev.totalReviews + 1,
+                  average: prev.totalReviews > 0
+                    ? ((prev.average * prev.totalReviews + newReview.rating) / (prev.totalReviews + 1))
+                    : newReview.rating,
+                  distribution: (() => {
+                    const dist = [...prev.distribution];
+                    dist[5 - newReview.rating]++;
+                    return dist;
+                  })(),
+                }));
+                
+                // Keep form open to show success message, then close after 3 seconds
+                // Review stays in the list permanently
+                setTimeout(() => {
+                  setShowForm(false);
+                }, 3000);
+                
+                // Fetch reviews in background to ensure consistency (without showing loading)
+                setTimeout(() => {
+                  fetchReviews(false);
+                }, 3500);
+              } else {
+                // Fallback: if no review data, just fetch
+                fetchReviews();
+                setShowForm(false);
+              }
             }}
           />
         </div>
@@ -159,13 +256,18 @@ export default function ReviewsSection({ itemId, itemType }: ReviewsSectionProps
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
             Be the first to share your experience! Your review will help others make better decisions.
           </p>
-          {!showForm && (
+          {!showForm && userReviewCount < 2 && (
             <button
               onClick={() => setShowForm(true)}
               className="bg-[#E51A4B] hover:bg-[#c91742] text-white font-semibold py-2 px-6 rounded-lg transition-colors"
             >
               Write the First Review
             </button>
+          )}
+          {userReviewCount >= 2 && (
+            <p className="text-sm text-gray-500">
+              You've reached the maximum of 2 reviews for this item
+            </p>
           )}
         </div>
       ) : (
@@ -221,9 +323,21 @@ export default function ReviewsSection({ itemId, itemType }: ReviewsSectionProps
               >
                 <div className="flex justify-between items-start mb-1.5 sm:mb-3">
                   <div className="flex items-center gap-1.5 sm:gap-3">
-                    <div className="w-7 h-7 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#E51A4B] to-[#FF6B6B] flex items-center justify-center text-white font-semibold text-xs sm:text-lg">
-                      {getInitials(r.userName)}
-                    </div>
+                    {r.userImage ? (
+                      <div className="w-7 h-7 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0">
+                        <Image
+                          src={r.userImage}
+                          alt={r.userName}
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-7 h-7 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#E51A4B] to-[#FF6B6B] flex items-center justify-center text-white font-semibold text-xs sm:text-lg flex-shrink-0">
+                        {getInitials(r.userName)}
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-semibold text-gray-800 text-xs sm:text-base">{r.userName}</h3>
                       <p className="text-[10px] sm:text-sm text-gray-500">

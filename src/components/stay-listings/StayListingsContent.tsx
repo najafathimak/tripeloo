@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 import { motion } from "framer-motion";
 import {
   FaPlaneDeparture,
@@ -855,7 +856,7 @@ function StayListingsContent() {
               >
                 <div className="relative h-64 overflow-hidden">
                   <Image
-                    src={stay.coverImage}
+                    src={optimizeCloudinaryUrl(stay.coverImage)}
                     alt={stay.name}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -962,7 +963,7 @@ function StayListingsContent() {
               >
                 <div className="relative h-64 overflow-hidden">
                   <Image
-                    src={activity.coverImage}
+                    src={optimizeCloudinaryUrl(activity.coverImage)}
                     alt={activity.name}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -1058,7 +1059,7 @@ function StayListingsContent() {
               >
                 <div className="relative h-64 overflow-hidden">
                   <Image
-                    src={trip.coverImage}
+                    src={optimizeCloudinaryUrl(trip.coverImage)}
                     alt={trip.name}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-500"

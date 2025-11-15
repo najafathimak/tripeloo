@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/server/db/client';
+import { findDestinationBySlugOrName } from '@/server/repositories/destinationsRepository';
 
 const COLLECTION = 'activities';
+
+export const revalidate = 3600;
 
 export async function GET(
   request: NextRequest,
@@ -10,55 +13,50 @@ export async function GET(
   try {
     const { id: activityId } = await params;
     
-    console.log('[api/activities/[id]] Received activityId:', activityId);
-    
     if (!activityId) {
       return NextResponse.json({ error: 'Activity ID is required' }, { status: 400 });
     }
     
     const decodedActivityId = decodeURIComponent(activityId);
-    console.log('[api/activities/[id]] Decoded activityId:', decodedActivityId);
     
     const db = await getDb();
     const ObjectId = require('mongodb').ObjectId;
     
     let activity = null;
     
-    // Try ObjectId first
     if (ObjectId.isValid(decodedActivityId)) {
       try {
         const objectId = new ObjectId(decodedActivityId);
         activity = await db.collection(COLLECTION).findOne({ _id: objectId });
-        if (activity) {
-          console.log('[api/activities/[id]] ✓ Found by ObjectId');
-        }
       } catch (err) {
-        console.log('[api/activities/[id]] ObjectId query failed:', err);
+        // ObjectId query failed, try next strategy
       }
     }
     
-    // Fallback: string comparison
     if (!activity) {
       const allActivities = await db.collection(COLLECTION).find({}).toArray();
       activity = allActivities.find((a: any) => {
         const idStr = a._id?.toString() || a.id || '';
         return idStr === decodedActivityId || idStr === activityId;
       });
-      if (activity) {
-        console.log('[api/activities/[id]] ✓ Found by string comparison');
-      }
     }
     
     if (!activity) {
-      console.log('[api/activities/[id]] ✗ Activity not found');
       return NextResponse.json({ error: 'Activity not found', activityId: decodedActivityId }, { status: 404 });
     }
     
-    // Map activity data
+    // Get destination name if destinationSlug exists
+    let destinationName = '';
+    if (activity.destinationSlug) {
+      const destination = await findDestinationBySlugOrName(activity.destinationSlug);
+      destinationName = destination?.name || '';
+    }
+    
     const mappedActivity = {
       id: activity._id?.toString() || activity.id || '',
       name: activity.name || '',
       destinationSlug: activity.destinationSlug || '',
+      destinationName: destinationName,
       category: activity.category || '',
       coverImage: activity.coverImage || '',
       carouselImages: activity.carouselImages || [],
@@ -73,8 +71,11 @@ export async function GET(
       additionalDetails: activity.additionalDetails || [],
     };
     
-    console.log('[api/activities/[id]] Activity found:', mappedActivity.id);
-    return NextResponse.json({ data: mappedActivity });
+    return NextResponse.json({ data: mappedActivity }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (error) {
     console.error('[api/activities/[id]] error', error);
     return NextResponse.json(

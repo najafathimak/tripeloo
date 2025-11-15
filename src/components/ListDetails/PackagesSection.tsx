@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -146,7 +147,7 @@ export default function PackagesSection({
                     {displayImages.filter((img) => img && img.trim() !== "").map((img, i) => (
                       <SwiperSlide key={i}>
                         <Image
-                          src={img}
+                          src={optimizeCloudinaryUrl(img)}
                           alt={`${pkg.name} - Image ${i + 1}`}
                           fill
                           className="object-cover"
@@ -157,7 +158,7 @@ export default function PackagesSection({
                 </div>
               ) : pkg.thumb ? (
                 <Image
-                  src={pkg.thumb}
+                  src={optimizeCloudinaryUrl(pkg.thumb)}
                   alt={pkg.name}
                   width={400}
                   height={200}
@@ -254,7 +255,7 @@ export default function PackagesSection({
               {selectedPackage.images.filter((img) => img && img.trim() !== "").map((img, i) => (
                 <SwiperSlide key={i}>
                   <Image
-                    src={img}
+                    src={optimizeCloudinaryUrl(img)}
                     alt={selectedPackage.name}
                     width={800}
                     height={500}

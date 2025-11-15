@@ -4,6 +4,8 @@ import { findDestinationBySlugOrName } from '@/server/repositories/destinationsR
 
 const COLLECTION = 'trips';
 
+export const revalidate = 3600;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -11,58 +13,44 @@ export async function GET(
   try {
     const { id: tripId } = await params;
     
-    console.log('[api/trips/[id]] Received tripId:', tripId);
-    
     if (!tripId) {
       return NextResponse.json({ error: 'Trip ID is required' }, { status: 400 });
     }
     
     const decodedTripId = decodeURIComponent(tripId);
-    console.log('[api/trips/[id]] Decoded tripId:', decodedTripId);
     
     const db = await getDb();
     const ObjectId = require('mongodb').ObjectId;
     
     let trip = null;
     
-    // Try ObjectId first
     if (ObjectId.isValid(decodedTripId)) {
       try {
         const objectId = new ObjectId(decodedTripId);
         trip = await db.collection(COLLECTION).findOne({ _id: objectId });
-        if (trip) {
-          console.log('[api/trips/[id]] ✓ Found by ObjectId');
-        }
       } catch (err) {
-        console.log('[api/trips/[id]] ObjectId query failed:', err);
+        // ObjectId query failed, try next strategy
       }
     }
     
-    // Fallback: string comparison
     if (!trip) {
       const allTrips = await db.collection(COLLECTION).find({}).toArray();
       trip = allTrips.find((t: any) => {
         const idStr = t._id?.toString() || t.id || '';
         return idStr === decodedTripId || idStr === tripId;
       });
-      if (trip) {
-        console.log('[api/trips/[id]] ✓ Found by string comparison');
-      }
     }
     
     if (!trip) {
-      console.log('[api/trips/[id]] ✗ Trip not found');
       return NextResponse.json({ error: 'Trip not found', tripId: decodedTripId }, { status: 404 });
     }
     
-    // Fetch destination info for fallback location
     let destinationName = '';
     if (trip.destinationSlug) {
       const destination = await findDestinationBySlugOrName(trip.destinationSlug);
       destinationName = destination?.name || '';
     }
     
-    // Map trip data
     const mappedTrip = {
       id: trip._id?.toString() || trip.id || '',
       name: trip.name || '',
@@ -83,8 +71,11 @@ export async function GET(
       additionalDetails: trip.additionalDetails || [],
     };
     
-    console.log('[api/trips/[id]] Trip found:', mappedTrip.id);
-    return NextResponse.json({ data: mappedTrip });
+    return NextResponse.json({ data: mappedTrip }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (error) {
     console.error('[api/trips/[id]] error', error);
     return NextResponse.json(
