@@ -13,6 +13,7 @@ export type Activity = {
   coverImage: string;
   duration: string;
   price: number;
+  startingPrice?: number; // Optional field for database compatibility
   category: string;
 };
 

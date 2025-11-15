@@ -67,6 +67,7 @@ const ListingDetailsContent = () => {
   const [selectedRooms, setSelectedRooms] = useState<any[]>([]);
   const [stayData, setStayData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [reviewSummary, setReviewSummary] = useState({ average: 0, totalReviews: 0 });
   const bookingRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -95,6 +96,30 @@ const ListingDetailsContent = () => {
     };
 
     fetchStayData();
+  }, [stayId]);
+
+  // Fetch review summary
+  useEffect(() => {
+    const fetchReviewSummary = async () => {
+      if (!stayId) return;
+
+      try {
+        const res = await fetch(`/api/reviews?itemId=${encodeURIComponent(stayId)}&itemType=stay`);
+        if (res.ok) {
+          const data = await res.json();
+          setReviewSummary({
+            average: data.summary?.average || 0,
+            totalReviews: data.summary?.totalReviews || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching review summary:", error);
+      }
+    };
+
+    if (stayId) {
+      fetchReviewSummary();
+    }
   }, [stayId]);
 
 
@@ -219,9 +244,11 @@ const ListingDetailsContent = () => {
               <div className="flex flex-wrap items-center gap-3 text-gray-600">
                 <div className="flex items-center gap-1 text-emerald-600 font-medium">
                   <Star className="w-4 h-4 fill-emerald-500" />
-                  <span>5.0</span>
+                  <span>{reviewSummary.average > 0 ? reviewSummary.average.toFixed(1) : "0.0"}</span>
                 </div>
-                <span className="text-sm">(Reviews)</span>
+                <span className="text-sm">
+                  ({reviewSummary.totalReviews} {reviewSummary.totalReviews === 1 ? "review" : "reviews"})
+                </span>
               </div>
 
               <div className="flex items-center gap-3 mt-3">

@@ -29,7 +29,7 @@ export async function findActivitiesByDestination(destinationSlugOrName: string)
     name: r.name || '',
     coverImage: r.coverImage || r.image || '',
     duration: r.duration || '',
-    price: r.price || 0,
+    price: r.startingPrice || r.price || 0, // Check startingPrice first (like stays), then fallback to price
     category: r.category || 'General', // Map category from DB or default
   }));
 }

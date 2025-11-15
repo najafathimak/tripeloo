@@ -929,7 +929,7 @@ function StayListingsContent() {
           >
             <FaHiking className="text-6xl text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              No activities or experiences available in this location right now
+              No things to do/activities or experiences available in this location right now
             </h2>
             <p className="text-gray-600 mb-6">
               We're curating amazing experiences for you. For custom activity
@@ -970,7 +970,7 @@ function StayListingsContent() {
                   />
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
                     <p className="text-[#E51A4B] font-bold text-lg">
-                      ₹{activity.price}
+                      ₹{(activity.startingPrice ?? activity.price) || 0}
                     </p>
                   </div>
                 </div>

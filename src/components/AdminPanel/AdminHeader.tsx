@@ -39,56 +39,56 @@ export function AdminHeader() {
 
   return (
     <header className="sticky top-0 z-30 w-full bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="container mx-auto px-2 sm:px-4 lg:px-8">
+        <div className="flex items-center justify-between h-16 min-h-[64px]">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0 min-w-0">
             <button
               aria-label="Open Menu"
-              className="md:hidden text-gray-700 hover:text-[#E51A4B] transition-colors"
+              className="md:hidden text-gray-700 hover:text-[#E51A4B] transition-colors flex-shrink-0"
               onClick={openMenu}
             >
               <Menu size={24} />
             </button>
 
-            <Link href="/admin" className="flex items-center gap-2">
+            <Link href="/admin" className="flex items-center gap-1 lg:gap-2 flex-shrink-0 min-w-0">
               <Image
                 src="/assets/logo_new.png"
                 alt="Tripeloo Logo"
                 width={130}
                 height={43}
-                className="h-10 sm:h-12 w-auto"
+                className="h-10 md:h-11 lg:h-12 w-auto flex-shrink-0"
                 priority
               />
-              <span className="text-xs text-gray-500 font-normal hidden sm:inline">Admin Panel</span>
+              <span className="text-xs text-gray-500 font-normal hidden lg:inline whitespace-nowrap">Admin Panel</span>
             </Link>
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2 flex-1 min-w-0 justify-end ml-2">
             {adminNavLinks.map(({ href, label, icon: Icon }) => {
               const isActive = pathname === href;
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  className={`flex items-center gap-1 lg:gap-2 px-2 lg:px-4 py-2 rounded-lg transition-all flex-shrink-0 ${
                     isActive
                       ? "bg-[#E51A4B] text-white shadow-md"
                       : "text-gray-700 hover:bg-gray-100 hover:text-[#E51A4B]"
                   }`}
                 >
-                  <Icon size={18} />
-                  <span className="font-medium text-sm">{label}</span>
+                  <Icon className="w-4 h-4 lg:w-[18px] lg:h-[18px] flex-shrink-0" />
+                  <span className="font-medium text-xs lg:text-sm whitespace-nowrap">{label}</span>
                 </Link>
               );
             })}
           </nav>
 
           {/* Right Side - Status Indicator */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg flex-shrink-0 ml-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-xs font-semibold text-green-700">Active</span>
+            <span className="text-xs font-semibold text-green-700 whitespace-nowrap">Active</span>
           </div>
         </div>
       </div>
