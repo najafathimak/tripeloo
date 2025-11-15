@@ -98,7 +98,6 @@ export const WhatsAppBookingForm = ({
 
     const roomPackageType = isPackage ? "Package(s)" : "Room(s)";
     const userEmail = session?.user?.email ? `\nEmail: ${session.user.email}` : "";
-    const loyaltyPointsInfo = session?.user ? `\n\n💎 Check your loyalty points: ${loyaltyLink}` : "";
     
     // Build item details section
     const itemDetailsLines: string[] = [];
@@ -123,6 +122,9 @@ export const WhatsAppBookingForm = ({
     
     const bookingType = isPackage ? "trip" : itemType === 'activity' ? "activity" : "stay";
     
+    // Format loyalty points info - URL must be on its own line for WhatsApp to recognize it as clickable
+    const loyaltyPointsSection = session?.user && loyaltyLink ? `\n\n💎 Check your loyalty points:\n${loyaltyLink}` : '';
+    
     const message = `Hello! I would like to book this ${bookingType}${itemDetailsSection}
 
 Selected ${roomPackageType}:
@@ -133,7 +135,7 @@ Adults: ${adults}
 Kids: ${kids}
 
 📅 Dates:
-${!isPackage ? `Check-in: ${checkIn}\nCheck-out: ${checkOut}` : `Travel Date: ${checkIn || "To be selected"}`}${userEmail}${loyaltyPointsInfo}
+${!isPackage ? `Check-in: ${checkIn}\nCheck-out: ${checkOut}` : `Travel Date: ${checkIn || "To be selected"}`}${userEmail}${loyaltyPointsSection}
 
 Please confirm availability and total price.`;
 
