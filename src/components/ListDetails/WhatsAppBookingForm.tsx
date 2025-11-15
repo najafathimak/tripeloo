@@ -14,9 +14,24 @@ interface Room {
 interface WhatsAppBookingFormProps {
   selectedRooms: Room[];
   isPackage?: boolean;
+  destination?: string;
+  itemName?: string;
+  itemType?: 'stay' | 'activity' | 'trip';
+  itemLocation?: string;
+  itemPrice?: string;
+  itemOriginalPrice?: string;
 }
 
-export const WhatsAppBookingForm = ({ selectedRooms, isPackage = false }: WhatsAppBookingFormProps) => {
+export const WhatsAppBookingForm = ({ 
+  selectedRooms, 
+  isPackage = false,
+  destination,
+  itemName,
+  itemType,
+  itemLocation,
+  itemPrice,
+  itemOriginalPrice,
+}: WhatsAppBookingFormProps) => {
   const { data: session } = useSession();
   const [adults, setAdults] = useState(1);
   const [kids, setKids] = useState(0);
@@ -81,17 +96,43 @@ export const WhatsAppBookingForm = ({ selectedRooms, isPackage = false }: WhatsA
             .join("\n")
         : isPackage ? "No specific package selected" : "No specific room selected";
 
-    const itemType = isPackage ? "Package(s)" : "Room(s)";
+    const roomPackageType = isPackage ? "Package(s)" : "Room(s)";
     const userEmail = session?.user?.email ? `\nEmail: ${session.user.email}` : "";
     const loyaltyPointsInfo = session?.user ? `\n\n💎 Check your loyalty points: ${loyaltyLink}` : "";
     
-    const message = `Hello! I would like to book this ${isPackage ? "trip" : "stay"}
+    // Build item details section
+    const itemDetailsLines: string[] = [];
+    if (itemName) {
+      const itemTypeLabel = itemType === 'stay' ? '🏨 Stay' : itemType === 'activity' ? '🎯 Activity' : '✈️ Trip';
+      itemDetailsLines.push(`📍 ${itemTypeLabel}: ${itemName}`);
+    }
+    if (destination) {
+      itemDetailsLines.push(`📍 Destination: ${destination}`);
+    }
+    if (itemLocation) {
+      itemDetailsLines.push(`📍 Location: ${itemLocation}`);
+    }
+    if (itemPrice) {
+      itemDetailsLines.push(`💰 Price: ${itemPrice}`);
+    }
+    if (itemOriginalPrice) {
+      itemDetailsLines.push(`💰 Original Price: ${itemOriginalPrice}`);
+    }
     
-Selected ${itemType}:
+    const itemDetailsSection = itemDetailsLines.length > 0 ? `\n\n${itemDetailsLines.join('\n')}` : '';
+    
+    const bookingType = isPackage ? "trip" : itemType === 'activity' ? "activity" : "stay";
+    
+    const message = `Hello! I would like to book this ${bookingType}${itemDetailsSection}
+
+Selected ${roomPackageType}:
 ${selectedItemText}
 
+👥 Guests:
 Adults: ${adults}
 Kids: ${kids}
+
+📅 Dates:
 ${!isPackage ? `Check-in: ${checkIn}\nCheck-out: ${checkOut}` : `Travel Date: ${checkIn || "To be selected"}`}${userEmail}${loyaltyPointsInfo}
 
 Please confirm availability and total price.`;

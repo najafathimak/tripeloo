@@ -315,6 +315,9 @@ const TripDetailsContent = () => {
                 oldPrice={tripData.originalPrice && selectedPackages.length === 0 ? `${formatPrice(tripData.originalPrice)}/-` : ""}
                 savings={savings > 0 && selectedPackages.length === 0 ? `${formatPrice(savings)}/-` : ""}
                 isPackage={true}
+                destination={destination || tripData.destinationName}
+                itemType="trip"
+                itemLocation={tripData.location || tripData.destinationName}
               />
             </div>
 
@@ -345,6 +348,9 @@ const TripDetailsContent = () => {
               savings={savings > 0 && selectedPackages.length === 0 ? formatPrice(savings) : ""}
               className="w-full lg:w-[350px]"
               isPackage={true}
+              destination={destination || tripData.destinationName}
+              itemType="trip"
+              itemLocation={tripData.location || tripData.destinationName}
             />
           </div>
         </div>

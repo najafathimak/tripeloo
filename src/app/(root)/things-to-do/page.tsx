@@ -3,6 +3,7 @@ import IncludeItemSection from "@/components/ThingsToDo/IncludeItemSection";
 import ReviewsSection from "@/components/ThingsToDo/ReviewsSection";
 import ThingsCarousel from "@/components/ThingsToDo/ThingsCarousel";
 import LocationSection from "@/components/ListDetails/LocationSection";
+import BookingSidebar from "@/components/ListDetails/ListingDetailsClient";
 import {
   Star,
   Users,
@@ -14,7 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 
 // Expandable Additional Detail Component
@@ -72,8 +73,7 @@ const ActivityDetailsContent = () => {
   const destination = searchParams.get("destination");
   const [activityData, setActivityData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [adults, setAdults] = useState(1);
-  const [children, setChildren] = useState(0);
+  const bookingRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const fetchActivityData = async () => {
@@ -114,22 +114,6 @@ const ActivityDetailsContent = () => {
   const savings = activityData?.originalPrice 
     ? activityData.originalPrice - activityData.startingPrice 
     : 0;
-
-  const handleCheckAvailability = (e: React.FormEvent) => {
-    e.preventDefault();
-    const message = `Hello! I'm interested in checking availability for this activity:
-
-Activity: ${activityData?.name || 'N/A'}
-Adults: ${adults}
-Children: ${children}
-Price: ${activityData ? formatPrice(activityData.startingPrice) : 'N/A'}
-
-Please confirm availability and provide booking details.`;
-
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappURL = `https://wa.me/918089909386?text=${encodedMessage}`;
-    window.open(whatsappURL, '_blank');
-  };
 
   if (loading) {
     return (
@@ -299,50 +283,17 @@ Please confirm availability and provide booking details.`;
             </div>
 
             {/* Mobile Booking Sidebar */}
-            <div className="w-full lg:w-[350px] border shadow-md p-6 h-fit md:hidden top-20 mb-5">
-              <h2 className="text-gray-800 font-semibold text-lg line-clamp-2">
-                {activityData.name}
-              </h2>
-              <div className="flex items-center justify-between mt-3">
-                <p className="text-xl font-bold text-gray-900">
-                  {formatPrice(activityData.startingPrice)}/-
-                </p>
-                {activityData.originalPrice && (
-                  <span className="line-through text-gray-500 text-sm">
-                    {formatPrice(activityData.originalPrice)}/-
-                  </span>
-                )}
-              </div>
-              {savings > 0 && (
-                <p className="text-emerald-600 text-sm mt-1">
-                  SAVE {formatPrice(savings)}/-
-                </p>
-              )}
-
-              <form onSubmit={handleCheckAvailability} className="mt-6 flex flex-col gap-3">
-                <label className="text-sm text-gray-700">Number of Adults</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={adults}
-                  onChange={(e) => setAdults(Number(e.target.value))}
-                  className="border px-3 py-2 rounded-lg"
-                />
-                <label className="text-sm text-gray-700">Number of Children</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={children}
-                  onChange={(e) => setChildren(Number(e.target.value))}
-                  className="border px-3 py-2 rounded-lg"
-                />
-                <button
-                  type="submit"
-                  className="bg-[#E51A4B] hover:bg-red-700 transition text-white font-semibold py-2 rounded-lg"
-                >
-                  Check Availability
-                </button>
-              </form>
+            <div ref={bookingRef} className="md:hidden mb-5">
+              <BookingSidebar
+                selectedRooms={[]}
+                title={activityData.name}
+                price={`${formatPrice(activityData.startingPrice)}/-`}
+                oldPrice={activityData.originalPrice ? `${formatPrice(activityData.originalPrice)}/-` : ""}
+                savings={savings > 0 ? `SAVE ${formatPrice(savings)}/-` : ""}
+                destination={destination || activityData.destinationName || activityData.destinationSlug}
+                itemType="activity"
+                itemLocation={activityData.location || activityData.destinationName || activityData.destinationSlug}
+              />
             </div>
 
             <div className="px-4 sm:px-3 mb-5">
@@ -356,50 +307,18 @@ Please confirm availability and provide booking details.`;
           </div>
 
           {/* Desktop Booking Sidebar */}
-          <div className="w-full lg:w-[350px] border shadow-md p-6 h-fit sticky hidden md:block top-20">
-            <h2 className="text-gray-800 font-semibold text-lg line-clamp-2">
-              {activityData.name}
-            </h2>
-            <div className="flex items-center justify-between mt-3">
-              <p className="text-xl font-bold text-gray-900">
-                {formatPrice(activityData.startingPrice)}/-
-              </p>
-              {activityData.originalPrice && (
-                <span className="line-through text-gray-500 text-sm">
-                  {formatPrice(activityData.originalPrice)}/-
-                </span>
-              )}
-            </div>
-            {savings > 0 && (
-              <p className="text-emerald-600 text-sm mt-1">
-                SAVE {formatPrice(savings)}/-
-              </p>
-            )}
-
-            <form onSubmit={handleCheckAvailability} className="mt-6 flex flex-col gap-3">
-              <label className="text-sm text-gray-700">Number of Adults</label>
-              <input
-                type="number"
-                min="1"
-                value={adults}
-                onChange={(e) => setAdults(Number(e.target.value))}
-                className="border px-3 py-2 rounded-lg"
-              />
-              <label className="text-sm text-gray-700">Number of Children</label>
-              <input
-                type="number"
-                min="0"
-                value={children}
-                onChange={(e) => setChildren(Number(e.target.value))}
-                className="border px-3 py-2 rounded-lg"
-              />
-              <button
-                type="submit"
-                className="bg-[#E51A4B] hover:bg-red-700 transition text-white font-semibold py-2 rounded-lg"
-              >
-                Check Availability
-              </button>
-            </form>
+          <div ref={bookingRef} className="hidden md:block sticky top-20">
+            <BookingSidebar
+              selectedRooms={[]}
+              title={activityData.name}
+              price={formatPrice(activityData.startingPrice)}
+              oldPrice={activityData.originalPrice ? formatPrice(activityData.originalPrice) : ""}
+              savings={savings > 0 ? `SAVE ${formatPrice(savings)}/-` : ""}
+              className="w-full lg:w-[350px]"
+              destination={destination || activityData.destinationName || activityData.destinationSlug}
+              itemType="activity"
+              itemLocation={activityData.location || activityData.destinationName || activityData.destinationSlug}
+            />
           </div>
         </div>
       </div>
