@@ -25,7 +25,7 @@ const stats: Stat[] = [
     icon: Calendar,
     value: 6,
     suffix: "+",
-    label: "Years Industrial Experience",
+    label: "Years of Expertise",
     caption: "Dedicated to excellence in travel experiences",
     duration: 2000,
   },

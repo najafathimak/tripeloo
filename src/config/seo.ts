@@ -2,7 +2,7 @@ import { DefaultSeoProps } from 'next-seo';
 import { siteConfig } from './site';
 
 export const defaultSEO: DefaultSeoProps = {
-  title: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
+  title: `${siteConfig.name} — Book Stays, Things To Do & Getaways`,
   description: siteConfig.description,
   openGraph: {
     type: 'website',

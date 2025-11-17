@@ -93,6 +93,8 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   const [successMessage, setSuccessMessage] = useState("");
   const [destinations, setDestinations] = useState<Array<{ slug: string; name: string }>>([]);
   const [loadingDestinations, setLoadingDestinations] = useState(true);
+  const [categories, setCategories] = useState<Array<{ name: string }>>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [includeInput, setIncludeInput] = useState("");
@@ -117,6 +119,24 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
       }
     };
     fetchDestinations();
+  }, []);
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/categories?type=stay");
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
   }, []);
 
   // Populate form with initialData if editing
@@ -623,23 +643,17 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
               name="category"
               value={formData.category}
               onChange={handleInputChange}
+              disabled={loadingCategories}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent ${
                 errors.category ? "border-red-500" : "border-gray-300"
-              }`}
+              } ${loadingCategories ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              <option value="">Select Category</option>
-              <option value="Resort">Resort</option>
-              <option value="Eco Stay">Eco Stay</option>
-              <option value="Luxury">Luxury</option>
-              <option value="Beach Resort">Beach Resort</option>
-              <option value="Budget">Budget</option>
-              <option value="Adventure">Adventure</option>
-              <option value="Wildlife">Wildlife</option>
-              <option value="Nature">Nature</option>
-              <option value="Cultural">Cultural</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Relaxation">Relaxation</option>
-              <option value="General">General</option>
+              <option value="">{loadingCategories ? "Loading categories..." : "Select Category"}</option>
+              {categories.map((cat) => (
+                <option key={cat.name} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
             {errors.category && (
               <p className="mt-1 text-sm text-red-600 flex items-center gap-1">

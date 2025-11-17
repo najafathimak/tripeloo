@@ -22,6 +22,8 @@ export async function POST(request: NextRequest) {
       properties = [],
       packages = [],
       location,
+      contactNumber,
+      address,
       additionalDetails = [],
     } = body;
 
@@ -87,6 +89,8 @@ export async function POST(request: NextRequest) {
         highlights: Array.isArray(pkg.highlights) ? pkg.highlights.filter((h: string) => h && h.trim()) : [],
       })),
       location: location?.trim() || '',
+      contactNumber: contactNumber?.trim() || '',
+      address: address?.trim() || '',
       additionalDetails: additionalDetails.map((detail: any) => ({
         heading: detail.heading?.trim() || '',
         type: detail.type || 'description',

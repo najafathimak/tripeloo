@@ -1,7 +1,16 @@
+"use client";
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 
 export function Footer() {
+  const [currentYear, setCurrentYear] = useState(2025);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
+
   return (
     <footer className="mt-16 border-t border-gray-100 bg-white">
       <div className="container py-8">
@@ -28,20 +37,30 @@ export function Footer() {
           <div>
             <div className="font-semibold">Connect</div>
             <ul className="mt-2 space-y-1 text-sm">
-              <li><a className="hover:text-brand" href="https://instagram.com" target="_blank">Instagram</a></li>
-              <li><a className="hover:text-brand" href="https://youtube.com" target="_blank">YouTube</a></li>
-              <li><a className="hover:text-brand" href="https://wa.me/0000000000" target="_blank">WhatsApp</a></li>
+              <li><a className="hover:text-brand" href="https://www.instagram.com/tripeloo/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+              <li><a className="hover:text-brand" href="https://www.facebook.com/tripeloo" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+              <li><a className="hover:text-brand" href="https://wa.me/918089909386" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
             </ul>
           </div>
           <div>
             <div className="font-semibold">Contact</div>
-            <ul className="mt-2 space-y-1 text-sm">
-              <li>Email: <a className="hover:text-brand underline underline-offset-2" href="mailto:hello@tripeloo.com">hello@tripeloo.com</a></li>
-              <li>Phone: +91 00000 00000</li>
+            <ul className="mt-2 space-y-1 text-sm text-gray-600">
+              <li>
+                <span className="font-medium">Email:</span>{' '}
+                <a className="hover:text-brand underline underline-offset-2" href="mailto:support@tripeloo.com">support@tripeloo.com</a>
+              </li>
+              <li>
+                <span className="font-medium">Phone:</span>{' '}
+                <a className="hover:text-brand underline underline-offset-2" href="tel:7066444430">7066444430</a>
+              </li>
+              <li className="mt-2">
+                <span className="font-medium">Address:</span>
+                <p className="text-gray-600">South Beach, Calicut, Kerala</p>
+              </li>
             </ul>
           </div>
         </div>
-        <div className="mt-8 border-t border-gray-100 pt-4 text-xs text-gray-500">© {new Date().getFullYear()} Tripeloo. All rights reserved.</div>
+        <div className="mt-8 border-t border-gray-100 pt-4 text-xs text-gray-500">© {currentYear} Tripeloo. All rights reserved.</div>
       </div>
     </footer>
   );

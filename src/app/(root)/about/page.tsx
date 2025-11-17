@@ -122,6 +122,80 @@ const About = () => {
           <ContactSection />
         </div>
       </section>
+
+      {/* ---------- Legal & Policies Section ---------- */}
+      <section className="px-6 sm:px-10 py-16 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-semibold text-[#E51A4B] mb-12 text-center">
+            Legal & <span className="text-red-400 font-bold">Policies</span>
+          </h2>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition-shadow">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Privacy Policy</h3>
+              <p className="text-gray-600 mb-4">
+                Learn how we collect, use, store, and protect your personal information.
+              </p>
+              <a
+                href="/privacy"
+                className="text-[#E51A4B] font-semibold hover:underline inline-flex items-center gap-2"
+              >
+                Read Privacy Policy →
+              </a>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition-shadow">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Terms & Conditions</h3>
+              <p className="text-gray-600 mb-4">
+                Understand the terms and conditions for using our platform and services.
+              </p>
+              <a
+                href="/terms"
+                className="text-[#E51A4B] font-semibold hover:underline inline-flex items-center gap-2"
+              >
+                Read Terms →
+              </a>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition-shadow">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Company Policies</h3>
+              <p className="text-gray-600 mb-4">
+                Review our company policies regarding bookings, cancellations, and refunds.
+              </p>
+              <a
+                href="/policies"
+                className="text-[#E51A4B] font-semibold hover:underline inline-flex items-center gap-2"
+              >
+                View Policies →
+              </a>
+            </div>
+          </div>
+
+          {/* Contact Information Box */}
+          <div className="mt-12 bg-gradient-to-r from-[#E51A4B] to-[#c91742] rounded-lg p-8 text-white">
+            <h3 className="text-2xl font-semibold mb-6 text-center">Get in Touch</h3>
+            <div className="grid md:grid-cols-3 gap-6 text-center">
+              <div>
+                <p className="font-semibold mb-2">Company</p>
+                <p className="text-white/90">Tripeloo Travel Management LLP</p>
+              </div>
+              <div>
+                <p className="font-semibold mb-2">Location</p>
+                <p className="text-white/90">South Beach, Calicut, Kerala</p>
+              </div>
+              <div>
+                <p className="font-semibold mb-2">Contact</p>
+                <p className="text-white/90">
+                  <a href="tel:7066444430" className="hover:underline">7066444430</a>
+                </p>
+                <p className="text-white/90">
+                  <a href="mailto:support@tripeloo.com" className="hover:underline">support@tripeloo.com</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

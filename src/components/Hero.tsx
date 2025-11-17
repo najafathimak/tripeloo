@@ -60,7 +60,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
         {/* Desktop: Stable titles with glow animation */}
         <div className="hidden sm:flex absolute inset-0 items-center font-serif justify-center">
           <div className="select-none w-full flex items-center justify-center">
-            <div className="flex items-center gap-6 sm:gap-8 text-[7vw] leading-none tracking-tight">
+            <div className="flex items-center gap-3 sm:gap-4 lg:gap-6 text-[4.5vw] sm:text-[5vw] lg:text-[5.5vw] leading-none tracking-tight">
               <button 
                 onClick={() => onNav('destinations')} 
                 className="hero-title-desktop hero-title-1 text-white/95 hover:text-brand transition-colors"
@@ -79,7 +79,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
                 onClick={() => onNav('destinations')} 
                 className="hero-title-desktop hero-title-3 text-white/95 hover:text-brand transition-colors"
               >
-                Trips
+                Getaways
               </button>
             </div>
           </div>
@@ -114,40 +114,8 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
               onClick={() => onNav('destinations')} 
               className="hero-title-mobile text-white text-4xl font-bold tracking-wide hover:text-brand transition-colors"
             >
-              Trips
+              Getaways
             </button>
-          </div>
-        </div>
-
-        {/* Bottom-left row: short text - aligned with WhatsApp icon */}
-        <div className="absolute left-0 right-0 bottom-6 sm:bottom-8">
-          <div className="container flex items-end justify-start gap-4 px-4 sm:px-0">
-            <div className="max-w-xs font-extralight font-serif sm:pb-0 pb-12">
-              {/* Mobile: Compact line-by-line - aligned with WhatsApp icon */}
-              <div className="sm:hidden space-y-1">
-                <div className="hero-slogan text-white text-xs leading-tight">
-                  Your gateway to
-                </div>
-                <div className="hero-slogan delay-150 text-white text-xs leading-tight">
-                  unforgettable trips
-                </div>
-                <div className="hero-slogan delay-300 text-white text-xs leading-tight">
-                  and stays.
-                </div>
-                <div className="hero-slogan delay-450 text-white text-xs leading-tight mt-1">
-                  Let's travel together!
-                </div>
-              </div>
-              {/* Desktop: Original layout */}
-              <div className="hidden sm:block">
-                <div className="hero-slogan text-white text-base leading-snug">
-                  Your gateway to unforgettable trips and stays.
-                </div>
-                <div className="hero-slogan delay-150 text-white text-base leading-snug">
-                  Let's travel together!
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 

@@ -149,7 +149,7 @@ const TripDetailsContent = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E51A4B] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading trip details...</p>
+          <p className="mt-4 text-gray-600">Loading getaway details...</p>
         </div>
       </div>
     );
@@ -177,13 +177,13 @@ const TripDetailsContent = () => {
               </svg>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-              Trip Not Found
+              Getaway Not Found
             </h1>
             <p className="text-gray-600 mb-2">
-              We couldn't find the trip you're looking for.
+              We couldn't find the getaway you're looking for.
             </p>
             <p className="text-sm text-gray-500 mb-6">
-              The trip may have been removed or the link might be incorrect.
+              The getaway may have been removed or the link might be incorrect.
             </p>
           </div>
           <button
@@ -199,7 +199,7 @@ const TripDetailsContent = () => {
 
   return (
     <div className="mx-0 pt-11 sm:mx-[10%] relative">
-      {/* Carousel with trip cover image */}
+      {/* Carousel with getaway cover image */}
       <ListCarousel 
         carouselImages={tripData.carouselImages || []} 
         coverImage={tripData.coverImage} 
@@ -259,11 +259,11 @@ const TripDetailsContent = () => {
               </div>
             )}
 
-            {/* Trip Properties */}
+            {/* Getaway Properties */}
             {tripData.properties && tripData.properties.length > 0 && (
               <div className="mt-8 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
                 <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
-                  Trip Features
+                  Getaway Features
                 </h2>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
@@ -402,7 +402,7 @@ const TripDetails = () => {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E51A4B] mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading trip details...</p>
+            <p className="mt-4 text-gray-600">Loading getaway details...</p>
           </div>
         </div>
       }

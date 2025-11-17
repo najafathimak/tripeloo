@@ -72,6 +72,8 @@ export async function PUT(
       includes = [],
       excludes = [],
       location,
+      contactNumber,
+      address,
       activityDetails = {},
       additionalDetails = [],
     } = body;
@@ -118,6 +120,8 @@ export async function PUT(
           includes: Array.isArray(includes) ? includes.filter((i: string) => i.trim()) : [],
           excludes: Array.isArray(excludes) ? excludes.filter((e: string) => e.trim()) : [],
           location: location?.trim() || '',
+          contactNumber: contactNumber?.trim() || '',
+          address: address?.trim() || '',
           activityDetails: {
             ages: activityDetails.ages?.trim() || '',
             duration: activityDetails.duration?.trim() || '',

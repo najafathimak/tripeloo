@@ -20,6 +20,8 @@ export async function POST(request: NextRequest) {
       includes = [],
       excludes = [],
       location,
+      contactNumber,
+      address,
       activityDetails = {},
       additionalDetails = [],
     } = body;
@@ -77,6 +79,8 @@ export async function POST(request: NextRequest) {
       includes: includes.filter((inc: string) => inc.trim().length > 0),
       excludes: excludes.filter((exc: string) => exc.trim().length > 0),
       location: location?.trim() || '',
+      contactNumber: contactNumber?.trim() || '',
+      address: address?.trim() || '',
       activityDetails: {
         ages: activityDetails.ages?.trim() || '',
         duration: activityDetails.duration?.trim() || '',

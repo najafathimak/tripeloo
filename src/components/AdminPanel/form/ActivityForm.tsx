@@ -52,6 +52,8 @@ interface FormData {
   includes: string[];
   excludes: string[];
   location: string;
+  contactNumber: string;
+  address: string;
   activityDetails: ActivityDetails;
   additionalDetails: AdditionalDetail[];
 }
@@ -77,6 +79,8 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
     includes: [],
     excludes: [],
     location: "",
+    contactNumber: "",
+    address: "",
     activityDetails: {
       ages: "",
       duration: "",
@@ -96,6 +100,8 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
   const [successMessage, setSuccessMessage] = useState("");
   const [destinations, setDestinations] = useState<Array<{ slug: string; name: string }>>([]);
   const [loadingDestinations, setLoadingDestinations] = useState(true);
+  const [categories, setCategories] = useState<Array<{ name: string }>>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [includeInput, setIncludeInput] = useState("");
@@ -120,6 +126,24 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
     fetchDestinations();
   }, []);
 
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/categories?type=activity");
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   // Populate form with initialData if editing
   useEffect(() => {
     if (initialData && isEdit) {
@@ -140,6 +164,8 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
         includes: initialData.includes || [],
         excludes: initialData.excludes || [],
         location: initialData.location || "",
+        contactNumber: initialData.contactNumber || "",
+        address: initialData.address || "",
         activityDetails: {
           ages: initialData.activityDetails?.ages || "",
           duration: initialData.activityDetails?.duration || "",
@@ -411,6 +437,8 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
           includes: formData.includes,
           excludes: formData.excludes,
           location: formData.location.trim(),
+          contactNumber: formData.contactNumber.trim(),
+          address: formData.address.trim(),
           propertyName: formData.propertyName.trim(),
           activityDetails: formData.activityDetails,
           additionalDetails: formData.additionalDetails,
@@ -533,18 +561,17 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
               name="category"
               value={formData.category}
               onChange={handleInputChange}
+              disabled={loadingCategories}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent ${
                 errors.category ? "border-red-500" : "border-gray-300"
-              }`}
+              } ${loadingCategories ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              <option value="">Select Category</option>
-              <option value="Adventure">Adventure</option>
-              <option value="Wildlife">Wildlife</option>
-              <option value="Nature">Nature</option>
-              <option value="Cultural">Cultural</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Relaxation">Relaxation</option>
-              <option value="General">General</option>
+              <option value="">{loadingCategories ? "Loading categories..." : "Select Category"}</option>
+              {categories.map((cat) => (
+                <option key={cat.name} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
             {errors.category && (
               <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
@@ -936,6 +963,42 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
             />
           </div>
 
+          {/* Contact Number */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Contact Number <span className="text-gray-500 text-xs">(Optional - Admin Only)</span>
+            </label>
+            <input
+              type="tel"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleInputChange}
+              placeholder="e.g., +91 9876543210"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B]"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              This field is only visible in the admin panel and will not be displayed to users.
+            </p>
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Address <span className="text-gray-500 text-xs">(Optional - Admin Only)</span>
+            </label>
+            <textarea
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              rows={3}
+              placeholder="e.g., 123 Main Street, Wayanad, Kerala 673121"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B] resize-none"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              This field is only visible in the admin panel and will not be displayed to users.
+            </p>
+          </div>
+
           {/* Property Name (Admin Only) */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1120,6 +1183,8 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
                   includes: [],
                   excludes: [],
                   location: "",
+                  contactNumber: "",
+                  address: "",
                   activityDetails: {
                     ages: "",
                     duration: "",

@@ -29,7 +29,7 @@ export function Header() {
     { href: "/admin/destinations", label: "Destinations" },
     { href: "/admin/stay", label: "Stay" },
     { href: "/admin/things", label: "Things-to-do" },
-    { href: "/admin/trips", label: "Trips" },
+    { href: "/admin/trips", label: "Getaways" },
   ];
 
   return (

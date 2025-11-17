@@ -38,11 +38,11 @@ export const WhatsAppBookingForm = ({
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [loyaltyLink, setLoyaltyLink] = useState("");
-
-  const todayDate = dayjs().format("YYYY-MM-DD");
+  const [todayDate, setTodayDate] = useState("");
 
   useEffect(() => {
-    // Generate loyalty points link
+    // Set today's date and generate loyalty points link
+    setTodayDate(dayjs().format("YYYY-MM-DD"));
     if (typeof window !== "undefined") {
       const baseUrl = window.location.origin;
       setLoyaltyLink(`${baseUrl}/loyalty-points`);
@@ -122,6 +122,12 @@ export const WhatsAppBookingForm = ({
     
     const bookingType = isPackage ? "trip" : itemType === 'activity' ? "activity" : "stay";
     
+    // Format dates to dd/mm/yyyy
+    const formatDate = (dateString: string) => {
+      if (!dateString) return "To be selected";
+      return dayjs(dateString).format("DD/MM/YYYY");
+    };
+    
     // Format loyalty points info - URL must be on its own line for WhatsApp to recognize it as clickable
     const loyaltyPointsSection = session?.user && loyaltyLink ? `\n\n💎 Check your loyalty points:\n${loyaltyLink}` : '';
     
@@ -135,7 +141,7 @@ Adults: ${adults}
 Kids: ${kids}
 
 📅 Dates:
-${!isPackage ? `Check-in: ${checkIn}\nCheck-out: ${checkOut}` : `Travel Date: ${checkIn || "To be selected"}`}${userEmail}${loyaltyPointsSection}
+${!isPackage ? `Check-in: ${formatDate(checkIn)}\nCheck-out: ${formatDate(checkOut)}` : `Travel Date: ${formatDate(checkIn)}`}${userEmail}${loyaltyPointsSection}
 
 Please confirm availability and total price.`;
 
@@ -204,11 +210,16 @@ Please confirm availability and total price.`;
           <label className="text-gray-700 font-medium text-sm">Travel Date</label>
           <input
             type="date"
-            min={todayDate}
+            min={todayDate || undefined}
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
             className="border px-2 py-1.5 rounded-lg w-full text-sm"
           />
+          {checkIn && (
+            <p className="text-xs text-gray-500 mt-1">
+              Selected: {dayjs(checkIn).format("DD/MM/YYYY")}
+            </p>
+          )}
         </div>
       ) : (
         <div className="flex flex-col sm:flex-row gap-3">
@@ -216,22 +227,32 @@ Please confirm availability and total price.`;
             <label className="text-gray-700 font-medium text-sm">Check-in</label>
             <input
               type="date"
-              min={todayDate}
+              min={todayDate || undefined}
               value={checkIn}
               onChange={(e) => setCheckIn(e.target.value)}
               className="border px-2 py-1.5 rounded-lg w-full text-sm"
             />
+            {checkIn && (
+              <p className="text-xs text-gray-500 mt-1">
+                Selected: {dayjs(checkIn).format("DD/MM/YYYY")}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col flex-1 min-w-0">
             <label className="text-gray-700 font-medium text-sm">Check-out</label>
             <input
               type="date"
-              min={todayDate}
+              min={todayDate || undefined}
               value={checkOut}
               onChange={(e) => setCheckOut(e.target.value)}
               className="border px-2 py-1.5 rounded-lg w-full text-sm"
             />
+            {checkOut && (
+              <p className="text-xs text-gray-500 mt-1">
+                Selected: {dayjs(checkOut).format("DD/MM/YYYY")}
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -242,7 +263,7 @@ Please confirm availability and total price.`;
           type="submit"
           className="flex-1 bg-[#E51A4B] hover:bg-red-700 transition text-white font-semibold py-2 rounded-lg text-sm"
         >
-          Book Now on WhatsApp
+          Chat on WhatsApp
         </button>
         <button
           type="button"

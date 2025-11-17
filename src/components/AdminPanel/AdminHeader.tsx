@@ -4,11 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Image as ImageIcon, MapPin, Hotel, Activity, Plane, Menu, X, MessageSquare, Gift, FileText } from "lucide-react";
+import { LayoutDashboard, Image as ImageIcon, MapPin, Hotel, Activity, Plane, Menu, X, MessageSquare, Gift, FileText, Tag, ChevronDown } from "lucide-react";
 
 export function AdminHeader() {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const pathname = usePathname();
 
   const openMenu = () => {
@@ -24,18 +25,26 @@ export function AdminHeader() {
     }, 280);
   };
 
-  // Admin-specific navigation links
-  const adminNavLinks = [
+  // Primary navigation links (most frequently used)
+  const primaryNavLinks = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin/home-page", label: "Home Page", icon: ImageIcon },
     { href: "/admin/destinations", label: "Destinations", icon: MapPin },
     { href: "/admin/stays", label: "Stays", icon: Hotel },
     { href: "/admin/things", label: "Things to Do", icon: Activity },
-    { href: "/admin/trips", label: "Trips", icon: Plane },
+    { href: "/admin/trips", label: "Getaways", icon: Plane },
+  ];
+
+  // Secondary navigation links (less frequently used - in dropdown)
+  const secondaryNavLinks = [
+    { href: "/admin/home-page", label: "Home Page", icon: ImageIcon },
+    { href: "/admin/categories", label: "Categories", icon: Tag },
     { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
     { href: "/admin/loyalty-points", label: "Loyalty Points", icon: Gift },
     { href: "/admin/brochure", label: "Brochure", icon: FileText },
   ];
+
+  // All links for mobile menu
+  const allNavLinks = [...primaryNavLinks, ...secondaryNavLinks];
 
   return (
     <header className="sticky top-0 z-30 w-full bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
@@ -60,19 +69,20 @@ export function AdminHeader() {
                 className="h-10 md:h-11 lg:h-12 w-auto flex-shrink-0"
                 priority
               />
-              <span className="text-xs text-gray-500 font-normal hidden lg:inline whitespace-nowrap">Admin Panel</span>
+              <span className="text-xs text-gray-500 font-normal hidden 2xl:inline whitespace-nowrap">Admin Panel</span>
             </Link>
           </div>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1 lg:gap-2 flex-1 min-w-0 justify-end ml-2">
-            {adminNavLinks.map(({ href, label, icon: Icon }) => {
+            {/* Primary Links */}
+            {primaryNavLinks.map(({ href, label, icon: Icon }) => {
               const isActive = pathname === href;
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-1 lg:gap-2 px-2 lg:px-4 py-2 rounded-lg transition-all flex-shrink-0 ${
+                  className={`flex items-center gap-1 lg:gap-2 px-2 lg:px-3 py-2 rounded-lg transition-all flex-shrink-0 ${
                     isActive
                       ? "bg-[#E51A4B] text-white shadow-md"
                       : "text-gray-700 hover:bg-gray-100 hover:text-[#E51A4B]"
@@ -83,6 +93,51 @@ export function AdminHeader() {
                 </Link>
               );
             })}
+
+            {/* More Menu Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+                className={`flex items-center gap-1 lg:gap-2 px-2 lg:px-3 py-2 rounded-lg transition-all flex-shrink-0 ${
+                  secondaryNavLinks.some(link => pathname === link.href)
+                    ? "bg-[#E51A4B] text-white shadow-md"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-[#E51A4B]"
+                }`}
+              >
+                <span className="font-medium text-xs lg:text-sm whitespace-nowrap">More</span>
+                <ChevronDown className={`w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0 transition-transform ${moreMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {moreMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setMoreMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-20">
+                    {secondaryNavLinks.map(({ href, label, icon: Icon }) => {
+                      const isActive = pathname === href;
+                      return (
+                        <Link
+                          key={href}
+                          href={href}
+                          onClick={() => setMoreMenuOpen(false)}
+                          className={`flex items-center gap-3 px-4 py-2.5 transition-colors ${
+                            isActive
+                              ? "bg-[#E51A4B] text-white"
+                              : "text-gray-700 hover:bg-gray-100 hover:text-[#E51A4B]"
+                          }`}
+                        >
+                          <Icon className="w-4 h-4 flex-shrink-0" />
+                          <span className="font-medium text-sm">{label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </nav>
 
           {/* Right Side - Status Indicator */}
@@ -128,7 +183,7 @@ export function AdminHeader() {
 
             {/* Mobile nav links */}
             <nav className="grid gap-1 p-4 bg-white">
-              {adminNavLinks.map(({ href, label, icon: Icon }) => {
+              {allNavLinks.map(({ href, label, icon: Icon }) => {
                 const isActive = pathname === href;
                 return (
                   <Link

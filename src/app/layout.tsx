@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
+    default: `${siteConfig.name} — Book Stays, Things To Do & Getaways`,
     template: `%s | ${siteConfig.name}`
   },
   description: siteConfig.description,
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     { rel: 'apple-touch-icon', url: '/favicon.ico' }
   ],
   openGraph: {
-    title: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
+    title: `${siteConfig.name} — Book Stays, Things To Do & Getaways`,
     description: siteConfig.description,
     url: siteConfig.url,
     siteName: siteConfig.name,
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} - Book Stays, Things To Do & Trips`,
+        alt: `${siteConfig.name} - Book Stays, Things To Do & Getaways`,
       }
     ],
     locale: 'en_IN',
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
+    title: `${siteConfig.name} — Book Stays, Things To Do & Getaways`,
     description: siteConfig.description,
     images: [siteConfig.ogImage],
   },

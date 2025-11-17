@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     'India travel',
   ],
   openGraph: {
-    title: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
+    title: `${siteConfig.name} — Book Stays, Things To Do & Getaways`,
     description: 'Discover and book curated stays, activities, and trips across top destinations in India.',
     url: siteConfig.url,
     siteName: siteConfig.name,
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${siteConfig.name} — Book Stays, Things To Do & Trips`,
+    title: `${siteConfig.name} — Book Stays, Things To Do & Getaways`,
     description: 'Discover and book curated stays, activities, and trips across top destinations in India.',
     images: [siteConfig.ogImage],
   },

@@ -25,7 +25,7 @@ import {
 
 import { stayData, activitiesData, tripsData, type Stay, type Activity, type Trip } from "./DestinationData";
 
-const tabData = ["Stays", "Things to Do", "Trips"];
+const tabData = ["Stays", "Things to Do", "Getaways"];
 
 // Helper function to map category based on item data
 const mapCategory = (item: any, type: 'stay' | 'activity' | 'trip'): string => {
@@ -204,7 +204,7 @@ function StayListingsContent() {
     } else if (activeTab === "Things to Do") {
       queryParam = `things-to-do=${itemId}`;
       targetPage = "/things-to-do";
-    } else if (activeTab === "Trips") {
+    } else if (activeTab === "Getaways") {
       queryParam = `trips=${itemId}`;
       targetPage = "/trips";
     }
@@ -248,7 +248,7 @@ function StayListingsContent() {
       return ["All", ...Array.from(new Set(stays.map((s) => s.category)))];
     } else if (activeTab === "Things to Do" && activities) {
       return ["All", ...Array.from(new Set(activities.map((a) => a.category)))];
-    } else if (activeTab === "Trips" && trips) {
+    } else if (activeTab === "Getaways" && trips) {
       return ["All", ...Array.from(new Set(trips.map((t) => t.category)))];
     }
     return ["All"];
@@ -420,7 +420,7 @@ function StayListingsContent() {
           </>
         )}
 
-        {activeTab === "Trips" && (
+        {activeTab === "Getaways" && (
           <>
             <motion.div
               animate={{ x: [0, 50, 0] }}
@@ -466,7 +466,7 @@ function StayListingsContent() {
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-base" />
               <input
                 type="text"
-                placeholder="Search stays, activities, trips..."
+                placeholder="Search stays, activities, getaways..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-10 py-2.5 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent"
@@ -779,7 +779,7 @@ function StayListingsContent() {
           {activeTab === "Stays" && `Stays in ${decodedDestination}`}
           {activeTab === "Things to Do" &&
             `Things to Do in ${decodedDestination}`}
-          {activeTab === "Trips" && `Trips around ${decodedDestination}`}
+          {activeTab === "Getaways" && `Getaways around ${decodedDestination}`}
         </motion.h1>
 
         {/* No results message */}
@@ -985,8 +985,8 @@ function StayListingsContent() {
           </div>
         )}
 
-        {/* No results message for Trips */}
-        {activeTab === "Trips" && trips && trips.length > 0 && !hasTrips && (
+        {/* No results message for Getaways */}
+        {activeTab === "Getaways" && trips && trips.length > 0 && !hasTrips && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1015,8 +1015,8 @@ function StayListingsContent() {
           </motion.div>
         )}
 
-        {/* No Trips available */}
-        {!hasTrips && activeTab === "Trips" && (!trips || trips.length === 0) && (
+        {/* No Getaways available */}
+        {!hasTrips && activeTab === "Getaways" && (!trips || trips.length === 0) && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1025,10 +1025,10 @@ function StayListingsContent() {
           >
             <FaCarSide className="text-6xl text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              No trip packages available for this destination right now
+              No getaway packages available for this destination right now
             </h2>
             <p className="text-gray-600 mb-6">
-              We're designing perfect itineraries. For personalized trip
+              We're designing perfect itineraries. For personalized getaway
               planning, reach out to our support team.
             </p>
             <motion.a
@@ -1045,8 +1045,8 @@ function StayListingsContent() {
           </motion.div>
         )}
 
-        {/* Show trips if available */}
-        {hasTrips && activeTab === "Trips" && (
+        {/* Show getaways if available */}
+        {hasTrips && activeTab === "Getaways" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {filteredTrips.map((trip, index) => (
               <motion.div

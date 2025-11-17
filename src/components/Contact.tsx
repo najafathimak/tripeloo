@@ -7,19 +7,19 @@ const contactInfo = [
     id: 1,
     icon: <Mail className="text-sky-500 w-8 h-8 mt-1" />,
     title: "Email Us",
-    details: ["info@supportcompany.com", "info@example.com"],
+    details: ["support@tripeloo.com"],
   },
   {
     id: 2,
     icon: <Phone className="text-green-500 w-8 h-8 mt-1" />,
     title: "Call Us",
-    details: ["+7704345017", "+866-398-5917"],
+    details: ["7066444430"],
   },
   {
     id: 3,
     icon: <MapPin className="text-pink-500 w-8 h-8 mt-1" />,
     title: "Visit Us",
-    details: ["4517 Washington Ave. Manchester,", "Kentucky 39495"],
+    details: ["South Beach, Calicut", "Kerala"],
   },
 ];
 

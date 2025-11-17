@@ -74,6 +74,8 @@ export async function PUT(
       properties = [],
       packages = [],
       location,
+      contactNumber,
+      address,
       additionalDetails = [],
     } = body;
 
@@ -129,6 +131,8 @@ export async function PUT(
             highlights: Array.isArray(pkg.highlights) ? pkg.highlights.filter((h: string) => h && h.trim()) : [],
           })) : [],
           location: location?.trim() || '',
+          contactNumber: contactNumber?.trim() || '',
+          address: address?.trim() || '',
           additionalDetails: additionalDetails.map((detail: any) => ({
             heading: detail.heading?.trim() || '',
             type: detail.type || 'description',

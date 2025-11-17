@@ -389,7 +389,7 @@ export default function BrochureForm() {
                 }`}
               >
                 <Plane size={18} />
-                <span className="text-sm font-medium">Trips</span>
+                <span className="text-sm font-medium">Getaways</span>
               </button>
             </div>
           </div>
@@ -563,7 +563,7 @@ export default function BrochureForm() {
                 )}
               </div>
 
-              {/* Summary (for Stays/Trips) */}
+              {/* Summary (for Stays/Getaways) */}
               {selectedItem.summary && itemType !== "activity" && (
                 <p className="mt-4 mb-6 text-gray-600 text-sm sm:text-base">
                   {selectedItem.summary}
@@ -578,7 +578,7 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* Old Style Includes - After Description (for Stays/Trips) */}
+              {/* Old Style Includes - After Description (for Stays/Getaways) */}
               {selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 && itemType !== "activity" && (
                 <div className="mt-6 mb-6 flex flex-wrap gap-4 sm:gap-6 border-y py-4 text-gray-700 text-sm sm:text-base">
                   {selectedItem.includes.map((include: string, index: number) => (
@@ -677,10 +677,10 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* Trip Features (for Trips) */}
+              {/* Getaway Features (for Getaways) */}
               {selectedItem.properties && Array.isArray(selectedItem.properties) && selectedItem.properties.length > 0 && itemType === "trip" && (
                 <div className="mt-8 mb-6 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Trip Features</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Getaway Features</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
                     {selectedItem.properties.map((prop: string, index: number) => (
                       <div key={index}>{prop}</div>
@@ -762,7 +762,7 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* Packages Section (for Trips) */}
+              {/* Packages Section (for Getaways) */}
               {selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && itemType === "trip" && (
                 <div className="mb-6 mt-8">
                   <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Choose Your Package</h2>
@@ -846,7 +846,7 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* Price Section (for Stays/Trips) */}
+              {/* Price Section (for Stays/Getaways) */}
               {(itemType === "stay" || itemType === "trip") && (
                 <div className="mb-6">
                   <section className="bg-red-50 py-7 px-6 md:px-5 rounded-lg">

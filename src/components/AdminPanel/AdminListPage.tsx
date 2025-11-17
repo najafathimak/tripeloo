@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Edit, Eye, EyeOff, Loader2, Plus, Search, Filter, X, ArrowUpDown } from "lucide-react";
+import { Edit, Eye, EyeOff, Loader2, Plus, Search, Filter, X, ArrowUpDown, Phone, MapPin, Calendar, Tag, Building2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface AdminListPageProps {
@@ -24,6 +24,7 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [sortByPrice, setSortByPrice] = useState(false);
+  const [viewingItem, setViewingItem] = useState<any | null>(null);
 
   useEffect(() => {
     fetchItems();
@@ -68,6 +69,10 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
 
   const handleEdit = (id: string) => {
     router.push(`${editRoutePrefix}/${encodeURIComponent(id)}`);
+  };
+
+  const handleView = (item: any) => {
+    setViewingItem(item);
   };
 
   // Get unique categories from items
@@ -535,6 +540,13 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
                 {/* Actions */}
                 <div className="flex gap-2 mt-4">
                   <button
+                    onClick={() => handleView(item)}
+                    className="flex-1 px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Eye size={16} />
+                    View
+                  </button>
+                  <button
                     onClick={() => handleEdit(item.id)}
                     className="flex-1 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
                   >
@@ -544,7 +556,7 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
                   <button
                     onClick={() => handleToggleHide(item.id, item.isHidden || false)}
                     disabled={updating === item.id}
-                    className={`flex-1 px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                    className={`px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
                       item.isHidden
                         ? "bg-green-50 text-green-600 hover:bg-green-100"
                         : "bg-gray-50 text-gray-600 hover:bg-gray-100"
@@ -553,15 +565,9 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
                     {updating === item.id ? (
                       <Loader2 size={16} className="animate-spin" />
                     ) : item.isHidden ? (
-                      <>
-                        <Eye size={16} />
-                        Unhide
-                      </>
+                      <Eye size={16} />
                     ) : (
-                      <>
-                        <EyeOff size={16} />
-                        Hide
-                      </>
+                      <EyeOff size={16} />
                     )}
                   </button>
                 </div>
@@ -569,6 +575,215 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
             </div>
           ))}
         </div>
+      )}
+
+      {/* View Modal */}
+      {viewingItem && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setViewingItem(null)}
+          >
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-[#E51A4B] to-[#FF6B6B] p-6 text-white">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold mb-2">{viewingItem.name || "Untitled"}</h2>
+                    {viewingItem.propertyName && (
+                      <p className="text-white/80 text-sm">Property: {viewingItem.propertyName}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setViewingItem(null)}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content - Scrollable */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Cover Image */}
+                {viewingItem.coverImage && (
+                  <div className="relative w-full h-64 rounded-lg overflow-hidden mb-6">
+                    <Image
+                      src={viewingItem.coverImage}
+                      alt={viewingItem.name || "Item"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* Basic Details Grid */}
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
+                  {/* Contact Number */}
+                  {viewingItem.contactNumber && (
+                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Phone className="text-blue-600" size={18} />
+                        <h3 className="font-semibold text-gray-900">Contact Number</h3>
+                      </div>
+                      <a
+                        href={`tel:${viewingItem.contactNumber}`}
+                        className="text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        {viewingItem.contactNumber}
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Address */}
+                  {viewingItem.address && (
+                    <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Building2 className="text-indigo-600" size={18} />
+                        <h3 className="font-semibold text-gray-900">Address</h3>
+                      </div>
+                      <p className="text-gray-700 whitespace-pre-line">{viewingItem.address}</p>
+                    </div>
+                  )}
+
+                  {/* Location */}
+                  {viewingItem.location && (
+                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MapPin className="text-green-600" size={18} />
+                        <h3 className="font-semibold text-gray-900">Location</h3>
+                      </div>
+                      <p className="text-gray-700">{viewingItem.location}</p>
+                    </div>
+                  )}
+
+                  {/* Destination */}
+                  {viewingItem.destinationSlug && (
+                    <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MapPin className="text-purple-600" size={18} />
+                        <h3 className="font-semibold text-gray-900">Destination</h3>
+                      </div>
+                      <p className="text-gray-700">{viewingItem.destinationSlug}</p>
+                    </div>
+                  )}
+
+                  {/* Category */}
+                  {viewingItem.category && (
+                    <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Tag className="text-orange-600" size={18} />
+                        <h3 className="font-semibold text-gray-900">Category</h3>
+                      </div>
+                      <p className="text-gray-700">{viewingItem.category}</p>
+                    </div>
+                  )}
+
+                  {/* Price */}
+                  {viewingItem.startingPrice !== undefined && (
+                    <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-red-600 font-bold">₹</span>
+                        <h3 className="font-semibold text-gray-900">Starting Price</h3>
+                      </div>
+                      <p className="text-gray-700 font-bold text-lg">
+                        ₹{viewingItem.startingPrice}
+                        {viewingItem.currency && ` ${viewingItem.currency}`}
+                        {viewingItem.originalPrice && (
+                          <span className="text-gray-500 line-through text-sm ml-2">
+                            ₹{viewingItem.originalPrice}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Created Date */}
+                  {viewingItem.createdAt && (
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Calendar className="text-gray-600" size={18} />
+                        <h3 className="font-semibold text-gray-900">Created</h3>
+                      </div>
+                      <p className="text-gray-700">
+                        {new Date(viewingItem.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Summary/About */}
+                {(viewingItem.summary || viewingItem.about) && (
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
+                    <p className="text-gray-700 leading-relaxed">
+                      {viewingItem.summary || viewingItem.about}
+                    </p>
+                  </div>
+                )}
+
+                {/* Includes */}
+                {viewingItem.includes && viewingItem.includes.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-2">Includes</h3>
+                    <ul className="list-disc list-inside space-y-1 text-gray-700">
+                      {viewingItem.includes.map((inc: string, idx: number) => (
+                        <li key={idx}>{inc}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Status */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        viewingItem.isHidden
+                          ? "bg-gray-100 text-gray-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {viewingItem.isHidden ? "Hidden" : "Active"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="border-t border-gray-200 p-4 flex gap-3">
+                <button
+                  onClick={() => {
+                    setViewingItem(null);
+                    handleEdit(viewingItem.id);
+                  }}
+                  className="flex-1 px-4 py-2 bg-[#E51A4B] text-white rounded-lg hover:bg-[#c91742] transition-colors font-semibold flex items-center justify-center gap-2"
+                >
+                  <Edit size={18} />
+                  Edit
+                </button>
+                <button
+                  onClick={() => setViewingItem(null)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </>
       )}
     </div>
   );
