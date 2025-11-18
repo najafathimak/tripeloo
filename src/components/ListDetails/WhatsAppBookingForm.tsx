@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import dayjs from "dayjs";
+import { getNextWhatsAppNumber, formatWhatsAppNumber } from "@/utils/whatsapp";
 
 interface Room {
   id: number | string;
@@ -146,12 +147,15 @@ ${!isPackage ? `Check-in: ${formatDate(checkIn)}\nCheck-out: ${formatDate(checkO
 Please confirm availability and total price.`;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappURL = `https://wa.me/918089909386?text=${encodedMessage}`;
+    // Use round-robin to get the next WhatsApp number for booking leads
+    const phoneNumber = formatWhatsAppNumber(getNextWhatsAppNumber());
+    const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
     window.open(whatsappURL, "_blank");
   };
 
   const handleCall = () => {
-    window.open("tel:+918089909386");
+    // For direct calls, use the primary number
+    window.open("tel:+917066444430");
   };
 
   return (

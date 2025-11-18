@@ -87,6 +87,8 @@ export default function BrochureForm() {
   const [loading, setLoading] = useState(false);
   const [loadingItems, setLoadingItems] = useState(false);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [selectedRooms, setSelectedRooms] = useState<string[]>([]); // Array of room names/indices
+  const [selectedPackages, setSelectedPackages] = useState<string[]>([]); // Array of package names/indices
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -188,6 +190,12 @@ export default function BrochureForm() {
     fetchItemDetails();
   }, [selectedItemId, itemType, items]);
 
+  // Reset room/package selections when item changes
+  useEffect(() => {
+    setSelectedRooms([]);
+    setSelectedPackages([]);
+  }, [selectedItemId]);
+
   useEffect(() => {
     if (!selectedItemId || !itemType) {
       setReviews([]);
@@ -219,6 +227,7 @@ export default function BrochureForm() {
 
     setGeneratingPDF(true);
     try {
+      // Create a clean container for PDF generation
       const pdfContainer = document.createElement("div");
       pdfContainer.style.width = "210mm";
       pdfContainer.style.padding = "20mm";
@@ -228,46 +237,85 @@ export default function BrochureForm() {
       pdfContainer.style.position = "absolute";
       pdfContainer.style.left = "-9999px";
       pdfContainer.style.top = "0";
+      pdfContainer.style.zIndex = "-1";
       document.body.appendChild(pdfContainer);
 
+      // Clone the preview content
       const clonedContent = previewRef.current.cloneNode(true) as HTMLElement;
       
+      // Remove any existing styles that might interfere
+      clonedContent.removeAttribute("style");
       clonedContent.style.maxHeight = "none";
       clonedContent.style.overflow = "visible";
+      clonedContent.style.width = "100%";
+      clonedContent.style.backgroundColor = "#ffffff";
+      clonedContent.style.color = "#000000";
       
+      // Remove scroll-related classes and styles
+      clonedContent.classList.remove("max-h-[80vh]", "overflow-y-auto");
+      
+      // Create comprehensive stylesheet to fix all styling issues
       const style = document.createElement("style");
       style.textContent = `
         * { 
-          color: #000 !important; 
-          background-color: transparent !important;
+          box-sizing: border-box !important;
+        }
+        body, html {
+          margin: 0 !important;
+          padding: 0 !important;
         }
         img { 
           max-width: 100% !important; 
           height: auto !important; 
-          display: block;
+          display: block !important;
+          page-break-inside: avoid !important;
         }
-        .text-white, .text-gray-900 { color: #000 !important; }
+        .text-white { color: #000 !important; }
+        .text-gray-900 { color: #000 !important; }
+        .text-gray-800 { color: #000 !important; }
+        .text-gray-700 { color: #333 !important; }
+        .text-gray-600 { color: #666 !important; }
+        .text-gray-500 { color: #888 !important; }
+        .text-gray-400 { color: #999 !important; }
         .bg-white { background: #fff !important; }
+        .bg-gray-50 { background: #f9f9f9 !important; }
+        .bg-gray-100 { background: #f5f5f5 !important; }
+        .bg-gray-200 { background: #eee !important; }
         .bg-gray-800, .bg-gray-700 { background: #f5f5f5 !important; }
+        .bg-red-50 { background: #fef2f2 !important; }
         .border-gray-200 { border-color: #ddd !important; }
+        .border-gray-600 { border-color: #999 !important; }
         .text-[#E51A4B] { color: #E51A4B !important; }
+        .text-emerald-600 { color: #059669 !important; }
+        .text-green-600 { color: #16a34a !important; }
+        div, p, span, h1, h2, h3, h4, h5, h6 {
+          page-break-inside: avoid !important;
+        }
       `;
-      clonedContent.appendChild(style);
-
+      
+      // Insert style at the beginning
+      clonedContent.insertBefore(style, clonedContent.firstChild);
+      
+      // Append to container
       pdfContainer.appendChild(clonedContent);
 
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      // Wait for images to load and styles to apply
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      // Generate canvas with better settings
       const canvas = await html2canvas(pdfContainer, {
-        scale: 1.5,
+        scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
-        allowTaint: true,
-        imageTimeout: 10000,
+        allowTaint: false,
+        imageTimeout: 15000,
+        removeContainer: false,
+        windowWidth: pdfContainer.scrollWidth,
+        windowHeight: pdfContainer.scrollHeight,
       });
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.7);
+      const imgData = canvas.toDataURL("image/png", 0.95);
       const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = 210;
       const pageHeight = 297;
@@ -276,17 +324,19 @@ export default function BrochureForm() {
       let heightLeft = imgHeight;
       let position = 0;
 
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
 
+      // Clean up
       document.body.removeChild(pdfContainer);
+      
       const fileName = selectedItem
         ? `${selectedItem.name.replace(/[^a-z0-9]/gi, "_")}_brochure.pdf`
         : "brochure.pdf";
@@ -422,6 +472,80 @@ export default function BrochureForm() {
               {items.length === 0 && !loadingItems && selectedDestination && (
                 <p className="text-white/60 text-sm mt-2">No items found for this destination</p>
               )}
+            </div>
+          )}
+
+          {/* Room Selection (for Stays) */}
+          {selectedItem && itemType === "stay" && selectedItem.rooms && selectedItem.rooms.length > 0 && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                Select Rooms to Include (Optional - Leave empty to include all)
+              </label>
+              <div className="max-h-40 overflow-y-auto bg-gray-800 rounded-lg p-3 border border-gray-600">
+                {selectedItem.rooms.map((room: any, idx: number) => {
+                  const roomKey = room.name || `room-${idx}`;
+                  const isSelected = selectedRooms.includes(roomKey);
+                  return (
+                    <label key={idx} className="flex items-center gap-2 p-2 hover:bg-gray-700 rounded cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedRooms([...selectedRooms, roomKey]);
+                          } else {
+                            setSelectedRooms(selectedRooms.filter((r) => r !== roomKey));
+                          }
+                        }}
+                        className="w-4 h-4 text-[#E51A4B] bg-gray-700 border-gray-600 rounded focus:ring-[#E51A4B]"
+                      />
+                      <span className="text-sm text-white/90">{room.name || `Room ${idx + 1}`}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-white/60 mt-1">
+                {selectedRooms.length === 0 
+                  ? "All rooms will be included in the brochure" 
+                  : `${selectedRooms.length} room(s) selected`}
+              </p>
+            </div>
+          )}
+
+          {/* Package Selection (for Getaways) */}
+          {selectedItem && itemType === "trip" && selectedItem.packages && selectedItem.packages.length > 0 && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                Select Packages to Include (Optional - Leave empty to include all)
+              </label>
+              <div className="max-h-40 overflow-y-auto bg-gray-800 rounded-lg p-3 border border-gray-600">
+                {selectedItem.packages.map((pkg: any, idx: number) => {
+                  const pkgKey = pkg.name || `package-${idx}`;
+                  const isSelected = selectedPackages.includes(pkgKey);
+                  return (
+                    <label key={idx} className="flex items-center gap-2 p-2 hover:bg-gray-700 rounded cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedPackages([...selectedPackages, pkgKey]);
+                          } else {
+                            setSelectedPackages(selectedPackages.filter((p) => p !== pkgKey));
+                          }
+                        }}
+                        className="w-4 h-4 text-[#E51A4B] bg-gray-700 border-gray-600 rounded focus:ring-[#E51A4B]"
+                      />
+                      <span className="text-sm text-white/90">{pkg.name || `Package ${idx + 1}`}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-white/60 mt-1">
+                {selectedPackages.length === 0 
+                  ? "All packages will be included in the brochure" 
+                  : `${selectedPackages.length} package(s) selected`}
+              </p>
             </div>
           )}
 
@@ -690,11 +814,22 @@ export default function BrochureForm() {
               )}
 
               {/* Rooms Section (for Stays) */}
-              {selectedItem.rooms && Array.isArray(selectedItem.rooms) && selectedItem.rooms.length > 0 && itemType === "stay" && (
-                <div className="mb-6 mt-8">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Choose Your Room</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                    {selectedItem.rooms.map((room: any, idx: number) => (
+              {selectedItem.rooms && Array.isArray(selectedItem.rooms) && selectedItem.rooms.length > 0 && itemType === "stay" && (() => {
+                // Filter rooms based on selection
+                const roomsToShow = selectedRooms.length > 0
+                  ? selectedItem.rooms.filter((room: any, idx: number) => {
+                      const roomKey = room.name || `room-${idx}`;
+                      return selectedRooms.includes(roomKey);
+                    })
+                  : selectedItem.rooms;
+                
+                if (roomsToShow.length === 0) return null;
+                
+                return (
+                  <div className="mb-6 mt-8">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Choose Your Room</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                      {roomsToShow.map((room: any, idx: number) => (
                       <div key={idx} className="cursor-pointer rounded-xl overflow-hidden shadow-md border border-gray-200">
                         {room.thumb ? (
                           <Image
@@ -757,17 +892,29 @@ export default function BrochureForm() {
                           </div>
                         )}
                       </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Packages Section (for Getaways) */}
-              {selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && itemType === "trip" && (
-                <div className="mb-6 mt-8">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Choose Your Package</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                    {selectedItem.packages.map((pkg: any, idx: number) => (
+              {selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && itemType === "trip" && (() => {
+                // Filter packages based on selection
+                const packagesToShow = selectedPackages.length > 0
+                  ? selectedItem.packages.filter((pkg: any, idx: number) => {
+                      const pkgKey = pkg.name || `package-${idx}`;
+                      return selectedPackages.includes(pkgKey);
+                    })
+                  : selectedItem.packages;
+                
+                if (packagesToShow.length === 0) return null;
+                
+                return (
+                  <div className="mb-6 mt-8">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Choose Your Package</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                      {packagesToShow.map((pkg: any, idx: number) => (
                       <div key={idx} className="cursor-pointer rounded-xl overflow-hidden shadow-md border border-gray-200">
                         {pkg.thumb ? (
                           <Image
@@ -841,10 +988,11 @@ export default function BrochureForm() {
                           </div>
                         )}
                       </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Price Section (for Stays/Getaways) */}
               {(itemType === "stay" || itemType === "trip") && (
@@ -1018,7 +1166,7 @@ export default function BrochureForm() {
                   Email: hello@tripeloo.com
                 </p>
                 <p className="text-sm text-gray-700 text-center font-semibold">
-                  WhatsApp: +91 8089909386
+                  WhatsApp: +91 70664 44430
                 </p>
                 <p className="text-xs text-gray-500 text-center mt-4">
                   Generated by Tripeloo - Your trusted travel partner

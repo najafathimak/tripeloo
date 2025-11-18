@@ -1,4 +1,7 @@
+"use client";
+
 import { Circle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface AboutBandProps {
   title?: string;
@@ -7,20 +10,51 @@ interface AboutBandProps {
   buttonLink?: string;
 }
 
+// Fallback categories if no categories are fetched
+const fallbackCategories = [
+  "Resorts",
+  "Poolvillas",
+  "Tent rooms",
+  "Wood house",
+  "Homestay",
+  "Hotels"
+];
+
 export function AboutBand({ 
   title = "Discover India with Tripeloo",
   content = "At Tripeloo, we handcraft travel experiences that celebrate India's diverse beauty — from misty mountains to sun-kissed beaches, royal heritage, and hidden escapes. Whether you seek adventure or serenity, our curated stays and guided journeys ensure every trip feels personal and effortless.",
   buttonText = "hello@tripeloo.com",
   buttonLink = "mailto:hello@tripeloo.com"
 }: AboutBandProps) {
-  const stayTypes = [
-    "Resorts",
-    "Poolvillas",
-    "Tent rooms",
-    "Wood house",
-    "Homestay",
-    "Hotels"
-  ];
+  const [stayTypes, setStayTypes] = useState<string[]>(fallbackCategories);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories?type=stay');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data && data.data.length > 0) {
+            // Filter only active categories and get their names
+            const activeCategories = data.data
+              .filter((cat: any) => cat.isActive !== false)
+              .map((cat: any) => cat.name);
+            
+            // Use fetched categories if available, otherwise use fallback
+            setStayTypes(activeCategories.length > 0 ? activeCategories : fallbackCategories);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // Keep fallback categories on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   return (
     <section className="bg-gray-50 border-y border-gray-100">

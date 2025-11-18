@@ -1,7 +1,7 @@
 export const assets = {
-  about: '/assets/asset.jfif',
-  staysfeatures: '/assets/asset.jfif',
-  img : '/assets/asset.jfif'
+  about: '/assets/about.png',
+  staysfeatures: '/assets/staysfeatures.png',
+  img: '/assets/img.png'
 };
 
 
