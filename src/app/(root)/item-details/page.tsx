@@ -140,8 +140,8 @@ const ListingDetailsContent = () => {
   if (!stayData) {
     const handleWhatsAppSupport = () => {
       if (typeof window !== 'undefined') {
-        const text = `Hi Tripeloo! I need help finding a stay. Stay ID: ${stayId || 'N/A'}`;
-        const url = `https://wa.me/918089909386?text=${encodeURIComponent(text)}`;
+        const text = `Hi Tripeloo! I would like to discuss about my vacation and stays. Stay ID: ${stayId || 'N/A'}`;
+        const url = `https://wa.me/917066444430?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank');
       }
     };
@@ -204,10 +204,10 @@ const ListingDetailsContent = () => {
             <div className="pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-500 mb-2">Need immediate assistance?</p>
               <a
-                href="tel:+918089909386"
+                href="tel:+917066444430"
                 className="text-[#E51A4B] hover:text-[#C4163F] font-medium text-sm"
               >
-                Call us: +91 8089909386
+                Call us: +91 70664 44430
               </a>
             </div>
           </div>

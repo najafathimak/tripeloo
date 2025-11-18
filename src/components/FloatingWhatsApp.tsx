@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { getPrimaryWhatsAppNumber, formatWhatsAppNumber } from '@/utils/whatsapp';
 
 export function FloatingWhatsApp() {
   const [isOverWhiteBg, setIsOverWhiteBg] = useState(false);
@@ -27,8 +28,9 @@ export function FloatingWhatsApp() {
   const onWhatsAppClick = () => {
     if (typeof window === 'undefined') return;
     const site = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-    const text = `Hi Tripeloo! I'd like to plan a trip. ${site}`;
-    const url = `https://wa.me/918089909386?text=${encodeURIComponent(text)}`;
+    const text = `Hi Tripeloo! I would like to discuss about my vacation and stays. ${site}`;
+    const phoneNumber = formatWhatsAppNumber(getPrimaryWhatsAppNumber());
+    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
 

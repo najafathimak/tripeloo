@@ -30,8 +30,6 @@ export function Footer() {
             <ul className="mt-2 space-y-1 text-sm">
               <li><Link className="hover:text-brand" href="/privacy">Privacy</Link></li>
               <li><Link className="hover:text-brand" href="/terms">Terms</Link></li>
-              <li><Link className="hover:text-brand" href="/help">Help</Link></li>
-              <li><Link className="hover:text-brand" href="/partner">Partner with Us</Link></li>
             </ul>
           </div>
           <div>
@@ -39,7 +37,7 @@ export function Footer() {
             <ul className="mt-2 space-y-1 text-sm">
               <li><a className="hover:text-brand" href="https://www.instagram.com/tripeloo/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
               <li><a className="hover:text-brand" href="https://www.facebook.com/tripeloo" target="_blank" rel="noopener noreferrer">Facebook</a></li>
-              <li><a className="hover:text-brand" href="https://wa.me/918089909386" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+              <li><a className="hover:text-brand" href="https://wa.me/917066444430" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
             </ul>
           </div>
           <div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, CheckCircle, AlertCircle, Loader2, Plus, Trash2 } from "lucide-react";
+import { Upload, X, CheckCircle, AlertCircle, Loader2, Plus, Trash2, Pencil } from "lucide-react";
 import Image from "next/image";
 
 interface FormErrors {
@@ -102,6 +102,8 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   const [propertyInput, setPropertyInput] = useState("");
   const [pointInputs, setPointInputs] = useState<Record<string, string>>({});
   const [roomFeatureInputs, setRoomFeatureInputs] = useState<Record<string, string>>({});
+  const [editingFeature, setEditingFeature] = useState<{roomIndex: number, featureIndex: number} | null>(null);
+  const [editingFeatureValue, setEditingFeatureValue] = useState("");
 
   // Fetch destinations
   useEffect(() => {
@@ -346,6 +348,17 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
       ...formData,
       rooms: formData.rooms.filter((_, i) => i !== index),
     });
+    // Cancel editing if the removed room had a feature being edited
+    if (editingFeature && editingFeature.roomIndex === index) {
+      setEditingFeature(null);
+      setEditingFeatureValue("");
+    } else if (editingFeature && editingFeature.roomIndex > index) {
+      // Adjust room index if a room before the editing room was removed
+      setEditingFeature({
+        ...editingFeature,
+        roomIndex: editingFeature.roomIndex - 1,
+      });
+    }
   };
 
   const updateRoom = (index: number, field: keyof Room, value: any) => {
@@ -367,6 +380,34 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   const removeRoomFeature = (roomIndex: number, featureIndex: number) => {
     const room = formData.rooms[roomIndex];
     updateRoom(roomIndex, "features", room.features.filter((_, i) => i !== featureIndex));
+    // Cancel editing if the removed feature was being edited
+    if (editingFeature && editingFeature.roomIndex === roomIndex && editingFeature.featureIndex === featureIndex) {
+      setEditingFeature(null);
+      setEditingFeatureValue("");
+    }
+  };
+
+  const startEditingFeature = (roomIndex: number, featureIndex: number) => {
+    const room = formData.rooms[roomIndex];
+    setEditingFeature({ roomIndex, featureIndex });
+    setEditingFeatureValue(room.features[featureIndex]);
+  };
+
+  const saveEditingFeature = (roomIndex: number, featureIndex: number) => {
+    const room = formData.rooms[roomIndex];
+    const trimmedValue = editingFeatureValue.trim();
+    if (trimmedValue && trimmedValue !== room.features[featureIndex]) {
+      const updatedFeatures = [...room.features];
+      updatedFeatures[featureIndex] = trimmedValue;
+      updateRoom(roomIndex, "features", updatedFeatures);
+    }
+    setEditingFeature(null);
+    setEditingFeatureValue("");
+  };
+
+  const cancelEditingFeature = () => {
+    setEditingFeature(null);
+    setEditingFeatureValue("");
   };
 
   const addAdditionalDetail = () => {
@@ -1084,19 +1125,68 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
                     <label className="block text-sm text-gray-600 mb-2">Features</label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {room.features.map((feature, featureIndex) => (
-                        <span
-                          key={featureIndex}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
-                        >
-                          {feature}
-                          <button
-                            type="button"
-                            onClick={() => removeRoomFeature(roomIndex, featureIndex)}
-                            className="text-red-600"
+                        editingFeature?.roomIndex === roomIndex && editingFeature?.featureIndex === featureIndex ? (
+                          <div
+                            key={featureIndex}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-white border-2 border-[#E51A4B] rounded text-sm"
                           >
-                            <X size={12} />
-                          </button>
-                        </span>
+                            <input
+                              type="text"
+                              value={editingFeatureValue}
+                              onChange={(e) => setEditingFeatureValue(e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  saveEditingFeature(roomIndex, featureIndex);
+                                } else if (e.key === "Escape") {
+                                  e.preventDefault();
+                                  cancelEditingFeature();
+                                }
+                              }}
+                              className="outline-none text-sm min-w-[100px]"
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              onClick={() => saveEditingFeature(roomIndex, featureIndex)}
+                              className="text-green-600 hover:text-green-700"
+                              title="Save"
+                            >
+                              <CheckCircle size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelEditingFeature}
+                              className="text-gray-600 hover:text-gray-700"
+                              title="Cancel"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ) : (
+                          <span
+                            key={featureIndex}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
+                          >
+                            {feature}
+                            <button
+                              type="button"
+                              onClick={() => startEditingFeature(roomIndex, featureIndex)}
+                              className="text-blue-600 hover:text-blue-700"
+                              title="Edit"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeRoomFeature(roomIndex, featureIndex)}
+                              className="text-red-600 hover:text-red-700"
+                              title="Remove"
+                            >
+                              <X size={12} />
+                            </button>
+                          </span>
+                        )
                       ))}
                     </div>
                     <div className="flex gap-2">
@@ -1379,6 +1469,8 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
                 setImagePreview("");
                 setErrors({});
                 setSuccessMessage("");
+                setEditingFeature(null);
+                setEditingFeatureValue("");
               }}
               className="px-6 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50"
             >

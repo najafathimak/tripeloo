@@ -64,7 +64,7 @@ export function Header() {
         <div className="flex items-center gap-3">
           {/* Call Assistance - Desktop */}
           <a
-            href="tel:8089909386"
+            href="tel:7066444430"
             className={`hidden md:inline-flex items-center gap-2 rounded-full border ${isHomePage ? 'border-white/60 text-white hover:bg-white/10' : 'border-gray-300 text-gray-900 hover:bg-gray-50'} px-4 py-2 text-sm font-semibold transition`}
           >
             <Phone size={16} />
@@ -73,7 +73,7 @@ export function Header() {
           
           {/* Call Icon - Mobile */}
           <a
-            href="tel:8089909386"
+            href="tel:7066444430"
             className={`md:hidden ${isHomePage ? 'text-white hover:text-brand' : 'text-gray-900 hover:text-[#E51A4B]'} transition-colors p-2`}
             aria-label="Call Assistance"
           >
@@ -161,7 +161,7 @@ export function Header() {
             </nav>
             <div className="p-4 border-t border-gray-100 space-y-3">
               <a
-                href="tel:8089909386"
+                href="tel:7066444430"
                 className="flex items-center justify-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition"
                 onClick={closeMenu}
               >

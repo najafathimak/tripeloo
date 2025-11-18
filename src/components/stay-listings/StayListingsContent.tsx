@@ -829,7 +829,7 @@ function StayListingsContent() {
               support team.
             </p>
             <motion.a
-              href="https://wa.me/1234567890"
+              href="https://wa.me/917066444430"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.05 }}
@@ -936,7 +936,7 @@ function StayListingsContent() {
               recommendations, contact our support team.
             </p>
             <motion.a
-              href="https://wa.me/1234567890"
+              href="https://wa.me/917066444430"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.05 }}
@@ -1032,7 +1032,7 @@ function StayListingsContent() {
               planning, reach out to our support team.
             </p>
             <motion.a
-              href="https://wa.me/1234567890"
+              href="https://wa.me/917066444430"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.05 }}
