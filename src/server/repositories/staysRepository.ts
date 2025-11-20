@@ -110,6 +110,7 @@ function mapStayData(stay: any): any {
     includes: stay.includes || [],
     excludes: stay.excludes || [],
     properties: stay.properties || [],
+    importantInfo: stay.importantInfo || null,
     rooms: stay.rooms || [],
     location: stay.location || '',
     additionalDetails: stay.additionalDetails || [],

@@ -136,9 +136,6 @@ const ActivityDetailsContent = () => {
     }).format(price);
   };
 
-  const savings = activityData?.originalPrice 
-    ? activityData.originalPrice - activityData.startingPrice 
-    : 0;
 
   if (loading) {
     return (
@@ -196,7 +193,7 @@ const ActivityDetailsContent = () => {
   const activityDetails = activityData.activityDetails || {};
 
   return (
-    <div className="mx-0 pt-11 sm:mx-[10%]">
+    <div className="mx-0 pt-0 sm:pt-11 sm:mx-[10%]">
       <ThingsCarousel 
         carouselImages={activityData.carouselImages || []} 
         coverImage={activityData.coverImage} 
@@ -221,11 +218,6 @@ const ActivityDetailsContent = () => {
                 <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {formatPrice(activityData.startingPrice)}/-
                 </p>
-                {activityData.originalPrice && (
-                  <span className="line-through text-gray-500 text-sm">
-                    {formatPrice(activityData.originalPrice)}/-
-                  </span>
-                )}
               </div>
             </div>
             <div className="mt-8 bg-red-50 px-3 py-3 border rounded-lg">
@@ -309,17 +301,19 @@ const ActivityDetailsContent = () => {
               />
             </div>
 
-            {/* Mobile Booking Sidebar */}
-            <div ref={bookingRef} className="md:hidden mb-5">
+            {/* Mobile Booking Button - Fixed at bottom */}
+            <div className="md:hidden">
               <BookingSidebar
                 selectedRooms={[]}
                 title={activityData.name}
                 price={`${formatPrice(activityData.startingPrice)}/-`}
-                oldPrice={activityData.originalPrice ? `${formatPrice(activityData.originalPrice)}/-` : ""}
-                savings={savings > 0 ? `SAVE ${formatPrice(savings)}/-` : ""}
+                oldPrice=""
+                savings=""
+                isMobile={true}
                 destination={destination || activityData.destinationName || activityData.destinationSlug}
                 itemType="activity"
                 itemLocation={activityData.location || activityData.destinationName || activityData.destinationSlug}
+                itemImportantInfo={activityData.importantInfo}
               />
             </div>
 
@@ -339,9 +333,10 @@ const ActivityDetailsContent = () => {
               selectedRooms={[]}
               title={activityData.name}
               price={formatPrice(activityData.startingPrice)}
-              oldPrice={activityData.originalPrice ? formatPrice(activityData.originalPrice) : ""}
-              savings={savings > 0 ? `SAVE ${formatPrice(savings)}/-` : ""}
+              oldPrice=""
+              savings=""
               className="w-full lg:w-[350px]"
+              itemImportantInfo={activityData.importantInfo}
               destination={destination || activityData.destinationName || activityData.destinationSlug}
               itemType="activity"
               itemLocation={activityData.location || activityData.destinationName || activityData.destinationSlug}

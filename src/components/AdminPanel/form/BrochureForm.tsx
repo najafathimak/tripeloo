@@ -46,6 +46,7 @@ interface Item {
   location?: string;
   additionalDetails?: AdditionalDetail[];
   properties?: string[];
+  importantInfo?: string;
   rooms?: Array<{
     name: string;
     thumb?: string;
@@ -288,8 +289,46 @@ export default function BrochureForm() {
         .text-[#E51A4B] { color: #E51A4B !important; }
         .text-emerald-600 { color: #059669 !important; }
         .text-green-600 { color: #16a34a !important; }
-        div, p, span, h1, h2, h3, h4, h5, h6 {
+        /* Page break rules - Enhanced */
+        section, .bg-red-50, .rounded-lg, .rounded-2xl, .border-t-2 {
           page-break-inside: avoid !important;
+          break-inside: avoid !important;
+          page-break-after: auto !important;
+        }
+        h1, h2, h3, h4, h5, h6 {
+          page-break-after: avoid !important;
+          break-after: avoid !important;
+          page-break-inside: avoid !important;
+          page-break-before: auto !important;
+        }
+        div, p {
+          page-break-inside: avoid !important;
+          orphans: 4 !important;
+          widows: 4 !important;
+        }
+        /* Prevent breaking within lists and grids */
+        ul, ol {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+        li {
+          page-break-inside: avoid !important;
+        }
+        /* Keep sections together */
+        .mb-6, .mt-8, .mt-6, .mb-10, .mt-10 {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+        /* Prevent breaking in grid layouts */
+        .grid {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+        /* Keep footer together */
+        .border-t-2 {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+          page-break-before: auto !important;
         }
       `;
       
@@ -299,40 +338,57 @@ export default function BrochureForm() {
       // Append to container
       pdfContainer.appendChild(clonedContent);
 
-      // Wait for images to load and styles to apply
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Wait for images to load and styles to apply (reduced timeout)
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // Generate canvas with better settings
+      // Generate canvas with optimized settings for better performance
       const canvas = await html2canvas(pdfContainer, {
-        scale: 2,
+        scale: 1.2, // Further reduced for faster generation
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
         allowTaint: false,
-        imageTimeout: 15000,
+        imageTimeout: 5000, // Reduced timeout
         removeContainer: false,
         windowWidth: pdfContainer.scrollWidth,
         windowHeight: pdfContainer.scrollHeight,
+        ignoreElements: (element) => {
+          // Skip rendering certain elements that might slow down generation
+          const htmlElement = element as HTMLElement;
+          return htmlElement.classList?.contains('hidden') || 
+                 (htmlElement.style && htmlElement.style.display === 'none') ||
+                 htmlElement.getAttribute('aria-hidden') === 'true';
+        },
+        onclone: (clonedDoc) => {
+          // Ensure all images are loaded and optimize
+          const images = clonedDoc.querySelectorAll('img');
+          images.forEach((img) => {
+            if (!img.complete) {
+              img.style.display = 'none';
+            }
+            // Reduce image quality for PDF
+            if (img.src && img.src.startsWith('data:')) {
+              // Already optimized
+            }
+          });
+        },
       });
 
-      const imgData = canvas.toDataURL("image/png", 0.95);
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 210;
-      const pageHeight = 297;
+      const imgData = canvas.toDataURL("image/jpeg", 0.85); // Use JPEG with lower quality for smaller file size
+      
+      // Calculate dimensions for single page PDF
+      const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      let heightLeft = imgHeight;
-      let position = 0;
+      // Create PDF with custom height to fit entire content (single page)
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: [210, imgHeight + 20] // Width 210mm (A4 width), height based on content + margin
+      });
 
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
+      // Add image to single page
+      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
 
       // Clean up
       document.body.removeChild(pdfContainer);
@@ -694,6 +750,16 @@ export default function BrochureForm() {
                 </p>
               )}
 
+              {/* Important Info - Good to Know (Right after description for Stays) */}
+              {selectedItem.importantInfo && typeof selectedItem.importantInfo === 'string' && selectedItem.importantInfo.trim().length > 0 && itemType === "stay" && (
+                <div className="mt-6 mb-6 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Good to Know</h2>
+                  <div className="text-gray-700 text-sm sm:text-base whitespace-pre-line italic">
+                    {selectedItem.importantInfo}
+                  </div>
+                </div>
+              )}
+
               {/* About (for Activities) */}
               {selectedItem.about && itemType === "activity" && (
                 <div className="mt-8 mb-6 bg-red-50 px-3 py-3 border rounded-lg">
@@ -702,16 +768,41 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* Old Style Includes - After Description (for Stays/Getaways) */}
-              {selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 && itemType !== "activity" && (
-                <div className="mt-6 mb-6 flex flex-wrap gap-4 sm:gap-6 border-y py-4 text-gray-700 text-sm sm:text-base">
-                  {selectedItem.includes.map((include: string, index: number) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <span className="text-green-600">✓</span>
-                      <span>{include}</span>
-                    </div>
-                  ))}
-                </div>
+              {/* Includes/Excludes Section (for Stays/Getaways) */}
+              {(itemType === "stay" || itemType === "trip") && (
+                ((selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0) || 
+                 (selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0)) && (
+                  <div className="mb-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    <section className="bg-red-50 py-7 px-6 md:px-5 rounded-lg" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                      {selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 && (
+                        <div className={selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0 ? "mb-10" : ""}>
+                          <h2 className="text-xl font-semibold text-gray-800 mb-6">What Includes</h2>
+                          <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
+                            {selectedItem.includes.map((item: string, index: number) => (
+                              <div key={index} className="flex items-start gap-2">
+                                <Dot size={20} className="text-red-500" />
+                                <p className="text-sm text-gray-700 leading-snug">{item}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0 && (
+                        <div className={selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 ? "mt-10" : ""}>
+                          <h2 className="text-xl font-semibold text-gray-800 mb-6">What Excludes</h2>
+                          <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
+                            {selectedItem.excludes.map((item: string, index: number) => (
+                              <div key={index} className="flex items-start gap-3">
+                                <Dot size={20} className="text-red-500 mt-1 shrink-0" />
+                                <p className="text-sm text-gray-700 leading-snug">{item}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </section>
+                  </div>
+                )
               )}
 
               {/* Activity Details (for Activities) - Inline with Icons */}
@@ -789,13 +880,16 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* Resort Properties (for Stays) */}
+              {/* Highlights (for Stays) */}
               {selectedItem.properties && Array.isArray(selectedItem.properties) && selectedItem.properties.length > 0 && itemType === "stay" && (
                 <div className="mt-8 mb-6 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Resort Properties</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Highlights</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-gray-700 text-sm sm:text-base">
                     {selectedItem.properties.map((property: string, index: number) => (
-                      <div key={index}>{property}</div>
+                      <div key={index} className="flex items-start gap-2">
+                        <span className="text-[#E51A4B] font-bold mt-0.5">•</span>
+                        <span>{property}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -996,36 +1090,39 @@ export default function BrochureForm() {
 
               {/* Price Section (for Stays/Getaways) */}
               {(itemType === "stay" || itemType === "trip") && (
-                <div className="mb-6">
-                  <section className="bg-red-50 py-7 px-6 md:px-5 rounded-lg">
-                    {selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 && (
-                      <div className={selectedItem.excludes && selectedItem.excludes.length > 0 ? "mb-10" : ""}>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">Price Includes</h2>
-                        <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
-                          {selectedItem.includes.map((item: string, index: number) => (
-                            <div key={index} className="flex items-center gap-3">
-                              <Check className="text-green-600 w-5 h-5 flex-shrink-0" />
-                              <span>{item}</span>
-                            </div>
-                          ))}
+                ((selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0) || 
+                 (selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0)) && (
+                  <div className="mb-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    <section className="bg-red-50 py-7 px-6 md:px-5 rounded-lg" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                      {selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 && (
+                        <div className={selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0 ? "mb-10" : ""}>
+                          <h2 className="text-xl font-semibold text-gray-800 mb-6">Price Includes</h2>
+                          <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
+                            {selectedItem.includes.map((item: string, index: number) => (
+                              <div key={index} className="flex items-center gap-3">
+                                <Check className="text-green-600 w-5 h-5 flex-shrink-0" />
+                                <span>{item}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0 && (
-                      <div>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">Price Excludes</h2>
-                        <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
-                          {selectedItem.excludes.map((item: string, index: number) => (
-                            <div key={index} className="flex items-center gap-3">
-                              <span className="text-red-600 w-5 h-5 flex-shrink-0 flex items-center justify-center">•</span>
-                              <span>{item}</span>
-                            </div>
-                          ))}
+                      )}
+                      {selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0 && (
+                        <div className={selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 ? "mt-10" : ""}>
+                          <h2 className="text-xl font-semibold text-gray-800 mb-6">Price Excludes</h2>
+                          <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
+                            {selectedItem.excludes.map((item: string, index: number) => (
+                              <div key={index} className="flex items-center gap-3">
+                                <span className="text-red-600 w-5 h-5 flex-shrink-0 flex items-center justify-center">•</span>
+                                <span>{item}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </section>
-                </div>
+                      )}
+                    </section>
+                  </div>
+                )
               )}
 
               {/* Additional Details - Expandable Style */}
@@ -1149,7 +1246,7 @@ export default function BrochureForm() {
               )}
 
               {/* Footer */}
-              <div className="mt-8 pt-6 border-t-2 border-gray-300">
+              <div className="mt-8 pt-6 border-t-2 border-gray-300" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                 <div className="flex justify-center mb-4">
                   <Image
                     src="/assets/logo_new.png"
@@ -1159,17 +1256,46 @@ export default function BrochureForm() {
                     className="h-12 w-auto object-contain"
                   />
                 </div>
-                <p className="text-sm text-gray-600 text-center mb-2">
-                  For bookings and inquiries, contact us at:
-                </p>
-                <p className="text-sm text-gray-700 text-center font-semibold mb-2">
-                  Email: hello@tripeloo.com
-                </p>
-                <p className="text-sm text-gray-700 text-center font-semibold">
-                  WhatsApp: +91 70664 44430
-                </p>
+                <div className="text-center mb-4">
+                  <p className="text-sm text-gray-700 font-semibold mb-2">
+                    Tripeloo Travel Management LLP
+                  </p>
+                  <p className="text-sm text-gray-600 mb-2">
+                    South Beach, Calicut, Kerala
+                  </p>
+                  <p className="text-sm text-gray-700 mb-1">
+                    Email: <a href="mailto:support@tripeloo.com" className="text-[#E51A4B] hover:underline">support@tripeloo.com</a>
+                  </p>
+                  <p className="text-sm text-gray-700 mb-3">
+                    Phone: <a href="tel:7066444430" className="text-[#E51A4B] hover:underline">7066444430</a>
+                  </p>
+                  <div className="flex justify-center gap-4 items-center">
+                    <a 
+                      href="https://www.instagram.com/tripeloo" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-[#E51A4B] hover:text-[#c91742] transition-colors"
+                      aria-label="Instagram"
+                    >
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      </svg>
+                    </a>
+                    <a 
+                      href="https://www.facebook.com/tripeloo" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-[#E51A4B] hover:text-[#c91742] transition-colors"
+                      aria-label="Facebook"
+                    >
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
                 <p className="text-xs text-gray-500 text-center mt-4">
-                  Generated by Tripeloo - Your trusted travel partner
+                  © {new Date().getFullYear()} Tripeloo. All rights reserved.
                 </p>
               </div>
             </div>

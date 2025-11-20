@@ -51,6 +51,7 @@ interface FormData {
   includes: string[];
   excludes: string[];
   properties: string[];
+  importantInfo?: string;
   rooms: Room[];
   location: string;
   contactNumber: string;
@@ -79,6 +80,7 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
     includes: [],
     excludes: [],
     properties: [],
+    importantInfo: "",
     rooms: [],
     location: "",
     contactNumber: "",
@@ -161,6 +163,7 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
         includes: initialData.includes || [],
         excludes: initialData.excludes || [],
         properties: initialData.properties || [],
+        importantInfo: initialData.importantInfo || "",
         rooms: (initialData.rooms || []).map((room: any, idx: number) => ({
           id: room.id || `room-${idx}`,
           name: room.name || "",
@@ -559,6 +562,7 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
           includes: formData.includes,
           excludes: formData.excludes,
           properties: formData.properties,
+          importantInfo: formData.importantInfo?.trim() || null,
           rooms: formData.rooms,
           location: formData.location.trim(),
           contactNumber: formData.contactNumber.trim(),
@@ -1001,7 +1005,7 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
           {/* Properties */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Resort Properties <span className="text-gray-500 text-xs">(Optional)</span>
+              Highlights <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <div className="flex gap-2 mb-2">
                   <input
@@ -1044,6 +1048,24 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Important Info */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Important Info <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <textarea
+              name="importantInfo"
+              value={formData.importantInfo || ""}
+              onChange={handleInputChange}
+              rows={3}
+              placeholder="e.g., ₹4000/- per cottage, 18 occupancy, Check-in: 2 PM, Check-out: 11 AM"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B] resize-none"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Add important information like pricing details, occupancy, check-in/out times, etc. This will be displayed as "Good to Know" section.
+            </p>
           </div>
 
           {/* Rooms */}
@@ -1460,6 +1482,7 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
                   includes: [],
                   excludes: [],
                   properties: [],
+                  importantInfo: "",
                   rooms: [],
                   location: "",
                   contactNumber: "",

@@ -72,6 +72,7 @@ export async function PUT(
       includes = [],
       excludes = [],
       properties = [],
+      importantInfo,
       rooms = [],
       location,
       contactNumber,
@@ -121,6 +122,7 @@ export async function PUT(
           includes: Array.isArray(includes) ? includes.filter((i: string) => i.trim()) : [],
           excludes: Array.isArray(excludes) ? excludes.filter((e: string) => e.trim()) : [],
           properties: Array.isArray(properties) ? properties.filter((p: string) => p.trim()) : [],
+          importantInfo: importantInfo?.trim() || null,
           rooms: Array.isArray(rooms) ? rooms.map((room: any) => ({
             id: room.id || Date.now().toString(),
             name: room.name?.trim() || '',

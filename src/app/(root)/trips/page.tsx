@@ -140,9 +140,6 @@ const TripDetailsContent = () => {
   const totalPrice = selectedPackages.reduce((sum, pkg) => sum + pkg.price, 0);
   const displayPrice = selectedPackages.length > 0 ? totalPrice : (tripData?.startingPrice || 0);
   
-  const savings = tripData?.originalPrice 
-    ? tripData.originalPrice - tripData.startingPrice 
-    : 0;
 
   if (loading) {
     return (
@@ -198,7 +195,7 @@ const TripDetailsContent = () => {
   }
 
   return (
-    <div className="mx-0 pt-11 sm:mx-[10%] relative">
+    <div className="mx-0 pt-0 sm:pt-11 sm:mx-[10%] relative">
       {/* Carousel with getaway cover image */}
       <ListCarousel 
         carouselImages={tripData.carouselImages || []} 
@@ -229,11 +226,6 @@ const TripDetailsContent = () => {
                 <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {formatPrice(displayPrice)}/-
                 </p>
-                {tripData.originalPrice && selectedPackages.length === 0 && (
-                  <span className="line-through text-gray-500 text-sm sm:text-base">
-                    {formatPrice(tripData.originalPrice)}/-
-                  </span>
-                )}
               </div>
             </div>
 
@@ -333,18 +325,20 @@ const TripDetailsContent = () => {
               ) : null;
             })()}
 
-            {/* Mobile Booking Sidebar */}
-            <div ref={bookingRef} className="md:hidden">
+            {/* Mobile Booking Button - Fixed at bottom */}
+            <div className="md:hidden">
               <BookingSidebar
                 selectedRooms={selectedPackages}
                 title={tripData.name}
                 price={`${formatPrice(displayPrice)}/-`}
-                oldPrice={tripData.originalPrice && selectedPackages.length === 0 ? `${formatPrice(tripData.originalPrice)}/-` : ""}
-                savings={savings > 0 && selectedPackages.length === 0 ? `${formatPrice(savings)}/-` : ""}
+                oldPrice=""
+                savings=""
+                isMobile={true}
                 isPackage={true}
                 destination={destination || tripData.destinationName}
                 itemType="trip"
                 itemLocation={tripData.location || tripData.destinationName}
+                itemImportantInfo={tripData.importantInfo}
               />
             </div>
 
@@ -371,13 +365,14 @@ const TripDetailsContent = () => {
               selectedRooms={selectedPackages}
               title={tripData.name}
               price={formatPrice(displayPrice)}
-              oldPrice={tripData.originalPrice && selectedPackages.length === 0 ? formatPrice(tripData.originalPrice) : ""}
-              savings={savings > 0 && selectedPackages.length === 0 ? formatPrice(savings) : ""}
+              oldPrice=""
+              savings=""
               className="w-full lg:w-[350px]"
               isPackage={true}
               destination={destination || tripData.destinationName}
               itemType="trip"
               itemLocation={tripData.location || tripData.destinationName}
+              itemImportantInfo={tripData.importantInfo}
             />
           </div>
         </div>

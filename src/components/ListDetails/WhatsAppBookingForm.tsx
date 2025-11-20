@@ -20,7 +20,7 @@ interface WhatsAppBookingFormProps {
   itemType?: 'stay' | 'activity' | 'trip';
   itemLocation?: string;
   itemPrice?: string;
-  itemOriginalPrice?: string;
+  itemImportantInfo?: string;
 }
 
 export const WhatsAppBookingForm = ({ 
@@ -31,7 +31,7 @@ export const WhatsAppBookingForm = ({
   itemType,
   itemLocation,
   itemPrice,
-  itemOriginalPrice,
+  itemImportantInfo,
 }: WhatsAppBookingFormProps) => {
   const { data: session } = useSession();
   const [adults, setAdults] = useState(1);
@@ -115,8 +115,8 @@ export const WhatsAppBookingForm = ({
     if (itemPrice) {
       itemDetailsLines.push(`💰 Price: ${itemPrice}`);
     }
-    if (itemOriginalPrice) {
-      itemDetailsLines.push(`💰 Original Price: ${itemOriginalPrice}`);
+    if (itemImportantInfo && typeof itemImportantInfo === 'string' && itemImportantInfo.trim().length > 0) {
+      itemDetailsLines.push(`\n📌 Good to Know:\n${itemImportantInfo.trim()}`);
     }
     
     const itemDetailsSection = itemDetailsLines.length > 0 ? `\n\n${itemDetailsLines.join('\n')}` : '';
