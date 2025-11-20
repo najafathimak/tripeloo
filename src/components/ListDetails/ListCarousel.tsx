@@ -66,7 +66,7 @@ const ThingsCarousel = ({ carouselImages = [], coverImage }: ListCarouselProps) 
   }, [emblaApi]);
 
   return (
-    <section className="relative h-[70vh] sm:h-[90vh] mt-6 overflow-hidden">
+    <section className="relative h-[70vh] sm:h-[90vh] mt-0 sm:mt-6 overflow-hidden border-t border-gray-200 sm:border-0">
       <div className="embla h-full rounded-sm sm:rounded-3xl" ref={emblaRef}>
         <div className="embla__container flex">
           {slides.map((slide) => (

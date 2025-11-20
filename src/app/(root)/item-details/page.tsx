@@ -224,12 +224,9 @@ const ListingDetailsContent = () => {
     }).format(price);
   };
 
-  const savings = stayData?.originalPrice 
-    ? stayData.originalPrice - stayData.startingPrice 
-    : 0;
 
   return (
-    <div className="mx-0 pt-11 sm:mx-[10%] relative">
+    <div className="mx-0 pt-0 sm:pt-11 sm:mx-[10%] relative">
       <ListCarousel carouselImages={stayData.carouselImages || []} coverImage={stayData.coverImage} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex flex-col lg:flex-row justify-between gap-8">
@@ -255,11 +252,6 @@ const ListingDetailsContent = () => {
                 <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {formatPrice(stayData.startingPrice)}/-
                 </p>
-                {stayData.originalPrice && (
-                  <span className="line-through text-gray-500 text-sm sm:text-base">
-                    {formatPrice(stayData.originalPrice)}/-
-                  </span>
-                )}
               </div>
             </div>
 
@@ -268,6 +260,18 @@ const ListingDetailsContent = () => {
               <p className="mt-4 text-gray-600 text-sm sm:text-base">
                 {stayData.summary}
               </p>
+            )}
+
+            {/* Important Info - Good to Know (Right after description) */}
+            {stayData.importantInfo && typeof stayData.importantInfo === 'string' && stayData.importantInfo.trim().length > 0 && (
+              <div className="mt-6 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
+                  Good to Know
+                </h2>
+                <div className="text-gray-700 text-sm sm:text-base whitespace-pre-line italic">
+                  {stayData.importantInfo}
+                </div>
+              </div>
             )}
 
             {/* Old Style Includes - After Description */}
@@ -282,16 +286,19 @@ const ListingDetailsContent = () => {
               </div>
             )}
 
-            {/* Resort Properties */}
+            {/* Highlights */}
             {stayData.properties && stayData.properties.length > 0 && (
               <div className="mt-8 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
                 <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
-                  Resort Properties
+                  Highlights
                 </h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-gray-700 text-sm sm:text-base">
                   {stayData.properties.map((property: string, index: number) => (
-                    <div key={index}>{property}</div>
+                    <div key={index} className="flex items-start gap-2">
+                      <span className="text-[#E51A4B] font-bold mt-0.5">•</span>
+                      <span>{property}</span>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -354,17 +361,19 @@ const ListingDetailsContent = () => {
               />
             </div>
 
-            {/* Mobile Booking Sidebar - Above Reviews */}
-            <div id="mobile-booking-form" ref={bookingRef} data-booking-form className="md:hidden mb-5">
+            {/* Mobile Booking Button - Fixed at bottom */}
+            <div className="md:hidden">
               <BookingSidebar
                 selectedRooms={selectedRooms}
                 title={stayData.name}
                 price={`${formatPrice(stayData.startingPrice)}/-`}
-                oldPrice={stayData.originalPrice ? `${formatPrice(stayData.originalPrice)}/-` : ""}
-                savings={savings > 0 ? `${formatPrice(savings)}/-` : ""}
+                oldPrice=""
+                savings=""
+                isMobile={true}
                 destination={destination || stayData.destinationName || stayData.destinationSlug}
                 itemType="stay"
                 itemLocation={stayData.location || stayData.destinationName || stayData.destinationSlug}
+                itemImportantInfo={stayData.importantInfo}
               />
             </div>
 
@@ -385,12 +394,13 @@ const ListingDetailsContent = () => {
               selectedRooms={selectedRooms}
               title={stayData.name}
               price={formatPrice(stayData.startingPrice)}
-              oldPrice={stayData.originalPrice ? formatPrice(stayData.originalPrice) : ""}
-              savings={savings > 0 ? formatPrice(savings) : ""}
+              oldPrice=""
+              savings=""
               className="w-full lg:w-[350px]"
               destination={destination || stayData.destinationName || stayData.destinationSlug}
               itemType="stay"
               itemLocation={stayData.location || stayData.destinationName || stayData.destinationSlug}
+              itemImportantInfo={stayData.importantInfo}
             />
           </div>
         </div>

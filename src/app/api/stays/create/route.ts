@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       includes = [],
       excludes = [],
       properties = [],
+      importantInfo,
       rooms = [],
       location,
       contactNumber,
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
       includes: includes.filter((inc: string) => inc.trim().length > 0),
       excludes: excludes.filter((exc: string) => exc.trim().length > 0),
       properties: properties.filter((prop: string) => prop.trim().length > 0),
+      importantInfo: importantInfo?.trim() || null,
       rooms: rooms.map((room: any) => ({
         name: room.name?.trim() || '',
         rate: room.rate?.trim() || '',

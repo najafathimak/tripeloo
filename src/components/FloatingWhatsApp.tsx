@@ -1,19 +1,33 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { getPrimaryWhatsAppNumber, formatWhatsAppNumber } from '@/utils/whatsapp';
 
 export function FloatingWhatsApp() {
+  const pathname = usePathname();
   const [isOverWhiteBg, setIsOverWhiteBg] = useState(false);
+  const [isInHeroSection, setIsInHeroSection] = useState(true);
+  
+  // Check if we're on the home page
+  const isHomePage = pathname === '/';
+  
+  // Hide on detail pages (they have their own booking forms)
+  const isDetailPage = pathname === '/item-details' || 
+                       pathname === '/things-to-do' || 
+                       pathname === '/trips';
 
   useEffect(() => {
     const handleScroll = () => {
-      // Check if we're past the hero section (assuming hero is ~100vh)
+      if (typeof window === 'undefined') return;
+      
       const heroHeight = window.innerHeight;
       const scrollY = window.scrollY;
       
+      // Check if we're still in the hero section (first 100vh)
+      setIsInHeroSection(scrollY < heroHeight);
+      
       // If scrolled past hero section, we're likely over white background
-      // Using a threshold to ensure smooth transition
       setIsOverWhiteBg(scrollY > heroHeight * 0.7);
     };
 
@@ -34,30 +48,40 @@ export function FloatingWhatsApp() {
     window.open(url, '_blank');
   };
 
+  // Show rotating text only on home page and when in hero section
+  const showRotatingText = isHomePage && isInHeroSection;
+
+  // Don't render on detail pages (after hooks are called)
+  if (isDetailPage) {
+    return null;
+  }
+
   return (
     <div className="fixed -right-2 sm:right-6 bottom-2 sm:bottom-8 z-50">
-      <div className="relative h-40 w-40 sm:h-48 sm:w-48">
-        {/* Rotating circular text - Desktop only */}
-        <svg 
-          className="hidden sm:block absolute inset-0 h-full w-full animate-spin-slower" 
-          viewBox="0 0 180 180" 
-          fill="none"
-        >
-          <defs>
-            <path id="circlePathFloating" d="M90,90 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
-          </defs>
-          <text 
-            fontSize="12" 
-            letterSpacing="3" 
-            fontWeight="700" 
-            fill={isOverWhiteBg ? "#000000" : "#ffffff"} 
-            xmlSpace="preserve"
+      <div className={`relative ${showRotatingText ? 'h-40 w-40 sm:h-48 sm:w-48' : 'h-16 w-16 sm:h-20 sm:w-20'}`}>
+        {/* Rotating circular text - Only on home page hero section, Desktop only */}
+        {showRotatingText && (
+          <svg 
+            className="hidden sm:block absolute inset-0 h-full w-full animate-spin-slower" 
+            viewBox="0 0 180 180" 
+            fill="none"
           >
-            <textPath href="#circlePathFloating" startOffset="0%">
-              LET'S PLAN YOUR VACATION WITH TRIPELOO•     LET'S PLAN YOUR VACATION WITH TRIPELOO     •     LET'S PLAN YOUR VACATION WITH TRIPELOO     •     LET'S PLAN YOUR VACATION WITH TRIPELOO     •
-            </textPath>
-          </text>
-        </svg>
+            <defs>
+              <path id="circlePathFloating" d="M90,90 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
+            </defs>
+            <text 
+              fontSize="12" 
+              letterSpacing="3" 
+              fontWeight="700" 
+              fill="#ffffff" 
+              xmlSpace="preserve"
+            >
+              <textPath href="#circlePathFloating" startOffset="0%">
+                LET'S PLAN YOUR VACATION WITH TRIPELOO•     LET'S PLAN YOUR VACATION WITH TRIPELOO     •     LET'S PLAN YOUR VACATION WITH TRIPELOO     •     LET'S PLAN YOUR VACATION WITH TRIPELOO     •
+              </textPath>
+            </text>
+          </svg>
+        )}
         
         {/* WhatsApp button with popping animation */}
         <div className="absolute inset-0 flex items-center justify-center">

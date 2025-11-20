@@ -15,6 +15,17 @@ interface AdminListPageProps {
 }
 
 export default function AdminListPage({ title, type, addRoute, editRoutePrefix, showAddButton = true }: AdminListPageProps) {
+  // Helper function to get singular form for "Add Your First" button
+  const getSingularForm = (title: string): string => {
+    if (title === "Things to Do") {
+      return "Thing to Do";
+    }
+    // Remove 's' from the end for plural forms
+    if (title.endsWith("s")) {
+      return title.slice(0, -1);
+    }
+    return title;
+  };
   const router = useRouter();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -458,7 +469,7 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
               onClick={() => router.push(addRoute)}
               className="mt-4 px-6 py-2 bg-[#E51A4B] text-white rounded-lg hover:bg-[#c91742] transition-colors"
             >
-              Add Your First {title.slice(0, -1)}
+              Add Your First {getSingularForm(title)}
             </button>
           )}
         </div>
