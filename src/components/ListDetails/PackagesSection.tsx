@@ -94,12 +94,16 @@ const defaultPackages: Package[] = [
 ];
 
 export default function PackagesSection({
-  packages = defaultPackages,
+  packages,
   onPackageSelect,
 }: {
   packages?: Package[];
   onPackageSelect: (packages: Package[]) => void;
 }) {
+  // Only show packages if they exist - don't use defaultPackages fallback
+  if (!packages || !Array.isArray(packages) || packages.length === 0) {
+    return null;
+  }
   const [selectedPackage, setSelectedPackage] = useState<null | Package>(null);
   const [selectedPackages, setSelectedPackages] = useState<Package[]>([]);
 

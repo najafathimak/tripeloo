@@ -274,17 +274,7 @@ const ListingDetailsContent = () => {
               </div>
             )}
 
-            {/* Old Style Includes - After Description */}
-            {stayData.includes && stayData.includes.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-4 sm:gap-6 border-y py-4 text-gray-700 text-sm sm:text-base">
-                {stayData.includes.map((include: string, index: number) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    <span>{include}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Includes section hidden */}
 
             {/* Highlights */}
             {stayData.properties && stayData.properties.length > 0 && (
@@ -304,24 +294,26 @@ const ListingDetailsContent = () => {
               </div>
             )}
 
-            {/* Rooms Section */}
-            <div className="px-4 sm:px-6 mb-5 mt-8 relative">
-              <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-                  Choose Your Room
-                </h2>
-              </div>
+            {/* Rooms Section - Only show if rooms exist for this specific stay */}
+            {stayData.rooms && Array.isArray(stayData.rooms) && stayData.rooms.length > 0 && (
+              <div className="px-4 sm:px-6 mb-5 mt-8 relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                    Choose Your Room
+                  </h2>
+                </div>
 
-              {/* Info Badge */}
-              <div className="inline-block bg-[#7E22CE]/10 text-[#7E22CE] text-xs font-medium px-3 py-1 rounded-full mb-4">
-                💡 Select your preferred room type to continue booking
-              </div>
+                {/* Info Badge */}
+                <div className="inline-block bg-[#7E22CE]/10 text-[#7E22CE] text-xs font-medium px-3 py-1 rounded-full mb-4">
+                  💡 Select your preferred room type to continue booking
+                </div>
 
-              <RoomsSection 
-                rooms={stayData.rooms || []} 
-                onRoomSelect={(rooms) => setSelectedRooms(rooms)} 
-              />
-            </div>
+                <RoomsSection 
+                  rooms={stayData.rooms} 
+                  onRoomSelect={(rooms) => setSelectedRooms(rooms)} 
+                />
+              </div>
+            )}
 
             {/* Price Section */}
             <div className="mb-5">

@@ -106,6 +106,15 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   const [roomFeatureInputs, setRoomFeatureInputs] = useState<Record<string, string>>({});
   const [editingFeature, setEditingFeature] = useState<{roomIndex: number, featureIndex: number} | null>(null);
   const [editingFeatureValue, setEditingFeatureValue] = useState("");
+  const [editingInclude, setEditingInclude] = useState<number | null>(null);
+  const [editingIncludeValue, setEditingIncludeValue] = useState("");
+  const [editingExclude, setEditingExclude] = useState<number | null>(null);
+  const [editingExcludeValue, setEditingExcludeValue] = useState("");
+  const [editingProperty, setEditingProperty] = useState<number | null>(null);
+  const [editingPropertyValue, setEditingPropertyValue] = useState("");
+  const [editingImportantInfo, setEditingImportantInfo] = useState(false);
+  const [editingPoint, setEditingPoint] = useState<{detailIndex: number, pointIndex: number} | null>(null);
+  const [editingPointValue, setEditingPointValue] = useState("");
 
   // Fetch destinations
   useEffect(() => {
@@ -289,10 +298,35 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   };
 
   const removeInclude = (index: number) => {
+    if (editingInclude === index) {
+      setEditingInclude(null);
+      setEditingIncludeValue("");
+    }
     setFormData({
       ...formData,
       includes: formData.includes.filter((_, i) => i !== index),
     });
+  };
+
+  const startEditingInclude = (index: number) => {
+    setEditingInclude(index);
+    setEditingIncludeValue(formData.includes[index]);
+  };
+
+  const saveEditingInclude = (index: number) => {
+    const trimmedValue = editingIncludeValue.trim();
+    if (trimmedValue && trimmedValue !== formData.includes[index]) {
+      const updated = [...formData.includes];
+      updated[index] = trimmedValue;
+      setFormData({ ...formData, includes: updated });
+    }
+    setEditingInclude(null);
+    setEditingIncludeValue("");
+  };
+
+  const cancelEditingInclude = () => {
+    setEditingInclude(null);
+    setEditingIncludeValue("");
   };
 
   const addExclude = () => {
@@ -306,10 +340,35 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   };
 
   const removeExclude = (index: number) => {
+    if (editingExclude === index) {
+      setEditingExclude(null);
+      setEditingExcludeValue("");
+    }
     setFormData({
       ...formData,
       excludes: formData.excludes.filter((_, i) => i !== index),
     });
+  };
+
+  const startEditingExclude = (index: number) => {
+    setEditingExclude(index);
+    setEditingExcludeValue(formData.excludes[index]);
+  };
+
+  const saveEditingExclude = (index: number) => {
+    const trimmedValue = editingExcludeValue.trim();
+    if (trimmedValue && trimmedValue !== formData.excludes[index]) {
+      const updated = [...formData.excludes];
+      updated[index] = trimmedValue;
+      setFormData({ ...formData, excludes: updated });
+    }
+    setEditingExclude(null);
+    setEditingExcludeValue("");
+  };
+
+  const cancelEditingExclude = () => {
+    setEditingExclude(null);
+    setEditingExcludeValue("");
   };
 
   const addProperty = () => {
@@ -323,10 +382,35 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   };
 
   const removeProperty = (index: number) => {
+    if (editingProperty === index) {
+      setEditingProperty(null);
+      setEditingPropertyValue("");
+    }
     setFormData({
       ...formData,
       properties: formData.properties.filter((_, i) => i !== index),
     });
+  };
+
+  const startEditingProperty = (index: number) => {
+    setEditingProperty(index);
+    setEditingPropertyValue(formData.properties[index]);
+  };
+
+  const saveEditingProperty = (index: number) => {
+    const trimmedValue = editingPropertyValue.trim();
+    if (trimmedValue && trimmedValue !== formData.properties[index]) {
+      const updated = [...formData.properties];
+      updated[index] = trimmedValue;
+      setFormData({ ...formData, properties: updated });
+    }
+    setEditingProperty(null);
+    setEditingPropertyValue("");
+  };
+
+  const cancelEditingProperty = () => {
+    setEditingProperty(null);
+    setEditingPropertyValue("");
   };
 
   const addRoom = () => {
@@ -484,8 +568,35 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   };
 
   const removeDetailPoint = (detailIndex: number, pointIndex: number) => {
+    if (editingPoint && editingPoint.detailIndex === detailIndex && editingPoint.pointIndex === pointIndex) {
+      setEditingPoint(null);
+      setEditingPointValue("");
+    }
     const detail = formData.additionalDetails[detailIndex];
     updateAdditionalDetail(detailIndex, "points", detail.points?.filter((_, i) => i !== pointIndex) || []);
+  };
+
+  const startEditingPoint = (detailIndex: number, pointIndex: number) => {
+    const detail = formData.additionalDetails[detailIndex];
+    setEditingPoint({ detailIndex, pointIndex });
+    setEditingPointValue(detail.points?.[pointIndex] || "");
+  };
+
+  const saveEditingPoint = (detailIndex: number, pointIndex: number) => {
+    const trimmedValue = editingPointValue.trim();
+    if (trimmedValue) {
+      const detail = formData.additionalDetails[detailIndex];
+      const updatedPoints = [...(detail.points || [])];
+      updatedPoints[pointIndex] = trimmedValue;
+      updateAdditionalDetail(detailIndex, "points", updatedPoints);
+    }
+    setEditingPoint(null);
+    setEditingPointValue("");
+  };
+
+  const cancelEditingPoint = () => {
+    setEditingPoint(null);
+    setEditingPointValue("");
   };
 
   const handleRoomImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, roomIndex: number, isThumb = false) => {
@@ -936,19 +1047,57 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
             {formData.includes.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.includes.map((inc, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-[#E51A4B]/10 text-[#E51A4B] rounded-full text-sm"
-                  >
-                    {inc}
-          <button
-            type="button"
-                      onClick={() => removeInclude(index)}
-                      className="hover:text-red-700"
-          >
-                      <X size={14} />
-          </button>
-                  </span>
+                  <div key={index} className="inline-flex items-center gap-1">
+                    {editingInclude === index ? (
+                      <div className="flex items-center gap-1 px-3 py-1 bg-white border-2 border-[#E51A4B] rounded-full">
+                        <input
+                          type="text"
+                          value={editingIncludeValue}
+                          onChange={(e) => setEditingIncludeValue(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              saveEditingInclude(index);
+                            }
+                          }}
+                          className="text-sm outline-none min-w-[150px]"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => saveEditingInclude(index)}
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <CheckCircle size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditingInclude}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#E51A4B]/10 text-[#E51A4B] rounded-full text-sm">
+                        {inc}
+                        <button
+                          type="button"
+                          onClick={() => startEditingInclude(index)}
+                          className="hover:text-[#c91742]"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeInclude(index)}
+                          className="hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -984,19 +1133,57 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
             {formData.excludes.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.excludes.map((exc, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-sm"
-                  >
-                    {exc}
-                    <button
-                      type="button"
-                      onClick={() => removeExclude(index)}
-                      className="hover:text-red-700"
-                    >
-                      <X size={14} />
-                    </button>
-                  </span>
+                  <div key={index} className="inline-flex items-center gap-1">
+                    {editingExclude === index ? (
+                      <div className="flex items-center gap-1 px-3 py-1 bg-white border-2 border-orange-500 rounded-full">
+                        <input
+                          type="text"
+                          value={editingExcludeValue}
+                          onChange={(e) => setEditingExcludeValue(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              saveEditingExclude(index);
+                            }
+                          }}
+                          className="text-sm outline-none min-w-[150px]"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => saveEditingExclude(index)}
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <CheckCircle size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditingExclude}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-sm">
+                        {exc}
+                        <button
+                          type="button"
+                          onClick={() => startEditingExclude(index)}
+                          className="hover:text-orange-800"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeExclude(index)}
+                          className="hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -1032,19 +1219,57 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
             {formData.properties.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.properties.map((prop, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm"
-                  >
-                    {prop}
-                    <button
-                      type="button"
-                      onClick={() => removeProperty(index)}
-                      className="hover:text-red-700"
-                    >
-                      <X size={14} />
-                    </button>
-                  </span>
+                  <div key={index} className="inline-flex items-center gap-1">
+                    {editingProperty === index ? (
+                      <div className="flex items-center gap-1 px-3 py-1 bg-white border-2 border-blue-500 rounded-full">
+                        <input
+                          type="text"
+                          value={editingPropertyValue}
+                          onChange={(e) => setEditingPropertyValue(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              saveEditingProperty(index);
+                            }
+                          }}
+                          className="text-sm outline-none min-w-[150px]"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => saveEditingProperty(index)}
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <CheckCircle size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditingProperty}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                        {prop}
+                        <button
+                          type="button"
+                          onClick={() => startEditingProperty(index)}
+                          className="hover:text-blue-800"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeProperty(index)}
+                          className="hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -1052,17 +1277,60 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
 
           {/* Important Info */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Important Info <span className="text-gray-500 text-xs">(Optional)</span>
-            </label>
-            <textarea
-              name="importantInfo"
-              value={formData.importantInfo || ""}
-              onChange={handleInputChange}
-              rows={3}
-              placeholder="e.g., ₹4000/- per cottage, 18 occupancy, Check-in: 2 PM, Check-out: 11 AM"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B] resize-none"
-            />
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-semibold text-gray-700">
+                Important Info <span className="text-gray-500 text-xs">(Optional)</span>
+              </label>
+              {formData.importantInfo && formData.importantInfo.trim().length > 0 && !editingImportantInfo && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingImportantInfo(true);
+                  }}
+                  className="text-[#E51A4B] hover:text-[#c91742] flex items-center gap-1 text-sm"
+                >
+                  <Pencil size={14} />
+                  Edit
+                </button>
+              )}
+            </div>
+            {editingImportantInfo || !formData.importantInfo || formData.importantInfo.trim().length === 0 ? (
+              <div>
+                <textarea
+                  name="importantInfo"
+                  value={formData.importantInfo || ""}
+                  onChange={handleInputChange}
+                  onBlur={() => {
+                    if (formData.importantInfo && formData.importantInfo.trim().length > 0) {
+                      setEditingImportantInfo(false);
+                    }
+                  }}
+                  rows={4}
+                  placeholder="e.g., ₹4000/- per cottage, 18 occupancy, Check-in: 2 PM, Check-out: 11 AM"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B] resize-none"
+                  autoFocus={editingImportantInfo}
+                />
+                {editingImportantInfo && (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingImportantInfo(false);
+                      }}
+                      className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg"
+                    >
+                      Done
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 whitespace-pre-line">
+                  {formData.importantInfo}
+                </div>
+              </div>
+            )}
             <p className="text-xs text-gray-500 mt-1">
               Add important information like pricing details, occupancy, check-in/out times, etc. This will be displayed as "Good to Know" section.
             </p>
@@ -1400,15 +1668,57 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
                             key={pointIndex}
                             className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg"
                           >
-                            <span className="text-[#E51A4B] font-bold">•</span>
-                            <span className="flex-1 text-sm">{point}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeDetailPoint(index, pointIndex)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <X size={16} />
-                            </button>
+                            {editingPoint?.detailIndex === index && editingPoint?.pointIndex === pointIndex ? (
+                              <>
+                                <span className="text-[#E51A4B] font-bold">•</span>
+                                <input
+                                  type="text"
+                                  value={editingPointValue}
+                                  onChange={(e) => setEditingPointValue(e.target.value)}
+                                  onKeyPress={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
+                                      saveEditingPoint(index, pointIndex);
+                                    }
+                                  }}
+                                  className="flex-1 text-sm outline-none border-b-2 border-[#E51A4B] px-1"
+                                  autoFocus
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => saveEditingPoint(index, pointIndex)}
+                                  className="text-green-600 hover:text-green-700"
+                                >
+                                  <CheckCircle size={16} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={cancelEditingPoint}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-[#E51A4B] font-bold">•</span>
+                                <span className="flex-1 text-sm">{point}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => startEditingPoint(index, pointIndex)}
+                                  className="text-[#E51A4B] hover:text-[#c91742]"
+                                >
+                                  <Pencil size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeDetailPoint(index, pointIndex)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </>
+                            )}
                           </div>
                         ))}
                       </div>

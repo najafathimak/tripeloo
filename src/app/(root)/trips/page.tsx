@@ -239,17 +239,7 @@ const TripDetailsContent = () => {
               </div>
             )}
 
-            {/* Inclusions */}
-            {tripData.includes && tripData.includes.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-4 sm:gap-6 border-y py-4 text-gray-700 text-sm sm:text-base">
-                {tripData.includes.map((inc: string, index: number) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    <span>{inc}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Includes section hidden */}
 
             {/* Getaway Properties */}
             {tripData.properties && tripData.properties.length > 0 && (
