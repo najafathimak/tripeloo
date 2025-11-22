@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, CheckCircle, AlertCircle, Loader2, Plus, Trash2 } from "lucide-react";
+import { Upload, X, CheckCircle, AlertCircle, Loader2, Plus, Trash2, Pencil } from "lucide-react";
 import Image from "next/image";
 
 interface FormErrors {
@@ -107,6 +107,12 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
   const [includeInput, setIncludeInput] = useState("");
   const [excludeInput, setExcludeInput] = useState("");
   const [pointInputs, setPointInputs] = useState<Record<string, string>>({});
+  const [editingInclude, setEditingInclude] = useState<number | null>(null);
+  const [editingIncludeValue, setEditingIncludeValue] = useState("");
+  const [editingExclude, setEditingExclude] = useState<number | null>(null);
+  const [editingExcludeValue, setEditingExcludeValue] = useState("");
+  const [editingPoint, setEditingPoint] = useState<{detailIndex: number, pointIndex: number} | null>(null);
+  const [editingPointValue, setEditingPointValue] = useState("");
 
   // Fetch destinations
   useEffect(() => {
@@ -296,10 +302,35 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
   };
 
   const removeInclude = (index: number) => {
+    if (editingInclude === index) {
+      setEditingInclude(null);
+      setEditingIncludeValue("");
+    }
     setFormData({
       ...formData,
       includes: formData.includes.filter((_, i) => i !== index),
     });
+  };
+
+  const startEditingInclude = (index: number) => {
+    setEditingInclude(index);
+    setEditingIncludeValue(formData.includes[index]);
+  };
+
+  const saveEditingInclude = (index: number) => {
+    const trimmedValue = editingIncludeValue.trim();
+    if (trimmedValue && trimmedValue !== formData.includes[index]) {
+      const updated = [...formData.includes];
+      updated[index] = trimmedValue;
+      setFormData({ ...formData, includes: updated });
+    }
+    setEditingInclude(null);
+    setEditingIncludeValue("");
+  };
+
+  const cancelEditingInclude = () => {
+    setEditingInclude(null);
+    setEditingIncludeValue("");
   };
 
   const addExclude = () => {
@@ -313,10 +344,35 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
   };
 
   const removeExclude = (index: number) => {
+    if (editingExclude === index) {
+      setEditingExclude(null);
+      setEditingExcludeValue("");
+    }
     setFormData({
       ...formData,
       excludes: formData.excludes.filter((_, i) => i !== index),
     });
+  };
+
+  const startEditingExclude = (index: number) => {
+    setEditingExclude(index);
+    setEditingExcludeValue(formData.excludes[index]);
+  };
+
+  const saveEditingExclude = (index: number) => {
+    const trimmedValue = editingExcludeValue.trim();
+    if (trimmedValue && trimmedValue !== formData.excludes[index]) {
+      const updated = [...formData.excludes];
+      updated[index] = trimmedValue;
+      setFormData({ ...formData, excludes: updated });
+    }
+    setEditingExclude(null);
+    setEditingExcludeValue("");
+  };
+
+  const cancelEditingExclude = () => {
+    setEditingExclude(null);
+    setEditingExcludeValue("");
   };
 
   const addAdditionalDetail = () => {
@@ -390,8 +446,35 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
   };
 
   const removeDetailPoint = (detailIndex: number, pointIndex: number) => {
+    if (editingPoint && editingPoint.detailIndex === detailIndex && editingPoint.pointIndex === pointIndex) {
+      setEditingPoint(null);
+      setEditingPointValue("");
+    }
     const detail = formData.additionalDetails[detailIndex];
     updateAdditionalDetail(detailIndex, "points", detail.points?.filter((_, i) => i !== pointIndex) || []);
+  };
+
+  const startEditingPoint = (detailIndex: number, pointIndex: number) => {
+    const detail = formData.additionalDetails[detailIndex];
+    setEditingPoint({ detailIndex, pointIndex });
+    setEditingPointValue(detail.points?.[pointIndex] || "");
+  };
+
+  const saveEditingPoint = (detailIndex: number, pointIndex: number) => {
+    const trimmedValue = editingPointValue.trim();
+    if (trimmedValue) {
+      const detail = formData.additionalDetails[detailIndex];
+      const updatedPoints = [...(detail.points || [])];
+      updatedPoints[pointIndex] = trimmedValue;
+      updateAdditionalDetail(detailIndex, "points", updatedPoints);
+    }
+    setEditingPoint(null);
+    setEditingPointValue("");
+  };
+
+  const cancelEditingPoint = () => {
+    setEditingPoint(null);
+    setEditingPointValue("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -882,19 +965,57 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
             {formData.includes.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.includes.map((inc, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-[#E51A4B]/10 text-[#E51A4B] rounded-full text-sm"
-                  >
-                    {inc}
-                    <button
-                      type="button"
-                      onClick={() => removeInclude(index)}
-                      className="hover:text-red-700"
-                    >
-                      <X size={14} />
-                    </button>
-                  </span>
+                  <div key={index} className="inline-flex items-center gap-1">
+                    {editingInclude === index ? (
+                      <div className="flex items-center gap-1 px-3 py-1 bg-white border-2 border-[#E51A4B] rounded-full">
+                        <input
+                          type="text"
+                          value={editingIncludeValue}
+                          onChange={(e) => setEditingIncludeValue(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              saveEditingInclude(index);
+                            }
+                          }}
+                          className="text-sm outline-none min-w-[150px]"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => saveEditingInclude(index)}
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <CheckCircle size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditingInclude}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#E51A4B]/10 text-[#E51A4B] rounded-full text-sm">
+                        {inc}
+                        <button
+                          type="button"
+                          onClick={() => startEditingInclude(index)}
+                          className="hover:text-[#c91742]"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeInclude(index)}
+                          className="hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -930,19 +1051,57 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
             {formData.excludes.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.excludes.map((exc, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-sm"
-                  >
-                    {exc}
-                    <button
-                      type="button"
-                      onClick={() => removeExclude(index)}
-                      className="hover:text-red-700"
-                    >
-                      <X size={14} />
-                    </button>
-                  </span>
+                  <div key={index} className="inline-flex items-center gap-1">
+                    {editingExclude === index ? (
+                      <div className="flex items-center gap-1 px-3 py-1 bg-white border-2 border-orange-500 rounded-full">
+                        <input
+                          type="text"
+                          value={editingExcludeValue}
+                          onChange={(e) => setEditingExcludeValue(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              saveEditingExclude(index);
+                            }
+                          }}
+                          className="text-sm outline-none min-w-[150px]"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => saveEditingExclude(index)}
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <CheckCircle size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditingExclude}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-sm">
+                        {exc}
+                        <button
+                          type="button"
+                          onClick={() => startEditingExclude(index)}
+                          className="hover:text-orange-800"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeExclude(index)}
+                          className="hover:text-red-700"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -1101,15 +1260,57 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
                             key={pointIndex}
                             className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg"
                           >
-                            <span className="text-[#E51A4B] font-bold">•</span>
-                            <span className="flex-1 text-sm">{point}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeDetailPoint(index, pointIndex)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <X size={16} />
-                            </button>
+                            {editingPoint?.detailIndex === index && editingPoint?.pointIndex === pointIndex ? (
+                              <>
+                                <span className="text-[#E51A4B] font-bold">•</span>
+                                <input
+                                  type="text"
+                                  value={editingPointValue}
+                                  onChange={(e) => setEditingPointValue(e.target.value)}
+                                  onKeyPress={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
+                                      saveEditingPoint(index, pointIndex);
+                                    }
+                                  }}
+                                  className="flex-1 text-sm outline-none border-b-2 border-[#E51A4B] px-1"
+                                  autoFocus
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => saveEditingPoint(index, pointIndex)}
+                                  className="text-green-600 hover:text-green-700"
+                                >
+                                  <CheckCircle size={16} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={cancelEditingPoint}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-[#E51A4B] font-bold">•</span>
+                                <span className="flex-1 text-sm">{point}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => startEditingPoint(index, pointIndex)}
+                                  className="text-[#E51A4B] hover:text-[#c91742]"
+                                >
+                                  <Pencil size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeDetailPoint(index, pointIndex)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </>
+                            )}
                           </div>
                         ))}
                       </div>

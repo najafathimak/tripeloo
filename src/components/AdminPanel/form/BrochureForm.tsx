@@ -151,6 +151,9 @@ export default function BrochureForm() {
       return;
     }
 
+    // Clear selectedItem immediately to prevent showing stale rooms/packages from previous stay/getaway
+    setSelectedItem(null);
+
     const fetchItemDetails = async () => {
       setLoading(true);
       try {
@@ -175,14 +178,22 @@ export default function BrochureForm() {
                 ).filter((img: string) => img && img.trim() !== "")
               : [],
           };
-          setSelectedItem(normalizedItem);
+          // Only set if the selectedItemId hasn't changed during fetch
+          if (normalizedItem.id === selectedItemId) {
+            setSelectedItem(normalizedItem);
+          }
         } else {
           setSelectedItem(null);
         }
       } catch (error) {
         console.error("Error fetching item details:", error);
         const item = items.find((i) => i.id === selectedItemId);
-        setSelectedItem(item || null);
+        // Only set if the item ID matches
+        if (item && item.id === selectedItemId) {
+          setSelectedItem(item);
+        } else {
+          setSelectedItem(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -191,6 +202,7 @@ export default function BrochureForm() {
     fetchItemDetails();
   }, [selectedItemId, itemType, items]);
 
+  // Reset room/package selections and clear selectedItem when item changes
   // Reset room/package selections when item changes
   useEffect(() => {
     setSelectedRooms([]);
@@ -227,10 +239,18 @@ export default function BrochureForm() {
     if (!previewRef.current || !selectedItem) return;
 
     setGeneratingPDF(true);
+    let pdfContainer: HTMLDivElement | null = null;
+    
     try {
-      // Create a clean container for PDF generation
-      const pdfContainer = document.createElement("div");
-      pdfContainer.style.width = "210mm";
+      // Convert 210mm to pixels (1mm ≈ 3.779527559 pixels at 96 DPI)
+      const mmToPx = 3.779527559;
+      const containerWidthPx = 210 * mmToPx; // ~794px
+      
+      // Create a clean container for PDF generation with fixed dimensions
+      pdfContainer = document.createElement("div");
+      pdfContainer.style.width = `${containerWidthPx}px`;
+      pdfContainer.style.minWidth = `${containerWidthPx}px`;
+      pdfContainer.style.maxWidth = `${containerWidthPx}px`;
       pdfContainer.style.padding = "20mm";
       pdfContainer.style.backgroundColor = "#ffffff";
       pdfContainer.style.fontFamily = "Arial, sans-serif";
@@ -239,6 +259,7 @@ export default function BrochureForm() {
       pdfContainer.style.left = "-9999px";
       pdfContainer.style.top = "0";
       pdfContainer.style.zIndex = "-1";
+      pdfContainer.style.display = "block";
       document.body.appendChild(pdfContainer);
 
       // Clone the preview content
@@ -249,8 +270,51 @@ export default function BrochureForm() {
       clonedContent.style.maxHeight = "none";
       clonedContent.style.overflow = "visible";
       clonedContent.style.width = "100%";
+      clonedContent.style.minWidth = "100%";
       clonedContent.style.backgroundColor = "#ffffff";
       clonedContent.style.color = "#000000";
+      
+      // Fix all images to maintain their aspect ratio and explicit dimensions
+      const allImages = clonedContent.querySelectorAll("img");
+      let logoIndex = 0;
+      allImages.forEach((img) => {
+        const htmlImg = img as HTMLImageElement;
+        if (htmlImg.alt && htmlImg.alt.toLowerCase().includes("logo")) {
+          // First logo (top) - larger
+          if (logoIndex === 0) {
+            htmlImg.style.width = "200px";
+            htmlImg.style.height = "80px";
+            htmlImg.style.minWidth = "200px";
+            htmlImg.style.maxWidth = "200px";
+            htmlImg.style.minHeight = "64px";
+            htmlImg.style.maxHeight = "80px";
+            htmlImg.style.objectFit = "contain";
+            htmlImg.style.display = "block";
+            htmlImg.setAttribute("width", "200");
+            htmlImg.setAttribute("height", "80");
+            logoIndex++;
+          } 
+          // Second logo (bottom) - smaller
+          else {
+            htmlImg.style.width = "150px";
+            htmlImg.style.height = "60px";
+            htmlImg.style.minWidth = "150px";
+            htmlImg.style.maxWidth = "150px";
+            htmlImg.style.minHeight = "48px";
+            htmlImg.style.maxHeight = "60px";
+            htmlImg.style.objectFit = "contain";
+            htmlImg.style.display = "block";
+            htmlImg.setAttribute("width", "150");
+            htmlImg.setAttribute("height", "60");
+          }
+        }
+        // Ensure all images load properly and have explicit dimensions
+        if (!htmlImg.complete) {
+          htmlImg.style.display = "block";
+        }
+        // Remove any responsive classes that might affect sizing
+        htmlImg.classList.remove("w-auto", "h-auto");
+      });
       
       // Remove scroll-related classes and styles
       clonedContent.classList.remove("max-h-[80vh]", "overflow-y-auto");
@@ -271,6 +335,29 @@ export default function BrochureForm() {
           display: block !important;
           page-break-inside: avoid !important;
         }
+        /* Fix logo sizes - ensure they don't collapse */
+        img[alt*="Logo"], img[alt*="logo"] {
+          object-fit: contain !important;
+          display: block !important;
+        }
+        /* Top logo - first occurrence */
+        img[alt*="Logo"]:first-of-type, img[alt*="logo"]:first-of-type {
+          width: 200px !important;
+          height: 80px !important;
+          min-width: 200px !important;
+          max-width: 200px !important;
+          min-height: 64px !important;
+          max-height: 80px !important;
+        }
+        /* Bottom logo - second occurrence */
+        img[alt*="Logo"]:nth-of-type(2), img[alt*="logo"]:nth-of-type(2) {
+          width: 150px !important;
+          height: 60px !important;
+          min-width: 150px !important;
+          max-width: 150px !important;
+          min-height: 48px !important;
+          max-height: 60px !important;
+        }
         .text-white { color: #000 !important; }
         .text-gray-900 { color: #000 !important; }
         .text-gray-800 { color: #000 !important; }
@@ -278,12 +365,22 @@ export default function BrochureForm() {
         .text-gray-600 { color: #666 !important; }
         .text-gray-500 { color: #888 !important; }
         .text-gray-400 { color: #999 !important; }
-        .bg-white { background: #fff !important; }
-        .bg-gray-50 { background: #f9f9f9 !important; }
-        .bg-gray-100 { background: #f5f5f5 !important; }
-        .bg-gray-200 { background: #eee !important; }
-        .bg-gray-800, .bg-gray-700 { background: #f5f5f5 !important; }
-        .bg-red-50 { background: #fef2f2 !important; }
+        /* Force all backgrounds to white */
+        .bg-white, .bg-gray-50, .bg-gray-100, .bg-gray-200, .bg-gray-300, .bg-gray-400, 
+        .bg-gray-500, .bg-gray-600, .bg-gray-700, .bg-gray-800, .bg-gray-900,
+        .bg-red-50, .bg-red-100, .bg-red-200,
+        [class*="bg-gray"], [class*="bg-red"] {
+          background: #fff !important;
+          background-color: #fff !important;
+        }
+        /* Remove any inline background colors that might be gray */
+        div, section, article, aside, main, header, footer {
+          background-color: #fff !important;
+        }
+        /* Keep specific colored backgrounds only for brand colors */
+        .bg-\\[\\#E51A4B\\], [style*="background"][style*="#E51A4B"] {
+          background: #E51A4B !important;
+        }
         .border-gray-200 { border-color: #ddd !important; }
         .border-gray-600 { border-color: #999 !important; }
         .text-[#E51A4B] { color: #E51A4B !important; }
@@ -338,20 +435,122 @@ export default function BrochureForm() {
       // Append to container
       pdfContainer.appendChild(clonedContent);
 
-      // Wait for images to load and styles to apply (reduced timeout)
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // Wait for images to load and styles to apply
+      // Force all images to load before capturing - Increased timeout for multiple rooms
+      const images = pdfContainer.querySelectorAll("img");
+      const imageCount = images.length;
+      console.log(`Loading ${imageCount} images for PDF generation...`);
+      
+      const imagePromises = Array.from(images).map((img, index) => {
+        return new Promise<void>((resolve) => {
+          const htmlImg = img as HTMLImageElement;
+          
+          // Check if image is already loaded
+          if (htmlImg.complete && htmlImg.naturalWidth > 0) {
+            resolve();
+            return;
+          }
+          
+          // Set up load handler
+          const loadHandler = () => {
+            if (htmlImg.complete && htmlImg.naturalWidth > 0) {
+              resolve();
+            }
+          };
+          
+          // Set up error handler - continue even if image fails
+          const errorHandler = () => {
+            console.warn(`Image ${index + 1} failed to load, continuing...`);
+            resolve(); // Continue even on error
+          };
+          
+          htmlImg.onload = loadHandler;
+          htmlImg.onerror = errorHandler;
+          
+          // Increase timeout for multiple images (10 seconds per image, but max 30 seconds total)
+          const timeoutDuration = Math.min(10000, Math.max(5000, 30000 / imageCount));
+          setTimeout(() => {
+            if (htmlImg.complete) {
+              resolve();
+            } else {
+              console.warn(`Image ${index + 1} timeout after ${timeoutDuration}ms, continuing...`);
+              resolve(); // Continue even on timeout
+            }
+          }, timeoutDuration);
+          
+          // Force reload if needed
+          if (htmlImg.src && !htmlImg.complete) {
+            const originalSrc = htmlImg.src;
+            htmlImg.src = '';
+            htmlImg.src = originalSrc;
+          }
+        });
+      });
+      
+      // Wait for all images with progress tracking
+      try {
+        await Promise.all(imagePromises);
+        console.log(`All ${imageCount} images loaded successfully`);
+      } catch (error) {
+        console.error('Error loading images:', error);
+        // Continue anyway - some images might have loaded
+      }
+      
+      // Additional wait for styles and layout to stabilize
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Force recalculation of container dimensions after all content is loaded
+      // This ensures we capture the full height including all images and content
+      pdfContainer.style.height = 'auto';
+      pdfContainer.style.minHeight = 'auto';
+      pdfContainer.style.maxHeight = 'none';
+      
+      // Wait a bit more for layout recalculation
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Generate canvas with optimized settings for better performance
+      // Use fixed dimensions instead of viewport-based
+      const containerWidth = pdfContainer.offsetWidth || containerWidthPx;
+      
+      // Force layout recalculation to get accurate height
+      pdfContainer.style.height = 'auto';
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      
+      // Use scrollHeight to ensure we capture ALL content, add generous buffer
+      const measuredHeight = Math.max(
+        pdfContainer.scrollHeight || 0,
+        pdfContainer.offsetHeight || 0,
+        clonedContent.scrollHeight || 0,
+        clonedContent.offsetHeight || 0
+      );
+      
+      // Add buffer: 200px for safety, or 10% of content height, whichever is larger
+      const buffer = Math.max(200, measuredHeight * 0.1);
+      const containerHeight = measuredHeight + buffer;
+      
+      console.log(`Container dimensions: ${containerWidth}x${containerHeight}px (measured: ${measuredHeight}px + buffer: ${buffer}px)`);
+      
+      // Adaptive scale and timeout based on image count
+      // More images = lower scale for performance, longer timeout
+      const scale = imageCount > 20 ? 1.0 : imageCount > 10 ? 1.1 : 1.2;
+      const imageTimeout = Math.min(60000, Math.max(15000, imageCount * 3000)); // More generous timeout
+      
+      console.log(`Using scale: ${scale}, timeout: ${imageTimeout}ms for ${imageCount} images`);
+      
       const canvas = await html2canvas(pdfContainer, {
-        scale: 1.2, // Further reduced for faster generation
+        scale: scale, // Adaptive scale for performance with many images
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
         allowTaint: false,
-        imageTimeout: 5000, // Reduced timeout
+        imageTimeout: imageTimeout, // More generous timeout for multiple images
         removeContainer: false,
-        windowWidth: pdfContainer.scrollWidth,
-        windowHeight: pdfContainer.scrollHeight,
+        width: containerWidth,
+        height: containerHeight,
+        windowWidth: containerWidth,
+        windowHeight: containerHeight,
+        scrollX: 0,
+        scrollY: 0,
         ignoreElements: (element) => {
           // Skip rendering certain elements that might slow down generation
           const htmlElement = element as HTMLElement;
@@ -359,47 +558,139 @@ export default function BrochureForm() {
                  (htmlElement.style && htmlElement.style.display === 'none') ||
                  htmlElement.getAttribute('aria-hidden') === 'true';
         },
-        onclone: (clonedDoc) => {
+        onclone: (clonedDoc, element) => {
+          // Ensure the cloned container has proper height
+          const clonedContainer = clonedDoc.body.firstChild as HTMLElement;
+          if (clonedContainer) {
+            clonedContainer.style.height = 'auto';
+            clonedContainer.style.minHeight = 'auto';
+            clonedContainer.style.maxHeight = 'none';
+            clonedContainer.style.overflow = 'visible';
+            clonedContainer.style.backgroundColor = '#ffffff';
+          }
+          
+          // Force all elements with gray/red backgrounds to white
+          const allElements = clonedDoc.querySelectorAll('*');
+          allElements.forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            // Check class-based backgrounds
+            if (htmlEl.className && typeof htmlEl.className === 'string') {
+              const className = htmlEl.className;
+              if (className.includes('bg-gray') || 
+                  className.includes('bg-red-50') || 
+                  className.includes('bg-red-100') ||
+                  className.includes('bg-red-200')) {
+                htmlEl.style.backgroundColor = '#ffffff';
+                htmlEl.style.background = '#ffffff';
+              }
+            }
+            // Check inline styles
+            if (htmlEl.style.backgroundColor) {
+              const bgColor = htmlEl.style.backgroundColor.toLowerCase();
+              if (bgColor.includes('gray') || 
+                  bgColor.includes('rgb(249') || // gray-50
+                  bgColor.includes('rgb(243') || // gray-100
+                  bgColor.includes('rgb(229') || // gray-200
+                  bgColor.includes('rgb(254, 242') || // red-50
+                  bgColor.includes('#f9f9f9') ||
+                  bgColor.includes('#f5f5f5') ||
+                  bgColor.includes('#eee') ||
+                  bgColor.includes('#fef2f2')) {
+                htmlEl.style.backgroundColor = '#ffffff';
+                htmlEl.style.background = '#ffffff';
+              }
+            }
+          });
+          
           // Ensure all images are loaded and optimize
           const images = clonedDoc.querySelectorAll('img');
           images.forEach((img) => {
-            if (!img.complete) {
-              img.style.display = 'none';
+            const htmlImg = img as HTMLImageElement;
+            // Only hide if image is truly not loaded after our wait
+            if (!htmlImg.complete || htmlImg.naturalWidth === 0) {
+              // Try to ensure image loads
+              if (htmlImg.src && !htmlImg.src.startsWith('data:')) {
+                htmlImg.loading = 'eager';
+              }
             }
-            // Reduce image quality for PDF
-            if (img.src && img.src.startsWith('data:')) {
-              // Already optimized
+            // Ensure images have proper dimensions
+            if (htmlImg.complete && htmlImg.naturalWidth > 0) {
+              htmlImg.style.display = 'block';
             }
           });
         },
       });
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.85); // Use JPEG with lower quality for smaller file size
+      // Use adaptive quality based on image count to prevent crashes
+      const quality = imageCount > 20 ? 0.75 : imageCount > 10 ? 0.80 : 0.85;
+      const imgData = canvas.toDataURL("image/jpeg", quality);
+      
+      console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}px`);
+      console.log(`Container scrollHeight: ${pdfContainer.scrollHeight}px, offsetHeight: ${pdfContainer.offsetHeight}px`);
+      console.log(`Using JPEG quality: ${quality} for ${imageCount} images`);
       
       // Calculate dimensions for single page PDF
       const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
+      console.log(`Calculated PDF dimensions: ${imgWidth}x${imgHeight}mm`);
+      
+      // Ensure we have enough height - add generous buffer to prevent cutoff
+      // Add 50mm buffer (25mm top + 25mm bottom) to ensure last section is included
+      const finalPdfHeight = Math.max(imgHeight + 50, 297); // Min A4 height
+      
+      console.log(`Final PDF height: ${finalPdfHeight}mm (content: ${imgHeight}mm + buffer: 50mm)`);
+      
       // Create PDF with custom height to fit entire content (single page)
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: [210, imgHeight + 20] // Width 210mm (A4 width), height based on content + margin
+        format: [210, finalPdfHeight] // Width 210mm (A4 width), height based on content + margins
       });
 
-      // Add image to single page
-      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
+      // Add image to single page - ensure full image is included
+      try {
+        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight, undefined, 'FAST');
+        console.log("Image added to PDF successfully");
+      } catch (error) {
+        console.error("Error adding image to PDF:", error);
+        // Try with lower quality if it fails
+        const fallbackData = canvas.toDataURL("image/jpeg", 0.7);
+        pdf.addImage(fallbackData, "JPEG", 0, 0, imgWidth, imgHeight, undefined, 'FAST');
+      }
 
       // Clean up
-      document.body.removeChild(pdfContainer);
+      if (pdfContainer && pdfContainer.parentNode) {
+        document.body.removeChild(pdfContainer);
+      }
       
       const fileName = selectedItem
         ? `${selectedItem.name.replace(/[^a-z0-9]/gi, "_")}_brochure.pdf`
         : "brochure.pdf";
       pdf.save(fileName);
+      
+      console.log("PDF generated successfully!");
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF. Please try again.");
+      
+      // Clean up on error
+      try {
+        if (pdfContainer && pdfContainer.parentNode) {
+          document.body.removeChild(pdfContainer);
+        }
+      } catch (cleanupError) {
+        console.error("Error cleaning up PDF container:", cleanupError);
+      }
+      
+      // Provide more helpful error message
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      if (errorMessage.includes("timeout") || errorMessage.includes("Timeout")) {
+        alert("PDF generation timed out. This may happen with many images. Please try selecting fewer rooms or wait a moment and try again.");
+      } else if (errorMessage.includes("image") || errorMessage.includes("load")) {
+        alert("Some images failed to load. Please check your internet connection and try again.");
+      } else {
+        alert(`Failed to generate PDF: ${errorMessage}. Please try again.`);
+      }
     } finally {
       setGeneratingPDF(false);
     }
@@ -531,8 +822,8 @@ export default function BrochureForm() {
             </div>
           )}
 
-          {/* Room Selection (for Stays) */}
-          {selectedItem && itemType === "stay" && selectedItem.rooms && selectedItem.rooms.length > 0 && (
+          {/* Room Selection (for Stays) - Only show if rooms exist for this specific stay */}
+          {selectedItem && String(selectedItem.id) === String(selectedItemId) && itemType === "stay" && selectedItem.rooms && Array.isArray(selectedItem.rooms) && selectedItem.rooms.length > 0 && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-white/90 mb-2">
                 Select Rooms to Include (Optional - Leave empty to include all)
@@ -568,8 +859,8 @@ export default function BrochureForm() {
             </div>
           )}
 
-          {/* Package Selection (for Getaways) */}
-          {selectedItem && itemType === "trip" && selectedItem.packages && selectedItem.packages.length > 0 && (
+          {/* Package Selection (for Getaways) - Only show if packages exist for this specific getaway */}
+          {selectedItem && String(selectedItem.id) === String(selectedItemId) && itemType === "trip" && selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-white/90 mb-2">
                 Select Packages to Include (Optional - Leave empty to include all)
@@ -671,25 +962,32 @@ export default function BrochureForm() {
               className="bg-white text-gray-900 rounded-lg p-6 shadow-lg max-h-[80vh] overflow-y-auto"
             >
               {/* Logo at Top Middle */}
-              <div className="flex justify-center mb-6">
+              <div className="flex justify-center mb-6" style={{ minHeight: '64px' }}>
                 <Image
                   src="/assets/logo_new.png"
                   alt="Tripeloo Logo"
                   width={200}
                   height={80}
                   className="h-16 w-auto object-contain"
+                  style={{ minWidth: '150px', maxWidth: '200px', height: 'auto' }}
                 />
               </div>
 
-              {/* Carousel - Cover Image + All Carousel Images */}
+              {/* Title - Show before images */}
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-snug mb-6">
+                {selectedItem.name}
+              </h1>
+
+              {/* Carousel - Cover Image + All Carousel Images - Larger Size */}
               <div className="mb-6">
                 {selectedItem.coverImage && (
                   <Image
                     src={optimizeCloudinaryUrl(selectedItem.coverImage)}
                     alt={selectedItem.name}
                     width={800}
-                    height={400}
-                    className="w-full h-80 object-cover rounded-lg mb-4"
+                    height={500}
+                    className="w-full h-auto object-cover rounded-lg mb-4 shadow-md"
+                    style={{ minHeight: '300px', maxHeight: '500px' }}
                   />
                 )}
                 {selectedItem.carouselImages && 
@@ -698,7 +996,7 @@ export default function BrochureForm() {
                    const imgUrl = typeof img === 'string' ? img : img?.url || '';
                    return imgUrl && imgUrl.trim() !== "";
                  }).length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div className="space-y-4">
                     {selectedItem.carouselImages
                       .filter((img: any) => {
                         const imgUrl = typeof img === 'string' ? img : img?.url || '';
@@ -711,20 +1009,16 @@ export default function BrochureForm() {
                             key={idx}
                             src={optimizeCloudinaryUrl(imgUrl)}
                             alt={`${selectedItem.name} - Image ${idx + 1}`}
-                            width={400}
-                            height={300}
-                            className="w-full h-48 object-cover rounded-lg"
+                            width={800}
+                            height={500}
+                            className="w-full h-auto object-cover rounded-lg shadow-md"
+                            style={{ minHeight: '300px', maxHeight: '500px' }}
                           />
                         );
                       })}
                   </div>
                 )}
               </div>
-
-              {/* Title */}
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-snug mb-4">
-                {selectedItem.name}
-              </h1>
 
               {/* Rating */}
               <div className="mb-4">
@@ -750,60 +1044,25 @@ export default function BrochureForm() {
                 </p>
               )}
 
-              {/* Important Info - Good to Know (Right after description for Stays) */}
-              {selectedItem.importantInfo && typeof selectedItem.importantInfo === 'string' && selectedItem.importantInfo.trim().length > 0 && itemType === "stay" && (
+              {/* Important Info - Good to Know (Right after description for Stays) - COMMENTED OUT */}
+              {/* {selectedItem.importantInfo && typeof selectedItem.importantInfo === 'string' && selectedItem.importantInfo.trim().length > 0 && itemType === "stay" && (
                 <div className="mt-6 mb-6 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
                   <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Good to Know</h2>
                   <div className="text-gray-700 text-sm sm:text-base whitespace-pre-line italic">
                     {selectedItem.importantInfo}
                   </div>
                 </div>
-              )}
+              )} */}
 
               {/* About (for Activities) */}
               {selectedItem.about && itemType === "activity" && (
-                <div className="mt-8 mb-6 bg-red-50 px-3 py-3 border rounded-lg">
+                <div className="mt-8 mb-6 bg-white px-3 py-3 border rounded-lg">
                   <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">About</h2>
                   <p className="text-gray-700">{selectedItem.about}</p>
                 </div>
               )}
 
-              {/* Includes/Excludes Section (for Stays/Getaways) */}
-              {(itemType === "stay" || itemType === "trip") && (
-                ((selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0) || 
-                 (selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0)) && (
-                  <div className="mb-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-                    <section className="bg-red-50 py-7 px-6 md:px-5 rounded-lg" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-                      {selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 && (
-                        <div className={selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0 ? "mb-10" : ""}>
-                          <h2 className="text-xl font-semibold text-gray-800 mb-6">What Includes</h2>
-                          <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
-                            {selectedItem.includes.map((item: string, index: number) => (
-                              <div key={index} className="flex items-start gap-2">
-                                <Dot size={20} className="text-red-500" />
-                                <p className="text-sm text-gray-700 leading-snug">{item}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0 && (
-                        <div className={selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 ? "mt-10" : ""}>
-                          <h2 className="text-xl font-semibold text-gray-800 mb-6">What Excludes</h2>
-                          <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
-                            {selectedItem.excludes.map((item: string, index: number) => (
-                              <div key={index} className="flex items-start gap-3">
-                                <Dot size={20} className="text-red-500 mt-1 shrink-0" />
-                                <p className="text-sm text-gray-700 leading-snug">{item}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </section>
-                  </div>
-                )
-              )}
+              {/* Excludes Section removed */}
 
               {/* Activity Details (for Activities) - Inline with Icons */}
               {selectedItem.activityDetails && Object.keys(selectedItem.activityDetails).length > 0 && itemType === "activity" && (
@@ -846,43 +1105,11 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* IncludeItemSection (for Activities) */}
-              {itemType === "activity" && (
-                <div className="mb-6">
-                  <section className="bg-red-50 py-7 px-6 md:px-5 rounded-lg">
-                    {selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 && (
-                      <div className={selectedItem.excludes && selectedItem.excludes.length > 0 ? "mb-10" : ""}>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">What Includes</h2>
-                        <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
-                          {selectedItem.includes.map((item: string, index: number) => (
-                            <div key={index} className="flex items-start gap-2">
-                              <Dot size={20} className="text-red-500" />
-                              <p className="text-sm text-gray-700 leading-snug">{item}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0 && (
-                      <div>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">What Excludes</h2>
-                        <div className="grid md:grid-cols-2 gap-y-4 gap-x-12 text-gray-700">
-                          {selectedItem.excludes.map((item: string, index: number) => (
-                            <div key={index} className="flex items-start gap-3">
-                              <Dot size={20} className="text-red-500 mt-1 shrink-0" />
-                              <p className="text-sm text-gray-700 leading-snug">{item}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </section>
-                </div>
-              )}
+              {/* Excludes Section removed */}
 
               {/* Highlights (for Stays) */}
               {selectedItem.properties && Array.isArray(selectedItem.properties) && selectedItem.properties.length > 0 && itemType === "stay" && (
-                <div className="mt-8 mb-6 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
+                <div className="mt-8 mb-6 bg-white rounded-2xl p-5 sm:p-6 shadow-inner">
                   <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Highlights</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-gray-700 text-sm sm:text-base">
                     {selectedItem.properties.map((property: string, index: number) => (
@@ -897,7 +1124,7 @@ export default function BrochureForm() {
 
               {/* Getaway Features (for Getaways) */}
               {selectedItem.properties && Array.isArray(selectedItem.properties) && selectedItem.properties.length > 0 && itemType === "trip" && (
-                <div className="mt-8 mb-6 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
+                <div className="mt-8 mb-6 bg-white rounded-2xl p-5 sm:p-6 shadow-inner">
                   <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Getaway Features</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
                     {selectedItem.properties.map((prop: string, index: number) => (
@@ -907,8 +1134,8 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* Rooms Section (for Stays) */}
-              {selectedItem.rooms && Array.isArray(selectedItem.rooms) && selectedItem.rooms.length > 0 && itemType === "stay" && (() => {
+              {/* Rooms Section (for Stays) - Only show if rooms exist for this specific stay */}
+              {selectedItem && String(selectedItem.id) === String(selectedItemId) && itemType === "stay" && selectedItem.rooms && Array.isArray(selectedItem.rooms) && selectedItem.rooms.length > 0 && (() => {
                 // Filter rooms based on selection
                 const roomsToShow = selectedRooms.length > 0
                   ? selectedItem.rooms.filter((room: any, idx: number) => {
@@ -921,66 +1148,56 @@ export default function BrochureForm() {
                 
                 return (
                   <div className="mb-6 mt-8">
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Choose Your Room</h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                    <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">Room</h2>
+                    <div className="space-y-8">
                       {roomsToShow.map((room: any, idx: number) => (
-                      <div key={idx} className="cursor-pointer rounded-xl overflow-hidden shadow-md border border-gray-200">
-                        {room.thumb ? (
-                          <Image
-                            src={optimizeCloudinaryUrl(room.thumb)}
-                            alt={room.name}
-                            width={180}
-                            height={120}
-                            className="h-[120px] w-full object-cover"
-                          />
-                        ) : room.images && room.images.length > 0 ? (
-                          <Image
-                            src={optimizeCloudinaryUrl(room.images[0])}
-                            alt={room.name}
-                            width={180}
-                            height={120}
-                            className="h-[120px] w-full object-cover"
-                          />
+                      <div key={idx} className="w-full">
+                        {/* Room Name */}
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">{room.name}</h3>
+                        
+                        {/* Room Images - Full Width, Larger Size */}
+                        {room.images && Array.isArray(room.images) && room.images.filter((img: string) => img && img.trim() !== "").length > 0 ? (
+                          <div className="space-y-4 mb-4">
+                            {room.images
+                              .filter((img: string) => img && img.trim() !== "")
+                              .map((img: string, imgIdx: number) => (
+                                <Image
+                                  key={imgIdx}
+                                  src={optimizeCloudinaryUrl(img)}
+                                  alt={`${room.name} - Image ${imgIdx + 1}`}
+                                  width={800}
+                                  height={500}
+                                  className="w-full h-auto object-cover rounded-lg shadow-md"
+                                  style={{ minHeight: '300px', maxHeight: '500px' }}
+                                />
+                              ))}
+                          </div>
+                        ) : room.thumb ? (
+                          <div className="mb-4">
+                            <Image
+                              src={optimizeCloudinaryUrl(room.thumb)}
+                              alt={room.name}
+                              width={800}
+                              height={500}
+                              className="w-full h-auto object-cover rounded-lg shadow-md"
+                              style={{ minHeight: '300px', maxHeight: '500px' }}
+                            />
+                          </div>
                         ) : (
-                          <div className="h-[120px] w-full bg-gray-200 flex items-center justify-center">
+                          <div className="h-[300px] w-full bg-white border border-gray-200 flex items-center justify-center rounded-lg mb-4">
                             <span className="text-gray-400 text-sm">No Image</span>
                           </div>
                         )}
-                        <div className="p-3 flex flex-col gap-1">
-                          <h3 className="font-semibold text-sm text-gray-800">{room.name}</h3>
-                          {/* Room rate excluded - only show if custom price is set globally */}
-                        </div>
-                        {/* Room Images Gallery */}
-                        {room.images && Array.isArray(room.images) && room.images.filter((img: string) => img && img.trim() !== "").length > 0 && (
-                          <div className="p-3 pt-0">
-                            <div className="grid grid-cols-2 gap-2">
-                              {room.images
-                                .filter((img: string) => img && img.trim() !== "")
-                                .slice(0, 4)
-                                .map((img: string, imgIdx: number) => (
-                                  <Image
-                                    key={imgIdx}
-                                    src={optimizeCloudinaryUrl(img)}
-                                    alt={`${room.name} - Image ${imgIdx + 1}`}
-                                    width={150}
-                                    height={100}
-                                    className="w-full h-20 object-cover rounded"
-                                  />
-                                ))}
-                            </div>
-                            {room.images.filter((img: string) => img && img.trim() !== "").length > 4 && (
-                              <p className="text-xs text-gray-500 mt-2">
-                                +{room.images.filter((img: string) => img && img.trim() !== "").length - 4} more images
-                              </p>
-                            )}
-                          </div>
-                        )}
+                        
                         {/* Room Features */}
                         {room.features && Array.isArray(room.features) && room.features.length > 0 && (
-                          <div className="p-3 pt-0">
-                            <div className="grid grid-cols-2 gap-2 text-gray-700 text-xs">
+                          <div className="mt-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700 text-sm sm:text-base">
                               {room.features.map((feature: string, fIdx: number) => (
-                                <div key={fIdx}>• {feature}</div>
+                                <div key={fIdx} className="flex items-start gap-2">
+                                  <span className="text-[#E51A4B] font-bold mt-0.5">•</span>
+                                  <span>{feature}</span>
+                                </div>
                               ))}
                             </div>
                           </div>
@@ -992,8 +1209,8 @@ export default function BrochureForm() {
                 );
               })()}
 
-              {/* Packages Section (for Getaways) */}
-              {selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && itemType === "trip" && (() => {
+              {/* Packages Section (for Getaways) - Only show if packages exist for this specific getaway */}
+              {selectedItem && String(selectedItem.id) === String(selectedItemId) && itemType === "trip" && selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && (() => {
                 // Filter packages based on selection
                 const packagesToShow = selectedPackages.length > 0
                   ? selectedItem.packages.filter((pkg: any, idx: number) => {
@@ -1027,7 +1244,7 @@ export default function BrochureForm() {
                             className="h-[120px] w-full object-cover"
                           />
                         ) : (
-                          <div className="h-[120px] w-full bg-gray-200 flex items-center justify-center">
+                          <div className="h-[120px] w-full bg-white border border-gray-200 flex items-center justify-center">
                             <span className="text-gray-400 text-sm">No Image</span>
                           </div>
                         )}
@@ -1088,12 +1305,12 @@ export default function BrochureForm() {
                 );
               })()}
 
-              {/* Price Section (for Stays/Getaways) */}
+              {/* Price Section (for Stays/Getaways) - Keep Price Includes and Price Excludes */}
               {(itemType === "stay" || itemType === "trip") && (
                 ((selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0) || 
                  (selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0)) && (
                   <div className="mb-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-                    <section className="bg-red-50 py-7 px-6 md:px-5 rounded-lg" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    <section className="bg-white py-7 px-6 md:px-5 rounded-lg border border-gray-200" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                       {selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0 && (
                         <div className={selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0 ? "mb-10" : ""}>
                           <h2 className="text-xl font-semibold text-gray-800 mb-6">Price Includes</h2>
@@ -1238,7 +1455,7 @@ export default function BrochureForm() {
               {/* Custom Content */}
               {customContent && (
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-3 border-b-2 border-[#E51A4B] pb-2">Special Notes</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-3 border-b-2 border-[#E51A4B] pb-2">Details</h2>
                   <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                     {customContent}
                   </div>
@@ -1247,13 +1464,14 @@ export default function BrochureForm() {
 
               {/* Footer */}
               <div className="mt-8 pt-6 border-t-2 border-gray-300" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-                <div className="flex justify-center mb-4">
+                <div className="flex justify-center mb-4" style={{ minHeight: '48px' }}>
                   <Image
                     src="/assets/logo_new.png"
                     alt="Tripeloo Logo"
                     width={150}
                     height={60}
                     className="h-12 w-auto object-contain"
+                    style={{ minWidth: '120px', maxWidth: '150px', height: 'auto' }}
                   />
                 </div>
                 <div className="text-center mb-4">

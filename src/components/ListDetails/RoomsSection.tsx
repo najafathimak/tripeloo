@@ -73,17 +73,20 @@ export default function RoomsSection({
   rooms?: any[];
   onRoomSelect: (rooms: any[]) => void;
 }) {
+  // Only show rooms if they exist - don't use defaultRooms fallback
+  if (!roomsProp || !Array.isArray(roomsProp) || roomsProp.length === 0) {
+    return null;
+  }
+
   // Map database rooms to component format
-  const rooms = roomsProp && roomsProp.length > 0
-    ? roomsProp.map((room, index) => ({
-        id: room.id || index + 1,
-        name: room.name || `Room ${index + 1}`,
-        rate: room.rate || "Price on request",
-        thumb: room.thumb || room.images?.[0] || "",
-        images: room.images || [room.thumb || ""],
-        features: room.features || [],
-      }))
-    : defaultRooms;
+  const rooms = roomsProp.map((room, index) => ({
+    id: room.id || index + 1,
+    name: room.name || `Room ${index + 1}`,
+    rate: room.rate || "Price on request",
+    thumb: room.thumb || room.images?.[0] || "",
+    images: room.images || [room.thumb || ""],
+    features: room.features || [],
+  }));
 
   const [selectedRoom, setSelectedRoom] = useState<null | (typeof rooms)[0]>(
     null
