@@ -1,6 +1,7 @@
 "use client";
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 function TentIcon() {
@@ -17,12 +18,10 @@ interface HeroProps {
 }
 
 export function Hero({ desktopImage, mobileImage }: HeroProps) {
-  const onNav = (hash: string) => {
-    if (typeof window !== 'undefined') {
-      window.location.href = hash;
-      const el = document.getElementById('explore');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  const router = useRouter();
+  
+  const onNav = (category: 'stays' | 'things-to-do' | 'getaways') => {
+    router.push(`/destinations?category=${category}`);
   };
 
   const defaultMobileImage = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.1.0&auto=format&fit=crop&q=100&w=1080&h=1920";
@@ -62,21 +61,21 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
           <div className="select-none w-full flex items-center justify-center">
             <div className="flex items-center gap-3 sm:gap-4 lg:gap-6 text-[4.5vw] sm:text-[5vw] lg:text-[5.5vw] leading-none tracking-tight">
               <button 
-                onClick={() => onNav('destinations')} 
+                onClick={() => onNav('stays')} 
                 className="hero-title-desktop hero-title-1 text-white/95 hover:text-brand transition-colors"
               >
                 Stays
               </button>
               <span className="text-white/95"><TentIcon /></span>
               <button 
-                onClick={() => onNav('destinations')} 
+                onClick={() => onNav('things-to-do')} 
                 className="hero-title-desktop hero-title-2 text-white/95 hover:text-brand transition-colors"
               >
                 Things to Do
               </button>
               <span className="text-white/95"><TentIcon /></span>
               <button 
-                onClick={() => onNav('destinations')} 
+                onClick={() => onNav('getaways')} 
                 className="hero-title-desktop hero-title-3 text-white/95 hover:text-brand transition-colors"
               >
                 Getaways
@@ -89,7 +88,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
         <div className="sm:hidden absolute inset-0 flex items-center font-serif justify-center px-4">
           <div className="select-none w-full flex flex-col items-center justify-center gap-2">
             <button 
-              onClick={() => onNav('destinations')} 
+              onClick={() => onNav('stays')} 
               className="hero-title-mobile text-white text-4xl font-bold tracking-wide hover:text-brand transition-colors"
             >
               Stays
@@ -100,7 +99,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
               </svg>
             </span>
             <button 
-              onClick={() => onNav('destinations')} 
+              onClick={() => onNav('things-to-do')} 
               className="hero-title-mobile text-white text-4xl font-bold tracking-wide hover:text-brand transition-colors"
             >
               Things to Do
@@ -111,7 +110,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
               </svg>
             </span>
             <button 
-              onClick={() => onNav('destinations')} 
+              onClick={() => onNav('getaways')} 
               className="hero-title-mobile text-white text-4xl font-bold tracking-wide hover:text-brand transition-colors"
             >
               Getaways
@@ -121,15 +120,15 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
 
         {/* Centered bottom light gray down arrow */}
         <div className="absolute left-0 right-0 bottom-6 sm:bottom-8 flex items-center justify-center">
-          <button
-            aria-label="Scroll to explore"
-            onClick={() => onNav('stays')}
+          <a
+            href="/destinations"
+            aria-label="Go to destinations"
             className="text-gray-300 hover:text-gray-200 transition"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-7 w-7">
               <path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
             </svg>
-          </button>
+          </a>
         </div>
       </div>
     </section>
