@@ -11,7 +11,7 @@ interface DestinationsClientProps {
 
 export default function DestinationsClient({ destinations }: DestinationsClientProps) {
   const searchParams = useSearchParams();
-  const category = searchParams.get("category");
+  const category = searchParams?.get("category") || null;
 
   return (
     <div className="container py-32">
