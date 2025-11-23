@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { destinations as fallbackDestinations } from "@/data/destinations";
 import { Destination } from "@/types/destination";
 import { siteConfig } from "@/config/site";
@@ -93,7 +94,34 @@ export default async function DestinationsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <DestinationsClient destinations={destinations} />
+      <Suspense fallback={
+        <div className="container py-32">
+          <div className="mb-8">
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              Popular Destinations
+            </h1>
+            <p className="mt-2 text-gray-600">
+              Explore top spots with cover images, starting prices, and highlights.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {destinations.map((d) => (
+              <article
+                key={d._id}
+                className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
+              >
+                <div className="relative h-56 w-full bg-gray-200 animate-pulse" />
+                <div className="p-4">
+                  <div className="h-6 bg-gray-200 rounded w-3/4 animate-pulse mb-2" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      }>
+        <DestinationsClient destinations={destinations} />
+      </Suspense>
     </>
   );
 }
