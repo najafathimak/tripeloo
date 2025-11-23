@@ -130,7 +130,7 @@ const About = () => {
             Legal & <span className="text-red-400 font-bold">Policies</span>
           </h2>
           
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             <div className="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition-shadow">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Privacy Policy</h3>
               <p className="text-gray-600 mb-4">
@@ -157,18 +157,6 @@ const About = () => {
               </a>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition-shadow">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Company Policies</h3>
-              <p className="text-gray-600 mb-4">
-                Review our company policies regarding bookings, cancellations, and refunds.
-              </p>
-              <a
-                href="/policies"
-                className="text-[#E51A4B] font-semibold hover:underline inline-flex items-center gap-2"
-              >
-                View Policies →
-              </a>
-            </div>
           </div>
 
           {/* Contact Information Box */}

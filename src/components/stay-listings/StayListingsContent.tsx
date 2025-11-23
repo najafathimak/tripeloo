@@ -72,8 +72,17 @@ function StayListingsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const rawDestination = searchParams.get("destination");
+  const categoryParam = searchParams.get("category");
+  
+  // Map category query param to tab name
+  const getDefaultTab = () => {
+    if (categoryParam === "things-to-do") return "Things to Do";
+    if (categoryParam === "getaways") return "Getaways";
+    return "Stays"; // default
+  };
+  
   const [isVisible, setIsVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState("Stays");
+  const [activeTab, setActiveTab] = useState(getDefaultTab());
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -91,6 +100,17 @@ function StayListingsContent() {
       return () => clearTimeout(timer);
     }
   }, [rawDestination, router]);
+
+  // Update active tab when category query param changes
+  useEffect(() => {
+    if (categoryParam === "things-to-do") {
+      setActiveTab("Things to Do");
+    } else if (categoryParam === "getaways") {
+      setActiveTab("Getaways");
+    } else if (categoryParam === "stays") {
+      setActiveTab("Stays");
+    }
+  }, [categoryParam]);
 
   // Fetch data from API
   useEffect(() => {
