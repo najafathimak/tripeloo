@@ -84,6 +84,7 @@ const BookingSidebar = ({
               itemLocation={itemLocation}
               itemPrice={price}
               itemImportantInfo={itemImportantInfo}
+              isMobile={true}
             />
           </div>
         </div>
@@ -144,6 +145,7 @@ const BookingSidebar = ({
                   itemLocation={itemLocation}
                   itemPrice={price}
                   itemImportantInfo={itemImportantInfo}
+                  isMobile={true}
                 />
               </div>
             </div>
@@ -200,6 +202,7 @@ const BookingSidebar = ({
           itemLocation={itemLocation}
           itemPrice={price}
           itemImportantInfo={itemImportantInfo}
+          isMobile={false}
         />
       </div>
     </div>
