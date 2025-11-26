@@ -34,7 +34,7 @@ export default function DestinationsClient({ destinations }: DestinationsClientP
               href={{
                 pathname: "/stay-listings",
                 query: {
-                  destination: d.location,
+                  destination: d.name,
                   ...(category && { category }),
                 },
               }}

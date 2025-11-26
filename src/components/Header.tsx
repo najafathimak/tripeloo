@@ -4,15 +4,22 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
-import { Phone, User, LogOut } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Phone, User, LogOut, Search, X } from 'lucide-react';
+import type { Destination } from '@/types/destination';
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [loadingDestinations, setLoadingDestinations] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('stays');
   const pathname = usePathname();
+  const router = useRouter();
   const isHomePage = pathname === '/';
   const { data: session, status } = useSession();
 
@@ -20,6 +27,50 @@ export function Header() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch destinations when search modal opens
+  useEffect(() => {
+    if (showSearchModal && destinations.length === 0) {
+      setLoadingDestinations(true);
+      fetch('/api/destinations')
+        .then(res => res.json())
+        .then(data => {
+          setDestinations(data.data || []);
+          setLoadingDestinations(false);
+        })
+        .catch(() => {
+          setLoadingDestinations(false);
+        });
+    }
+  }, [showSearchModal, destinations.length]);
+
+  const handleSearchSubmit = () => {
+    if (!selectedDestination) {
+      alert('Please select a destination');
+      return;
+    }
+
+    const destinationName = encodeURIComponent(selectedDestination);
+    let categoryParam = '';
+    
+    if (selectedCategory === 'getaways') {
+      categoryParam = 'getaways';
+    } else if (selectedCategory === 'things-to-do') {
+      categoryParam = 'things-to-do';
+    }
+    // stays is default, so no category param needed
+
+    const queryParams = new URLSearchParams({
+      destination: destinationName,
+    });
+    
+    if (categoryParam) {
+      queryParams.set('category', categoryParam);
+    }
+
+    setShowSearchModal(false);
+    router.push(`/stay-listings?${queryParams.toString()}`);
+  };
 
   const openMenu = () => {
     setClosing(false);
@@ -62,6 +113,15 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {/* Search Icon - Mobile & Desktop */}
+          <button
+            onClick={() => setShowSearchModal(true)}
+            className={`${isHomePage ? 'text-white hover:text-brand' : 'text-gray-900 hover:text-[#E51A4B]'} transition-colors p-2`}
+            aria-label="Search"
+          >
+            <Search size={20} />
+          </button>
+
           {/* Call Assistance - Desktop */}
           <a
             href="tel:7066444430"
@@ -200,6 +260,108 @@ export function Header() {
               ) : mounted ? (
                 <Link href="/login" className="flex-1 inline-flex items-center justify-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition" onClick={closeMenu}>Login</Link>
               ) : null}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search Modal */}
+      {showSearchModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowSearchModal(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+              <h2 className="text-xl font-bold text-gray-900">Search Destinations</h2>
+              <button
+                onClick={() => setShowSearchModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close"
+              >
+                <X size={20} className="text-gray-600" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Destination Selector */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Select Destination
+                </label>
+                {loadingDestinations ? (
+                  <div className="border border-gray-300 rounded-lg px-4 py-3 bg-gray-50">
+                    <p className="text-sm text-gray-500">Loading destinations...</p>
+                  </div>
+                ) : (
+                  <select
+                    value={selectedDestination}
+                    onChange={(e) => setSelectedDestination(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent"
+                  >
+                    <option value="">Choose a destination...</option>
+                    {destinations.map((dest) => (
+                      <option key={dest._id || dest.slug} value={dest.name}>
+                        {dest.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Category Selector */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Select Category
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    onClick={() => setSelectedCategory('stays')}
+                    className={`px-4 py-3 rounded-lg border-2 text-sm font-semibold transition ${
+                      selectedCategory === 'stays'
+                        ? 'border-[#E51A4B] bg-[#E51A4B] text-white'
+                        : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    Stays
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('things-to-do')}
+                    className={`px-4 py-3 rounded-lg border-2 text-sm font-semibold transition ${
+                      selectedCategory === 'things-to-do'
+                        ? 'border-[#E51A4B] bg-[#E51A4B] text-white'
+                        : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    Things to Do
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('getaways')}
+                    className={`px-4 py-3 rounded-lg border-2 text-sm font-semibold transition ${
+                      selectedCategory === 'getaways'
+                        ? 'border-[#E51A4B] bg-[#E51A4B] text-white'
+                        : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    Getaways
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                onClick={handleSearchSubmit}
+                disabled={!selectedDestination}
+                className="w-full bg-[#E51A4B] hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition"
+              >
+                Search
+              </button>
             </div>
           </div>
         </div>

@@ -21,6 +21,7 @@ interface WhatsAppBookingFormProps {
   itemLocation?: string;
   itemPrice?: string;
   itemImportantInfo?: string;
+  isMobile?: boolean;
 }
 
 export const WhatsAppBookingForm = ({ 
@@ -32,6 +33,7 @@ export const WhatsAppBookingForm = ({
   itemLocation,
   itemPrice,
   itemImportantInfo,
+  isMobile = false,
 }: WhatsAppBookingFormProps) => {
   const { data: session } = useSession();
   const [adults, setAdults] = useState(1);
@@ -158,6 +160,107 @@ Please confirm availability and total price.`;
     window.open("tel:+917066444430");
   };
 
+  const handleEmailInquiry = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate dates same as WhatsApp booking
+    if (isPackage) {
+      if (!checkIn) {
+        alert("Please select your travel date.");
+        return;
+      }
+      const today = dayjs().startOf("day");
+      const travelDate = dayjs(checkIn);
+      if (travelDate.isBefore(today)) {
+        alert("Past dates are not allowed.");
+        return;
+      }
+    } else {
+      if (!checkIn || !checkOut) {
+        alert("Please select both check-in and check-out dates.");
+        return;
+      }
+      const today = dayjs().startOf("day");
+      const checkInDate = dayjs(checkIn);
+      const checkOutDate = dayjs(checkOut);
+
+      if (checkInDate.isBefore(today) || checkOutDate.isBefore(today)) {
+        alert("Past dates are not allowed.");
+        return;
+      }
+
+      if (checkOutDate.isBefore(checkInDate)) {
+        alert("Check-out date must be after check-in date.");
+        return;
+      }
+    }
+
+    const selectedItemText =
+      selectedRooms.length > 0
+        ? selectedRooms
+            .map((r, i) => {
+              const price = r.price || (r.rate ? parseInt(r.rate.replace(/[^\d]/g, "")) : 0);
+              const duration = r.duration ? ` (${r.duration})` : "";
+              return `${i + 1}. ${r.name}${duration} - ₹${price.toLocaleString()}`;
+            })
+            .join("\n")
+        : isPackage ? "No specific package selected" : "No specific room selected";
+
+    const roomPackageType = isPackage ? "Package(s)" : "Room(s)";
+    const userEmail = session?.user?.email ? `\nEmail: ${session.user.email}` : "";
+    
+    // Build item details section
+    const itemDetailsLines: string[] = [];
+    if (itemName) {
+      const itemTypeLabel = itemType === 'stay' ? '🏨 Stay' : itemType === 'activity' ? '🎯 Activity' : '✈️ Trip';
+      itemDetailsLines.push(`📍 ${itemTypeLabel}: ${itemName}`);
+    }
+    if (destination) {
+      itemDetailsLines.push(`📍 Destination: ${destination}`);
+    }
+    if (itemLocation) {
+      itemDetailsLines.push(`📍 Location: ${itemLocation}`);
+    }
+    if (itemPrice) {
+      itemDetailsLines.push(`💰 Price: ${itemPrice}`);
+    }
+    if (itemImportantInfo && typeof itemImportantInfo === 'string' && itemImportantInfo.trim().length > 0) {
+      itemDetailsLines.push(`\n📌 Good to Know:\n${itemImportantInfo.trim()}`);
+    }
+    
+    const itemDetailsSection = itemDetailsLines.length > 0 ? `\n\n${itemDetailsLines.join('\n')}` : '';
+    
+    const bookingType = isPackage ? "trip" : itemType === 'activity' ? "activity" : "stay";
+    
+    // Format dates to dd/mm/yyyy
+    const formatDate = (dateString: string) => {
+      if (!dateString) return "To be selected";
+      return dayjs(dateString).format("DD/MM/YYYY");
+    };
+    
+    const subject = `Inquiry for ${bookingType} booking - ${itemName || 'Tripeloo'}`;
+    const body = `Hello Tripeloo Team,
+
+I would like to inquire about booking this ${bookingType}${itemDetailsSection}
+
+Selected ${roomPackageType}:
+${selectedItemText}
+
+👥 Guests:
+Adults: ${adults}
+Kids: ${kids}
+
+📅 Dates:
+${!isPackage ? `Check-in: ${formatDate(checkIn)}\nCheck-out: ${formatDate(checkOut)}` : `Travel Date: ${formatDate(checkIn)}`}${userEmail}
+
+Please confirm availability and provide the total price.
+
+Thank you!`;
+
+    const mailtoLink = `mailto:support@tripeloo.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoLink, "_blank");
+  };
+
   return (
     <form
       onSubmit={handleBooking}
@@ -262,7 +365,7 @@ Please confirm availability and total price.`;
       )}
 
       {/* Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 mt-2">
+      <div className={`flex flex-col ${isMobile ? 'sm:flex-row' : 'gap-3'} gap-3 mt-2`}>
         <button
           type="submit"
           className="flex-1 bg-[#E51A4B] hover:bg-red-700 transition text-white font-semibold py-2 rounded-lg text-sm"
@@ -276,6 +379,20 @@ Please confirm availability and total price.`;
         >
           Call Directly
         </button>
+        {/* Email Inquiry Button - Desktop Only */}
+        {!isMobile && (
+          <button
+            type="button"
+            onClick={handleEmailInquiry}
+            className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 transition font-semibold py-2 rounded-lg text-sm flex items-center justify-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            Enquiry via Email
+          </button>
+        )}
       </div>
     </form>
   );
