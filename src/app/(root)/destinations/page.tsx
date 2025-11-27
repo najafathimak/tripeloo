@@ -65,13 +65,17 @@ async function fetchDestinations() {
 export default async function DestinationsPage() {
   const destinations: Destination[] = await fetchDestinations();
 
+  // Filter out fallback destinations (those without _id) from structured data
+  // Fallback destinations have 'id' field, database destinations have '_id' field
+  const databaseDestinations = destinations.filter((dest) => dest._id);
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Travel Destinations',
     description: 'Discover curated destinations with stays, experiences, and trips',
-    numberOfItems: destinations.length,
-    itemListElement: destinations.map((dest, index) => ({
+    numberOfItems: databaseDestinations.length,
+    itemListElement: databaseDestinations.map((dest, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       item: {
