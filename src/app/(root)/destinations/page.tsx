@@ -4,6 +4,7 @@ import { destinations as fallbackDestinations } from "@/data/destinations";
 import { Destination } from "@/types/destination";
 import { siteConfig } from "@/config/site";
 import DestinationsClient from "@/components/destinations/DestinationsClient";
+import { listDestinations } from "@/server/services/destinationsService";
 
 export const metadata: Metadata = {
   title: "Destinations",
@@ -48,16 +49,11 @@ export const metadata: Metadata = {
 
 async function fetchDestinations() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/destinations`,
-      {
-        next: { revalidate: 3600 },
-      }
-    );
-    if (!res.ok) throw new Error("Failed");
-    const json = await res.json();
-    return json.data as typeof fallbackDestinations;
-  } catch {
+    // Use the service directly instead of HTTP fetch for better SSR reliability
+    const data = await listDestinations();
+    return data.length > 0 ? data : fallbackDestinations;
+  } catch (error) {
+    console.error('Error fetching destinations:', error);
     return fallbackDestinations;
   }
 }
@@ -69,7 +65,9 @@ export default async function DestinationsPage() {
   // Fallback destinations have 'id' field, database destinations have '_id' field
   const databaseDestinations = destinations.filter((dest) => dest._id);
 
-  const structuredData = {
+  // Only generate structured data if we have database destinations
+  // Empty structured data causes "No items detected" in Google Rich Results Test
+  const structuredData = databaseDestinations.length > 0 ? {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Travel Destinations',
@@ -90,14 +88,16 @@ export default async function DestinationsPage() {
         },
       },
     })),
-  };
+  } : null;
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      {structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      )}
       <Suspense fallback={
         <div className="container py-32">
           <div className="mb-8">
