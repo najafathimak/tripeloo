@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import dayjs from "dayjs";
 import { getNextWhatsAppNumber, formatWhatsAppNumber } from "@/utils/whatsapp";
+import whatsappNumbers from '@/config/whatsapp-numbers.json';
 
 interface Room {
   id: number | string;
@@ -163,37 +164,7 @@ Please confirm availability and total price.`;
   const handleEmailInquiry = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate dates same as WhatsApp booking
-    if (isPackage) {
-      if (!checkIn) {
-        alert("Please select your travel date.");
-        return;
-      }
-      const today = dayjs().startOf("day");
-      const travelDate = dayjs(checkIn);
-      if (travelDate.isBefore(today)) {
-        alert("Past dates are not allowed.");
-        return;
-      }
-    } else {
-      if (!checkIn || !checkOut) {
-        alert("Please select both check-in and check-out dates.");
-        return;
-      }
-      const today = dayjs().startOf("day");
-      const checkInDate = dayjs(checkIn);
-      const checkOutDate = dayjs(checkOut);
-
-      if (checkInDate.isBefore(today) || checkOutDate.isBefore(today)) {
-        alert("Past dates are not allowed.");
-        return;
-      }
-
-      if (checkOutDate.isBefore(checkInDate)) {
-        alert("Check-out date must be after check-in date.");
-        return;
-      }
-    }
+    // No date validation required for email enquiry - allow users to send without dates
 
     const selectedItemText =
       selectedRooms.length > 0
@@ -238,6 +209,14 @@ Please confirm availability and total price.`;
       return dayjs(dateString).format("DD/MM/YYYY");
     };
     
+    // Format loyalty points info
+    const loyaltyPointsSection = session?.user && loyaltyLink ? `\n\n💎 Check your loyalty points:\n${loyaltyLink}` : '';
+    
+    // Get phone numbers from config
+    const phoneNumbers = whatsappNumbers.numbers || [];
+    const phone1 = phoneNumbers[0] || '+917066444430';
+    const phone2 = phoneNumbers[1] || '+917902491042';
+    
     const subject = `Inquiry for ${bookingType} booking - ${itemName || 'Tripeloo'}`;
     const body = `Hello Tripeloo Team,
 
@@ -251,11 +230,17 @@ Adults: ${adults}
 Kids: ${kids}
 
 📅 Dates:
-${!isPackage ? `Check-in: ${formatDate(checkIn)}\nCheck-out: ${formatDate(checkOut)}` : `Travel Date: ${formatDate(checkIn)}`}${userEmail}
+${!isPackage ? `Check-in: ${formatDate(checkIn)}\nCheck-out: ${formatDate(checkOut)}` : `Travel Date: ${formatDate(checkIn)}`}${userEmail}${loyaltyPointsSection}
 
 Please confirm availability and provide the total price.
 
-Thank you!`;
+Thank you!
+
+---
+Contact Information:
+📧 Email: support@tripeloo.com
+📱 Phone: ${phone1}
+📱 Phone: ${phone2}`;
 
     const mailtoLink = `mailto:support@tripeloo.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoLink, "_blank");
