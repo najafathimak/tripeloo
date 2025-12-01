@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import dayjs from "dayjs";
 import { getNextWhatsAppNumber, formatWhatsAppNumber } from "@/utils/whatsapp";
-import whatsappNumbers from '@/config/whatsapp-numbers.json';
+import { X } from "lucide-react";
 
 interface Room {
   id: number | string;
@@ -43,6 +43,9 @@ export const WhatsAppBookingForm = ({
   const [checkOut, setCheckOut] = useState("");
   const [loyaltyLink, setLoyaltyLink] = useState("");
   const [todayDate, setTodayDate] = useState("");
+  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
+  const [enquiryName, setEnquiryName] = useState("");
+  const [enquiryMobile, setEnquiryMobile] = useState("");
 
   useEffect(() => {
     // Set today's date and generate loyalty points link
@@ -161,10 +164,31 @@ Please confirm availability and total price.`;
     window.open("tel:+917066444430");
   };
 
-  const handleEmailInquiry = (e: React.FormEvent) => {
+  const handleEmailInquiryClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    setIsEnquiryModalOpen(true);
+  };
 
-    // No date validation required for email enquiry - allow users to send without dates
+  const handleEmailInquirySubmit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent bubbling to parent form
+
+    // Validate name and mobile
+    if (!enquiryName.trim()) {
+      alert("Please enter your name.");
+      return;
+    }
+    if (!enquiryMobile.trim()) {
+      alert("Please enter your mobile number.");
+      return;
+    }
+
+    // Validate mobile number format (basic validation)
+    const mobileRegex = /^[0-9]{10}$/;
+    if (!mobileRegex.test(enquiryMobile.replace(/[\s-]/g, ''))) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
 
     const selectedItemText =
       selectedRooms.length > 0
@@ -209,18 +233,14 @@ Please confirm availability and total price.`;
       return dayjs(dateString).format("DD/MM/YYYY");
     };
     
-    // Format loyalty points info
-    const loyaltyPointsSection = session?.user && loyaltyLink ? `\n\n💎 Check your loyalty points:\n${loyaltyLink}` : '';
-    
-    // Get phone numbers from config
-    const phoneNumbers = whatsappNumbers.numbers || [];
-    const phone1 = phoneNumbers[0] || '+917066444430';
-    const phone2 = phoneNumbers[1] || '+917902491042';
-    
     const subject = `Inquiry for ${bookingType} booking - ${itemName || 'Tripeloo'}`;
     const body = `Hello Tripeloo Team,
 
 I would like to inquire about booking this ${bookingType}${itemDetailsSection}
+
+👤 Contact Details:
+Name: ${enquiryName.trim()}
+Mobile: ${enquiryMobile.trim()}${userEmail}
 
 Selected ${roomPackageType}:
 ${selectedItemText}
@@ -230,20 +250,19 @@ Adults: ${adults}
 Kids: ${kids}
 
 📅 Dates:
-${!isPackage ? `Check-in: ${formatDate(checkIn)}\nCheck-out: ${formatDate(checkOut)}` : `Travel Date: ${formatDate(checkIn)}`}${userEmail}${loyaltyPointsSection}
+${!isPackage ? `Check-in: ${formatDate(checkIn)}\nCheck-out: ${formatDate(checkOut)}` : `Travel Date: ${formatDate(checkIn)}`}
 
 Please confirm availability and provide the total price.
 
-Thank you!
-
----
-Contact Information:
-📧 Email: support@tripeloo.com
-📱 Phone: ${phone1}
-📱 Phone: ${phone2}`;
+Thank you!`;
 
     const mailtoLink = `mailto:support@tripeloo.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoLink, "_blank");
+
+    // Close modal and reset form immediately
+    setIsEnquiryModalOpen(false);
+    setEnquiryName("");
+    setEnquiryMobile("");
   };
 
   return (
@@ -368,7 +387,7 @@ Contact Information:
         {!isMobile && (
           <button
             type="button"
-            onClick={handleEmailInquiry}
+            onClick={handleEmailInquiryClick}
             className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 transition font-semibold py-2 rounded-lg text-sm flex items-center justify-center gap-2"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -379,6 +398,100 @@ Contact Information:
           </button>
         )}
       </div>
+
+      {/* Enquiry Modal - Desktop Only */}
+      {!isMobile && isEnquiryModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={() => {
+            setIsEnquiryModalOpen(false);
+            setEnquiryName("");
+            setEnquiryMobile("");
+          }}
+        >
+          {/* Dimmed Background */}
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in" />
+          
+          {/* Modal Content */}
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-gray-900">Enquiry Form</h3>
+              <button
+                onClick={() => {
+                  setIsEnquiryModalOpen(false);
+                  setEnquiryName("");
+                  setEnquiryMobile("");
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close"
+              >
+                <X size={20} className="text-gray-600" />
+              </button>
+            </div>
+
+            {/* Form Content */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label htmlFor="enquiry-name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Your Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="enquiry-name"
+                  type="text"
+                  value={enquiryName}
+                  onChange={(e) => setEnquiryName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="enquiry-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                  Mobile Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="enquiry-mobile"
+                  type="tel"
+                  value={enquiryMobile}
+                  onChange={(e) => setEnquiryMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  placeholder="Enter your mobile number"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent transition"
+                  maxLength={10}
+                  required
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleEmailInquirySubmit}
+                className="w-full bg-[#E51A4B] hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition shadow-md hover:shadow-lg"
+              >
+                Submit Enquiry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add CSS animations */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.2s ease-out;
+        }
+      `}</style>
     </form>
   );
 };
