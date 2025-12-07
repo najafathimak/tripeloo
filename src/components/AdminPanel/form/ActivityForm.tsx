@@ -586,7 +586,7 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Activity Name <span className="text-red-500">*</span>
+                Display Name <span className="text-gray-500 text-xs">(What users see)</span> <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -604,6 +604,9 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
                   {errors.name}
                 </p>
               )}
+              <p className="mt-1 text-xs text-gray-500">
+                This is the name displayed to users on the website.
+              </p>
             </div>
 
             <div>

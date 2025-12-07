@@ -682,7 +682,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Trip Name <span className="text-red-500">*</span>
+                Display Name <span className="text-gray-500 text-xs">(What users see)</span> <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -700,6 +700,9 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                   {errors.name}
                 </p>
               )}
+              <p className="mt-1 text-xs text-gray-500">
+                This is the name displayed to users on the website.
+              </p>
             </div>
 
             <div>
@@ -1473,10 +1476,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
             </p>
           </div>
 
-          {/* Property Name (Admin Only) */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Property Name <span className="text-gray-500 text-xs">(Optional - Admin Only)</span>
+          {/* Property Name (Admin Only) - Highlighted */}
+          <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
+            <label className="block text-sm font-bold text-gray-800 mb-2">
+              Property Name <span className="text-yellow-700 text-xs font-semibold">(Admin Only - Highlighted)</span>
             </label>
             <input
               type="text"
@@ -1484,10 +1487,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
               value={formData.propertyName}
               onChange={handleInputChange}
               placeholder="e.g., Trip ABC, Package XYZ (for admin identification)"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+              className="w-full px-4 py-3 border-2 border-yellow-500 bg-white rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-600 font-medium"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Internal property name for admin identification. Users will see the regular "Name" field.
+            <p className="mt-2 text-xs text-gray-700 font-medium">
+              ⚠️ This is the internal property name for admin identification. Display name (shown below) is what users see.
             </p>
           </div>
 

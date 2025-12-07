@@ -2,7 +2,15 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { Search, X, Heart } from 'lucide-react';
 import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
+
+interface Destination {
+  _id?: string;
+  slug?: string;
+  name: string;
+}
 
 function TentIcon() {
   return (
@@ -19,9 +27,57 @@ interface HeroProps {
 
 export function Hero({ desktopImage, mobileImage }: HeroProps) {
   const router = useRouter();
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [loadingDestinations, setLoadingDestinations] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('stays');
+  
+  // Fetch destinations when search modal opens
+  useEffect(() => {
+    if (showSearchModal && destinations.length === 0) {
+      setLoadingDestinations(true);
+      fetch('/api/destinations')
+        .then(res => res.json())
+        .then(data => {
+          setDestinations(data.data || []);
+          setLoadingDestinations(false);
+        })
+        .catch(() => {
+          setLoadingDestinations(false);
+        });
+    }
+  }, [showSearchModal, destinations.length]);
   
   const onNav = (category: 'stays' | 'things-to-do' | 'getaways') => {
     router.push(`/destinations?category=${category}`);
+  };
+
+  const handleSearchSubmit = () => {
+    if (!selectedDestination) {
+      alert('Please select a destination');
+      return;
+    }
+
+    const destinationName = encodeURIComponent(selectedDestination);
+    let categoryParam = '';
+    
+    if (selectedCategory === 'getaways') {
+      categoryParam = 'getaways';
+    } else if (selectedCategory === 'things-to-do') {
+      categoryParam = 'things-to-do';
+    }
+
+    const queryParams = new URLSearchParams({
+      destination: destinationName,
+    });
+    
+    if (categoryParam) {
+      queryParams.set('category', categoryParam);
+    }
+
+    setShowSearchModal(false);
+    router.push(`/stay-listings?${queryParams.toString()}`);
   };
 
   const defaultMobileImage = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.1.0&auto=format&fit=crop&q=100&w=1080&h=1920";
@@ -55,6 +111,19 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
           />
         )}
         <div className="absolute inset-0 bg-black/40" />
+
+        {/* Compact Search Bar - Top middle, under navigation */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 top-24 sm:top-28 md:top-32 w-full max-w-2xl px-4 z-20">
+          <button
+            onClick={() => setShowSearchModal(true)}
+            className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-4 shadow-lg hover:bg-white/15 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-3 text-white">
+              <Search className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <span className="text-sm sm:text-base font-medium">Click here to quick search</span>
+            </div>
+          </button>
+        </div>
 
         {/* Desktop: Stable titles with glow animation */}
         <div className="hidden sm:flex absolute inset-0 items-center font-serif justify-center">
@@ -116,6 +185,122 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
               Getaways
             </button>
           </div>
+        </div>
+
+        {/* Search Modal */}
+        {showSearchModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowSearchModal(false)}
+            />
+            
+            {/* Modal Content */}
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+                <h2 className="text-xl font-bold text-gray-900">Search Destinations</h2>
+                <button
+                  onClick={() => setShowSearchModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label="Close"
+                >
+                  <X size={20} className="text-gray-600" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {/* Destination Selector */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Select Destination
+                  </label>
+                  {loadingDestinations ? (
+                    <div className="border border-gray-300 rounded-lg px-4 py-3 bg-gray-50">
+                      <p className="text-sm text-gray-500">Loading destinations...</p>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedDestination}
+                      onChange={(e) => setSelectedDestination(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent"
+                    >
+                      <option value="">Choose a destination...</option>
+                      {destinations.map((dest) => (
+                        <option key={dest._id || dest.slug} value={dest.name}>
+                          {dest.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {/* Category Selector */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Select Category
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      onClick={() => setSelectedCategory('stays')}
+                      className={`px-4 py-3 rounded-lg border-2 text-sm font-semibold transition ${
+                        selectedCategory === 'stays'
+                          ? 'border-[#E51A4B] bg-[#E51A4B] text-white'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      Stays
+                    </button>
+                    <button
+                      onClick={() => setSelectedCategory('things-to-do')}
+                      className={`px-4 py-3 rounded-lg border-2 text-sm font-semibold transition ${
+                        selectedCategory === 'things-to-do'
+                          ? 'border-[#E51A4B] bg-[#E51A4B] text-white'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      Things to Do
+                    </button>
+                    <button
+                      onClick={() => setSelectedCategory('getaways')}
+                      className={`px-4 py-3 rounded-lg border-2 text-sm font-semibold transition ${
+                        selectedCategory === 'getaways'
+                          ? 'border-[#E51A4B] bg-[#E51A4B] text-white'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      Getaways
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  onClick={handleSearchSubmit}
+                  disabled={!selectedDestination}
+                  className="w-full bg-[#E51A4B] hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Made with Love in India - Bottom Left */}
+        <div className="absolute bottom-6 sm:bottom-8 left-4 sm:left-6 z-20">
+          <a
+            href="https://madewithloveinindia.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors text-sm sm:text-lg md:text-xl font-medium group"
+          >
+            <span>Made with</span>
+            <Heart className="w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7 fill-[#f43f5e] text-[#f43f5e] group-hover:scale-110 transition-transform" />
+            <span>in India</span>
+          </a>
         </div>
 
         {/* Centered bottom light gray down arrow */}

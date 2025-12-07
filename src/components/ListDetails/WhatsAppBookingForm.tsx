@@ -369,22 +369,26 @@ Thank you!`;
       )}
 
       {/* Buttons */}
-      <div className={`flex flex-col ${isMobile ? 'sm:flex-row' : 'gap-3'} gap-3 mt-2`}>
-        <button
-          type="submit"
-          className="flex-1 bg-[#E51A4B] hover:bg-red-700 transition text-white font-semibold py-2 rounded-lg text-sm"
-        >
-          Chat on WhatsApp
-        </button>
-        <button
-          type="button"
-          onClick={handleCall}
-          className="flex-1 border border-[#E51A4B] text-[#E51A4B] hover:bg-red-50 transition font-semibold py-2 rounded-lg text-sm"
-        >
-          Call Directly
-        </button>
-        {/* Email Inquiry Button - Desktop Only */}
-        {!isMobile && (
+      {isMobile ? (
+        // Mobile Order: Chat, Call
+        <div className="flex flex-col sm:flex-row gap-3 mt-2">
+          <button
+            type="submit"
+            className="flex-1 bg-[#E51A4B] hover:bg-red-700 transition text-white font-semibold py-2 rounded-lg text-sm"
+          >
+            Chat on WhatsApp
+          </button>
+          <button
+            type="button"
+            onClick={handleCall}
+            className="flex-1 border border-[#E51A4B] text-[#E51A4B] hover:bg-red-50 transition font-semibold py-2 rounded-lg text-sm"
+          >
+            Call Directly
+          </button>
+        </div>
+      ) : (
+        // Desktop Order: Enquiry, Chat, Call
+        <div className="flex flex-col gap-3 mt-2">
           <button
             type="button"
             onClick={handleEmailInquiryClick}
@@ -396,8 +400,21 @@ Thank you!`;
             </svg>
             Enquiry via Email
           </button>
-        )}
-      </div>
+          <button
+            type="submit"
+            className="flex-1 bg-[#E51A4B] hover:bg-red-700 transition text-white font-semibold py-2 rounded-lg text-sm"
+          >
+            Chat on WhatsApp
+          </button>
+          <button
+            type="button"
+            onClick={handleCall}
+            className="flex-1 border border-[#E51A4B] text-[#E51A4B] hover:bg-red-50 transition font-semibold py-2 rounded-lg text-sm"
+          >
+            Call Directly
+          </button>
+        </div>
+      )}
 
       {/* Enquiry Modal - Desktop Only */}
       {!isMobile && isEnquiryModalOpen && (
