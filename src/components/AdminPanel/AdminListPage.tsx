@@ -608,9 +608,14 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
               <div className="bg-gradient-to-r from-[#E51A4B] to-[#FF6B6B] p-6 text-white">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h2 className="text-2xl font-bold mb-2">{viewingItem.name || "Untitled"}</h2>
-                    {viewingItem.propertyName && (
-                      <p className="text-white/80 text-sm">Property: {viewingItem.propertyName}</p>
+                    {/* Property Name - Prominent (Admin Only) */}
+                    {viewingItem.propertyName ? (
+                      <>
+                        <h2 className="text-3xl font-bold mb-1">{viewingItem.propertyName}</h2>
+                        <p className="text-white/90 text-sm font-medium mb-2">Display Name: {viewingItem.name || "Untitled"}</p>
+                      </>
+                    ) : (
+                      <h2 className="text-2xl font-bold mb-2">{viewingItem.name || "Untitled"}</h2>
                     )}
                   </div>
                   <button
