@@ -120,7 +120,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
           >
             <div className="flex items-center justify-center gap-3 text-white">
               <Search className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="text-sm sm:text-base font-medium">Click here to quick search</span>
+              <span className="text-sm sm:text-base font-medium">Find Your Next Escape</span>
             </div>
           </button>
         </div>
