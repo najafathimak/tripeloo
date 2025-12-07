@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Download, Loader2, FileText, Image as ImageIcon, MapPin, Hotel, Activity, Plane, Star, Check, Users, Hourglass, Clock1, Smartphone, PawPrint, BookA, Dot } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Download, Loader2, FileText, Image as ImageIcon, MapPin, Hotel, Activity, Plane, Star, Check, Users, Hourglass, Clock1, Smartphone, PawPrint, BookA, Dot, Eye } from "lucide-react";
 import Image from "next/image";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -75,6 +76,7 @@ interface Item {
 }
 
 export default function BrochureForm() {
+  const router = useRouter();
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [selectedDestination, setSelectedDestination] = useState("");
   const [itemType, setItemType] = useState<"stay" | "activity" | "trip">("stay");
@@ -925,25 +927,48 @@ export default function BrochureForm() {
             />
           </div>
 
-          {/* Download Button */}
+          {/* Action Buttons */}
           {selectedItem && (
-            <button
-              onClick={handleGeneratePDF}
-              disabled={generatingPDF}
-              className="w-full bg-[#E51A4B] hover:bg-[#c91742] text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {generatingPDF ? (
-                <>
-                  <Loader2 className="animate-spin" size={20} />
-                  Generating PDF...
-                </>
-              ) : (
-                <>
-                  <Download size={20} />
-                  Download Brochure PDF
-                </>
-              )}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  // Store preview data in sessionStorage
+                  const previewData = {
+                    selectedItem,
+                    itemType,
+                    reviews,
+                    customContent,
+                    customPrice,
+                    selectedRooms,
+                    selectedPackages,
+                    selectedDestination: destinations.find(d => d.id === selectedDestination)?.name || selectedDestination,
+                  };
+                  sessionStorage.setItem('brochurePreviewData', JSON.stringify(previewData));
+                  router.push('/admin/brochure/preview');
+                }}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <Eye size={20} />
+                Show Preview
+              </button>
+              <button
+                onClick={handleGeneratePDF}
+                disabled={generatingPDF}
+                className="flex-1 bg-[#E51A4B] hover:bg-[#c91742] text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {generatingPDF ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download size={20} />
+                    Download Brochure PDF
+                  </>
+                )}
+              </button>
+            </div>
           )}
         </div>
 
