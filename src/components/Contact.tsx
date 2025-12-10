@@ -48,7 +48,7 @@ export default function ContactSection() {
       </div>
       <div className="mt-20 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-10">
-          Feel Free to Contact with us
+          Feel free to connect with us
         </h2>
 
         <form className="max-w-5xl mx-auto px-6 space-y-6">
