@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Learn about Tripeloo - your trusted travel companion for discovering beautiful resorts, holiday destinations, and exclusive travel packages. We make travel planning effortless and enjoyable.",
+    "Learn about Tripeloo - your trusted travel companion for discovering beautiful resorts, thrilling adventure activities, and tailor-made getaways across South India. We make travel planning effortless and enjoyable.",
   keywords: [
     'about Tripeloo',
     'travel company',
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "About Us | Tripeloo",
-    description: "Learn about Tripeloo - your trusted travel companion for discovering beautiful resorts, holiday destinations, and exclusive travel packages.",
+    description: "Learn about Tripeloo - your trusted travel companion for discovering beautiful resorts, thrilling adventure activities, and tailor-made getaways across South India.",
     url: `${siteConfig.url}/about`,
     siteName: siteConfig.name,
     images: [
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "About Us | Tripeloo",
-    description: "Learn about Tripeloo - your trusted travel companion for discovering beautiful resorts, holiday destinations, and exclusive travel packages.",
+    description: "Learn about Tripeloo - your trusted travel companion for discovering beautiful resorts, thrilling adventure activities, and tailor-made getaways across South India.",
   },
   alternates: {
     canonical: `${siteConfig.url}/about`,
@@ -92,19 +92,19 @@ const About = () => {
               <p>
                 Welcome to <b className="text-sky-800">Tripeloo</b> — your
                 trusted travel companion for discovering the most beautiful
-                resorts, holiday destinations, and exclusive travel packages
-                across the globe. We’re here to make travel planning effortless,
+                resorts, thrilling adventure activities, and tailor-made getaways
+                across South India. We're here to make travel planning effortless,
                 enjoyable, and truly unforgettable.
               </p>
 
               <h3 className="text-2xl font-semibold text-gray-800 mt-2">
-                What We Offer
+                WHAT WE OFFER:
               </h3>
               <p>
                 At <b className="text-sky-800">Tripeloo</b>, we connect
-                travelers with handpicked resorts, curated vacation packages,
+                travelers with handpicked resorts, curated staycation packages,
                 and unique local experiences. From luxury beach stays to
-                adventure getaways, our platform lets you explore, compare, and
+                beautiful mountain trails, our platform lets you explore, compare, and
                 book with ease — bringing transparency, comfort, and excitement
                 to every step of your journey.
               </p>

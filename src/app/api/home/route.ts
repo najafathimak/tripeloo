@@ -66,12 +66,7 @@ export async function PUT(request: NextRequest) {
       testimonials = [],
     } = body;
 
-    if (!heroDesktopImage || !heroMobileImage || !discoverTitle || !discoverContent || !discoverButtonText) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
+    // All fields are optional - no validation required
 
     const db = await getDb();
     
@@ -79,11 +74,11 @@ export async function PUT(request: NextRequest) {
     const existing = await db.collection(COLLECTION).findOne({});
     
     const homeData = {
-      heroDesktopImage: heroDesktopImage.trim(),
-      heroMobileImage: heroMobileImage.trim(),
-      discoverTitle: discoverTitle.trim(),
-      discoverContent: discoverContent.trim(),
-      discoverButtonText: discoverButtonText.trim(),
+      heroDesktopImage: heroDesktopImage?.trim() || '',
+      heroMobileImage: heroMobileImage?.trim() || '',
+      discoverTitle: discoverTitle?.trim() || '',
+      discoverContent: discoverContent?.trim() || '',
+      discoverButtonText: discoverButtonText?.trim() || '',
       discoverButtonLink: discoverButtonLink?.trim() || 'mailto:hello@tripeloo.com',
       testimonialsHeading: testimonialsHeading?.trim() || 'Testimonials',
       testimonials: Array.isArray(testimonials) ? testimonials.map((t: any) => ({

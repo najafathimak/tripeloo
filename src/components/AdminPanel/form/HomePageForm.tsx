@@ -192,22 +192,7 @@ export default function HomePageForm() {
 
     const newErrors: Record<string, string> = {};
 
-    if (!formData.heroDesktopImage.trim()) {
-      newErrors.heroDesktopImage = "Desktop hero image is required";
-    }
-    if (!formData.heroMobileImage.trim()) {
-      newErrors.heroMobileImage = "Mobile hero image is required";
-    }
-    if (!formData.discoverTitle.trim()) {
-      newErrors.discoverTitle = "Discover title is required";
-    }
-    if (!formData.discoverContent.trim()) {
-      newErrors.discoverContent = "Discover content is required";
-    }
-    if (!formData.discoverButtonText.trim()) {
-      newErrors.discoverButtonText = "Button text is required";
-    }
-
+    // No required fields - all fields are optional
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -284,7 +269,7 @@ export default function HomePageForm() {
             {/* Desktop Hero Image */}
             <div>
               <label className="block text-sm font-semibold text-white mb-2">
-                Desktop Banner Image <span className="text-red-400">*</span>
+                Desktop Banner Image
               </label>
               
               {/* Current Uploaded Image */}
@@ -356,7 +341,7 @@ export default function HomePageForm() {
             {/* Mobile Hero Image */}
             <div>
               <label className="block text-sm font-semibold text-white mb-2">
-                Mobile Banner Image <span className="text-red-400">*</span>
+                Mobile Banner Image
               </label>
               
               {/* Current Uploaded Image */}
@@ -434,7 +419,7 @@ export default function HomePageForm() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-white mb-2">
-                Title <span className="text-red-400">*</span>
+                Title
               </label>
               <input
                 type="text"
@@ -451,7 +436,7 @@ export default function HomePageForm() {
 
             <div>
               <label className="block text-sm font-semibold text-white mb-2">
-                Content <span className="text-red-400">*</span>
+                Content
               </label>
               <textarea
                 name="discoverContent"
@@ -469,7 +454,7 @@ export default function HomePageForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-white mb-2">
-                  Button Text <span className="text-red-400">*</span>
+                  Button Text
                 </label>
                 <input
                   type="text"
