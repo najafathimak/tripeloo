@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Search, X, Heart } from 'lucide-react';
-import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface Destination {
   _id?: string;
@@ -89,7 +88,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
         {/* Mobile background image - Portrait 4K quality */}
         {(mobileImage || defaultMobileImage) && (
           <Image
-            src={optimizeCloudinaryUrl(mobileImage || defaultMobileImage)}
+            src={mobileImage || defaultMobileImage}
             alt="Beautiful nature landscape background"
             fill
             priority
@@ -101,7 +100,7 @@ export function Hero({ desktopImage, mobileImage }: HeroProps) {
         {/* Desktop background image - 4K quality */}
         {(desktopImage || defaultDesktopImage) && (
           <Image
-            src={optimizeCloudinaryUrl(desktopImage || defaultDesktopImage)}
+            src={desktopImage || defaultDesktopImage}
             alt="Lush green hills background"
             fill
             priority
