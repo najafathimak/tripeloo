@@ -28,14 +28,14 @@ export async function GET() {
 
     const mappedData = {
       id: homeData._id?.toString() || '',
-      heroDesktopImage: homeData.heroDesktopImage || '',
-      heroMobileImage: homeData.heroMobileImage || '',
+      heroDesktopImage: (homeData.heroDesktopImage && typeof homeData.heroDesktopImage === 'string') ? homeData.heroDesktopImage : '',
+      heroMobileImage: (homeData.heroMobileImage && typeof homeData.heroMobileImage === 'string') ? homeData.heroMobileImage : '',
       discoverTitle: homeData.discoverTitle || 'Discover India with Tripeloo',
       discoverContent: homeData.discoverContent || '',
       discoverButtonText: homeData.discoverButtonText || 'hello@tripeloo.com',
       discoverButtonLink: homeData.discoverButtonLink || 'mailto:hello@tripeloo.com',
       testimonialsHeading: homeData.testimonialsHeading || 'Testimonials',
-      testimonials: homeData.testimonials || [],
+      testimonials: Array.isArray(homeData.testimonials) ? homeData.testimonials : [],
     };
 
     return NextResponse.json({ data: mappedData }, {

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, X, Plus, Loader2, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface Testimonial {
   id: string;
@@ -43,6 +44,10 @@ export default function HomePageForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [liveImages, setLiveImages] = useState<{ desktop: string; mobile: string }>({
+    desktop: "",
+    mobile: "",
+  });
 
   useEffect(() => {
     fetchHomeData();
@@ -51,13 +56,24 @@ export default function HomePageForm() {
   const fetchHomeData = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/home");
+      const res = await fetch("/api/home", { cache: 'no-store' });
+      
       if (res.ok) {
         const data = await res.json();
+        
         if (data.data) {
+          // Store the original live images separately - use actual values, not empty strings
+          const desktopImg = data.data.heroDesktopImage?.trim() || "";
+          const mobileImg = data.data.heroMobileImage?.trim() || "";
+          
+          setLiveImages({
+            desktop: desktopImg,
+            mobile: mobileImg,
+          });
+          
           setFormData({
-            heroDesktopImage: data.data.heroDesktopImage || "",
-            heroMobileImage: data.data.heroMobileImage || "",
+            heroDesktopImage: desktopImg,
+            heroMobileImage: mobileImg,
             discoverTitle: data.data.discoverTitle || "Discover India with Tripeloo",
             discoverContent: data.data.discoverContent || "",
             discoverButtonText: data.data.discoverButtonText || "hello@tripeloo.com",
@@ -217,6 +233,12 @@ export default function HomePageForm() {
       setSuccessMessage("Home page updated successfully!");
       setIsSubmitting(false);
       
+      // Update live images to reflect the new saved images
+      setLiveImages({
+        desktop: formData.heroDesktopImage,
+        mobile: formData.heroMobileImage,
+      });
+      
       // Scroll to top to show success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
@@ -253,37 +275,67 @@ export default function HomePageForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Hero Section Images */}
+        {/* Hero Section Images - Edit Section */}
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-          <h2 className="text-xl font-semibold text-white mb-4">Hero Section Images</h2>
+          <h2 className="text-xl font-semibold text-white mb-2">Hero Section Images</h2>
+          <p className="text-sm text-white/60 mb-4">Upload images for desktop and mobile hero banners</p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Desktop Hero Image */}
             <div>
               <label className="block text-sm font-semibold text-white mb-2">
-                Desktop Hero Image <span className="text-red-400">*</span>
+                Desktop Banner Image <span className="text-red-400">*</span>
               </label>
-              {formData.heroDesktopImage ? (
-                <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/20 mb-2">
-                  <Image
-                    src={formData.heroDesktopImage}
-                    alt="Desktop hero"
-                    fill
-                    className="object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, heroDesktopImage: "" }))}
-                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
-                  >
-                    <X size={16} />
-                  </button>
+              
+              {/* Current Uploaded Image */}
+              {liveImages.desktop ? (
+                <div className="mb-4 p-3 bg-white/5 border border-white/20 rounded-lg">
+                  <p className="text-xs text-white/70 mb-2 font-medium">Currently Uploaded:</p>
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/30">
+                    <Image
+                      src={optimizeCloudinaryUrl(liveImages.desktop)}
+                      alt="Current Desktop Banner"
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute top-2 left-2 bg-[#E51A4B]/90 text-white px-2 py-1 text-xs font-semibold rounded">
+                      CURRENT
+                    </div>
+                  </div>
                 </div>
-              ) : null}
+              ) : (
+                <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <p className="text-xs text-yellow-300">No desktop banner image uploaded yet</p>
+                </div>
+              )}
+              
+              {/* Preview of new image if uploaded but not saved yet */}
+              {formData.heroDesktopImage && formData.heroDesktopImage !== liveImages.desktop && (
+                <div className="mb-3 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <p className="text-xs text-blue-300 mb-2 font-medium">New image ready (will replace current after saving):</p>
+                  <div className="relative w-full h-32 rounded overflow-hidden border border-blue-400/50">
+                    <Image
+                      src={optimizeCloudinaryUrl(formData.heroDesktopImage)}
+                      alt="New Desktop Banner Preview"
+                      fill
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, heroDesktopImage: liveImages.desktop }))}
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                      title="Cancel and keep current image"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/30 rounded-lg cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
                 <Upload className="w-8 h-8 text-white/60 mb-2" />
                 <span className="text-sm text-white/80">
-                  {uploading === "desktop" ? "Uploading..." : "Upload Desktop Image"}
+                  {uploading === "desktop" ? "Uploading..." : formData.heroDesktopImage && formData.heroDesktopImage !== liveImages.desktop ? "Replace Desktop Image" : "Upload Desktop Image"}
                 </span>
                 <input
                   type="file"
@@ -304,29 +356,58 @@ export default function HomePageForm() {
             {/* Mobile Hero Image */}
             <div>
               <label className="block text-sm font-semibold text-white mb-2">
-                Mobile Hero Image <span className="text-red-400">*</span>
+                Mobile Banner Image <span className="text-red-400">*</span>
               </label>
-              {formData.heroMobileImage ? (
-                <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/20 mb-2">
-                  <Image
-                    src={formData.heroMobileImage}
-                    alt="Mobile hero"
-                    fill
-                    className="object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, heroMobileImage: "" }))}
-                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
-                  >
-                    <X size={16} />
-                  </button>
+              
+              {/* Current Uploaded Image */}
+              {liveImages.mobile ? (
+                <div className="mb-4 p-3 bg-white/5 border border-white/20 rounded-lg">
+                  <p className="text-xs text-white/70 mb-2 font-medium">Currently Uploaded:</p>
+                  <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-white/30">
+                    <Image
+                      src={optimizeCloudinaryUrl(liveImages.mobile)}
+                      alt="Current Mobile Banner"
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute top-2 left-2 bg-[#E51A4B]/90 text-white px-2 py-1 text-xs font-semibold rounded">
+                      CURRENT
+                    </div>
+                  </div>
                 </div>
-              ) : null}
+              ) : (
+                <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <p className="text-xs text-yellow-300">No mobile banner image uploaded yet</p>
+                </div>
+              )}
+              
+              {/* Preview of new image if uploaded but not saved yet */}
+              {formData.heroMobileImage && formData.heroMobileImage !== liveImages.mobile && (
+                <div className="mb-3 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <p className="text-xs text-blue-300 mb-2 font-medium">New image ready (will replace current after saving):</p>
+                  <div className="relative w-full aspect-[3/4] rounded overflow-hidden border border-blue-400/50">
+                    <Image
+                      src={optimizeCloudinaryUrl(formData.heroMobileImage)}
+                      alt="New Mobile Banner Preview"
+                      fill
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, heroMobileImage: liveImages.mobile }))}
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                      title="Cancel and keep current image"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/30 rounded-lg cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
                 <Upload className="w-8 h-8 text-white/60 mb-2" />
                 <span className="text-sm text-white/80">
-                  {uploading === "mobile" ? "Uploading..." : "Upload Mobile Image"}
+                  {uploading === "mobile" ? "Uploading..." : formData.heroMobileImage && formData.heroMobileImage !== liveImages.mobile ? "Replace Mobile Image" : "Upload Mobile Image"}
                 </span>
                 <input
                   type="file"
