@@ -174,25 +174,45 @@ export default function BrochureForm() {
         if (data.data) {
           const normalizedItem = {
             ...data.data,
+            id: String(data.data.id || data.data._id || ''), // Ensure ID is always a string
             carouselImages: Array.isArray(data.data.carouselImages)
               ? data.data.carouselImages.map((img: any) => 
                   typeof img === 'string' ? img : img.url || img
                 ).filter((img: string) => img && img.trim() !== "")
               : [],
+            // Ensure rooms is always an array and properly formatted
+            rooms: Array.isArray(data.data.rooms) 
+              ? data.data.rooms.filter((room: any) => room && (room.name || room.id)) // Filter out invalid rooms
+              : [],
           };
-          // Only set if the selectedItemId hasn't changed during fetch
-          if (normalizedItem.id === selectedItemId) {
+          // Debug logging for rooms
+          if (itemType === "stay") {
+            console.log('BrochureForm - Stay data loaded:', {
+              id: normalizedItem.id,
+              selectedId: selectedItemId,
+              roomsCount: normalizedItem.rooms?.length || 0,
+              rooms: normalizedItem.rooms,
+            });
+          }
+          // Only set if the selectedItemId hasn't changed during fetch - use string comparison
+          if (String(normalizedItem.id) === String(selectedItemId)) {
             setSelectedItem(normalizedItem);
+          } else {
+            console.warn('ID mismatch:', { normalizedId: normalizedItem.id, selectedId: selectedItemId });
           }
         } else {
           setSelectedItem(null);
         }
       } catch (error) {
         console.error("Error fetching item details:", error);
-        const item = items.find((i) => i.id === selectedItemId);
-        // Only set if the item ID matches
-        if (item && item.id === selectedItemId) {
-          setSelectedItem(item);
+        const item = items.find((i) => String(i.id) === String(selectedItemId));
+        // Only set if the item ID matches - use string comparison
+        if (item && String(item.id) === String(selectedItemId)) {
+          setSelectedItem({
+            ...item,
+            id: String(item.id), // Ensure ID is string
+            rooms: Array.isArray(item.rooms) ? item.rooms : [],
+          });
         } else {
           setSelectedItem(null);
         }
