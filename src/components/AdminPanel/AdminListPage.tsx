@@ -34,7 +34,7 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [sortByPrice, setSortByPrice] = useState(false);
+  const [sortByPrice, setSortByPrice] = useState(true); // Default to true for automatic low-to-high sorting
   const [viewingItem, setViewingItem] = useState<any | null>(null);
 
   useEffect(() => {
@@ -136,7 +136,7 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
       });
     }
 
-    // Sort by price (ascending)
+    // Sort by price (ascending) - always enabled by default
     if (sortByPrice) {
       filtered = [...filtered].sort((a, b) => {
         const priceA = a.startingPrice || a.price || 0;
@@ -220,9 +220,9 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
           >
             <Filter size={18} />
             <span className="font-semibold">Filter & Sort</span>
-            {(!selectedCategories.includes("All") || sortByPrice) && (
+            {(!selectedCategories.includes("All") || !sortByPrice) && (
               <span className="ml-auto bg-[#E51A4B] text-white text-xs px-2 py-1 rounded-full">
-                {(!selectedCategories.includes("All") ? selectedCategories.length : 0) + (sortByPrice ? 1 : 0)}
+                {(!selectedCategories.includes("All") ? selectedCategories.length : 0) + (!sortByPrice ? 1 : 0)}
               </span>
             )}
           </button>
@@ -259,9 +259,9 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
           >
             <Filter size={18} />
             <span className="font-semibold">Filter</span>
-            {(!selectedCategories.includes("All") || sortByPrice) && (
+            {(!selectedCategories.includes("All") || !sortByPrice) && (
               <span className="bg-[#E51A4B] text-white text-xs px-2 py-1 rounded-full">
-                {(!selectedCategories.includes("All") ? selectedCategories.length : 0) + (sortByPrice ? 1 : 0)}
+                {(!selectedCategories.includes("All") ? selectedCategories.length : 0) + (!sortByPrice ? 1 : 0)}
               </span>
             )}
           </button>
@@ -326,12 +326,12 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
             </div>
 
             {/* Reset Filters */}
-            {(searchQuery || !selectedCategories.includes("All") || sortByPrice) && (
+            {(searchQuery || !selectedCategories.includes("All") || !sortByPrice) && (
               <button
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedCategories(["All"]);
-                  setSortByPrice(false);
+                  setSortByPrice(true); // Reset to default sorting (low to high)
                 }}
                 className="w-full px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all font-medium"
               >
@@ -423,13 +423,13 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
                 </div>
 
                 {/* Reset Filters */}
-                {(searchQuery || !selectedCategories.includes("All") || sortByPrice) && (
+                {(searchQuery || !selectedCategories.includes("All") || !sortByPrice) && (
                   <button
                     type="button"
                     onClick={() => {
                       setSearchQuery("");
                       setSelectedCategories(["All"]);
-                      setSortByPrice(false);
+                      setSortByPrice(true); // Reset to default sorting (low to high)
                     }}
                     className="w-full px-4 py-3.5 rounded-xl bg-white/10 text-white active:bg-white/20 border border-white/20 transition-all font-medium min-h-[48px]"
                   >
@@ -482,7 +482,7 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
             onClick={() => {
               setSearchQuery("");
               setSelectedCategories(["All"]);
-              setSortByPrice(false);
+              setSortByPrice(true); // Reset to default sorting (low to high)
             }}
             className="bg-[#E51A4B] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#c91742] transition-colors"
           >

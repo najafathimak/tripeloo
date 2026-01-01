@@ -86,7 +86,7 @@ function StayListingsContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"]);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [sortByPrice, setSortByPrice] = useState(false);
+  const [sortByPrice, setSortByPrice] = useState(true);
   const [stays, setStays] = useState<Stay[] | null>(null);
   const [activities, setActivities] = useState<Activity[] | null>(null);
   const [trips, setTrips] = useState<Trip[] | null>(null);
@@ -204,11 +204,11 @@ function StayListingsContent() {
     fetchData();
   }, [rawDestination]);
 
-  // Reset filters when switching tabs
+  // Reset filters when switching tabs (keep sortByPrice as true for default sorting)
   useEffect(() => {
     setSelectedCategories(["All"]);
     setSearchQuery("");
-    setSortByPrice(false);
+    setSortByPrice(true); // Keep sorting enabled by default
   }, [activeTab]);
 
   const handleItemClick = (itemId: string) => {
@@ -518,9 +518,9 @@ function StayListingsContent() {
           >
             <FaFilter className="text-lg" />
             <span className="font-semibold text-base">Filter & Sort</span>
-            {(!selectedCategories.includes("All") || sortByPrice) && (
+            {(!selectedCategories.includes("All") || !sortByPrice) && (
               <span className="ml-auto bg-[#E51A4B] text-white text-xs px-2 py-1 rounded-full">
-                {(!selectedCategories.includes("All") ? selectedCategories.length : 0) + (sortByPrice ? 1 : 0)}
+                {(!selectedCategories.includes("All") ? selectedCategories.length : 0) + (!sortByPrice ? 1 : 0)}
               </span>
             )}
           </button>
@@ -623,12 +623,12 @@ function StayListingsContent() {
               </div>
 
               {/* Reset Filters */}
-              {(searchQuery || !selectedCategories.includes("All") || sortByPrice) && (
+              {(searchQuery || !selectedCategories.includes("All") || !sortByPrice) && (
                 <button
                   onClick={() => {
                     setSearchQuery("");
                     setSelectedCategories(["All"]);
-                    setSortByPrice(false);
+                    setSortByPrice(true); // Reset to default sorting (low to high)
                   }}
                   className="w-full px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all font-medium"
                 >
@@ -728,13 +728,13 @@ function StayListingsContent() {
               </div>
 
               {/* Reset Filters */}
-              {(searchQuery || !selectedCategories.includes("All") || sortByPrice) && (
+              {(searchQuery || !selectedCategories.includes("All") || !sortByPrice) && (
                 <button
                   type="button"
                   onClick={() => {
                     setSearchQuery("");
                     setSelectedCategories(["All"]);
-                    setSortByPrice(false);
+                    setSortByPrice(true); // Reset to default sorting (low to high)
                   }}
                   className="w-full px-4 py-3.5 rounded-xl bg-gray-200 text-gray-700 active:bg-gray-300 transition-all font-medium min-h-[48px] touch-manipulation"
                 >
@@ -823,7 +823,7 @@ function StayListingsContent() {
               onClick={() => {
                 setSearchQuery("");
                 setSelectedCategories(["All"]);
-                setSortByPrice(false);
+                setSortByPrice(true); // Reset to default sorting (low to high)
               }}
               className="bg-[#E51A4B] text-white px-6 py-3 rounded-full font-semibold"
             >
@@ -930,7 +930,7 @@ function StayListingsContent() {
               onClick={() => {
                 setSearchQuery("");
                 setSelectedCategories(["All"]);
-                setSortByPrice(false);
+                setSortByPrice(true); // Reset to default sorting (low to high)
               }}
               className="bg-[#E51A4B] text-white px-6 py-3 rounded-full font-semibold"
             >
@@ -1026,7 +1026,7 @@ function StayListingsContent() {
               onClick={() => {
                 setSearchQuery("");
                 setSelectedCategories(["All"]);
-                setSortByPrice(false);
+                setSortByPrice(true); // Reset to default sorting (low to high)
               }}
               className="bg-[#E51A4B] text-white px-6 py-3 rounded-full font-semibold"
             >

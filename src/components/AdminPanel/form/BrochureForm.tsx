@@ -172,33 +172,60 @@ export default function BrochureForm() {
         const data = await res.json();
         
         if (data.data) {
+          // Process rooms - be more lenient with filtering
+          let processedRooms: any[] = [];
+          if (Array.isArray(data.data.rooms)) {
+            processedRooms = data.data.rooms
+              .filter((room: any) => {
+                // More lenient filter - keep room if it's an object and has name OR id OR is not null/undefined
+                return room && typeof room === 'object' && (room.name || room.id || Object.keys(room).length > 0);
+              });
+          }
+          
           const normalizedItem = {
             ...data.data,
             id: String(data.data.id || data.data._id || ''), // Ensure ID is always a string
             carouselImages: Array.isArray(data.data.carouselImages)
-              ? data.data.carouselImages.map((img: any) => 
-                  typeof img === 'string' ? img : img.url || img
-                ).filter((img: string) => img && img.trim() !== "")
+              ? data.data.carouselImages
+                  .map((img: any) => {
+                    // Normalize image to string
+                    if (typeof img === 'string') return img;
+                    if (img && typeof img === 'object' && img.url) return String(img.url);
+                    return null;
+                  })
+                  .filter((img: string | null): img is string => 
+                    img !== null && typeof img === 'string' && img.trim() !== ""
+                  )
               : [],
-            // Ensure rooms is always an array and properly formatted
-            rooms: Array.isArray(data.data.rooms) 
-              ? data.data.rooms.filter((room: any) => room && (room.name || room.id)) // Filter out invalid rooms
-              : [],
+            // Use processed rooms array - normalize room images too
+            rooms: processedRooms.map((room: any) => ({
+              ...room,
+              // Ensure images array contains only valid strings
+              images: Array.isArray(room.images)
+                ? room.images
+                    .map((img: any) => {
+                      if (typeof img === 'string') return img;
+                      if (img && typeof img === 'object' && img.url) return String(img.url);
+                      return null;
+                    })
+                    .filter((img: string | null): img is string => 
+                      img !== null && typeof img === 'string' && img.trim() !== ""
+                    )
+                : (room.thumb ? [String(room.thumb)] : []),
+              // Ensure thumb is a string
+              thumb: room.thumb ? String(room.thumb) : '',
+              // Ensure features array contains only strings
+              features: Array.isArray(room.features)
+                ? room.features
+                    .map((f: any) => typeof f === 'string' ? f : String(f || ''))
+                    .filter((f: string) => f.trim() !== '')
+                : [],
+            })),
           };
-          // Debug logging for rooms
-          if (itemType === "stay") {
-            console.log('BrochureForm - Stay data loaded:', {
-              id: normalizedItem.id,
-              selectedId: selectedItemId,
-              roomsCount: normalizedItem.rooms?.length || 0,
-              rooms: normalizedItem.rooms,
-            });
-          }
+          
           // Only set if the selectedItemId hasn't changed during fetch - use string comparison
           if (String(normalizedItem.id) === String(selectedItemId)) {
             setSelectedItem(normalizedItem);
-          } else {
-            console.warn('ID mismatch:', { normalizedId: normalizedItem.id, selectedId: selectedItemId });
           }
         } else {
           setSelectedItem(null);
@@ -461,7 +488,6 @@ export default function BrochureForm() {
       // Force all images to load before capturing - Increased timeout for multiple rooms
       const images = pdfContainer.querySelectorAll("img");
       const imageCount = images.length;
-      console.log(`Loading ${imageCount} images for PDF generation...`);
       
       const imagePromises = Array.from(images).map((img, index) => {
         return new Promise<void>((resolve) => {
@@ -482,7 +508,6 @@ export default function BrochureForm() {
           
           // Set up error handler - continue even if image fails
           const errorHandler = () => {
-            console.warn(`Image ${index + 1} failed to load, continuing...`);
             resolve(); // Continue even on error
           };
           
@@ -492,12 +517,7 @@ export default function BrochureForm() {
           // Increase timeout for multiple images (10 seconds per image, but max 30 seconds total)
           const timeoutDuration = Math.min(10000, Math.max(5000, 30000 / imageCount));
           setTimeout(() => {
-            if (htmlImg.complete) {
-              resolve();
-            } else {
-              console.warn(`Image ${index + 1} timeout after ${timeoutDuration}ms, continuing...`);
-              resolve(); // Continue even on timeout
-            }
+            resolve(); // Continue even on timeout
           }, timeoutDuration);
           
           // Force reload if needed
@@ -512,7 +532,6 @@ export default function BrochureForm() {
       // Wait for all images with progress tracking
       try {
         await Promise.all(imagePromises);
-        console.log(`All ${imageCount} images loaded successfully`);
       } catch (error) {
         console.error('Error loading images:', error);
         // Continue anyway - some images might have loaded
@@ -550,14 +569,10 @@ export default function BrochureForm() {
       const buffer = Math.max(200, measuredHeight * 0.1);
       const containerHeight = measuredHeight + buffer;
       
-      console.log(`Container dimensions: ${containerWidth}x${containerHeight}px (measured: ${measuredHeight}px + buffer: ${buffer}px)`);
-      
       // Adaptive scale and timeout based on image count
       // More images = lower scale for performance, longer timeout
       const scale = imageCount > 20 ? 1.0 : imageCount > 10 ? 1.1 : 1.2;
       const imageTimeout = Math.min(60000, Math.max(15000, imageCount * 3000)); // More generous timeout
-      
-      console.log(`Using scale: ${scale}, timeout: ${imageTimeout}ms for ${imageCount} images`);
       
       const canvas = await html2canvas(pdfContainer, {
         scale: scale, // Adaptive scale for performance with many images
@@ -647,21 +662,13 @@ export default function BrochureForm() {
       const quality = imageCount > 20 ? 0.75 : imageCount > 10 ? 0.80 : 0.85;
       const imgData = canvas.toDataURL("image/jpeg", quality);
       
-      console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}px`);
-      console.log(`Container scrollHeight: ${pdfContainer.scrollHeight}px, offsetHeight: ${pdfContainer.offsetHeight}px`);
-      console.log(`Using JPEG quality: ${quality} for ${imageCount} images`);
-      
       // Calculate dimensions for single page PDF
       const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      console.log(`Calculated PDF dimensions: ${imgWidth}x${imgHeight}mm`);
-      
       // Ensure we have enough height - add generous buffer to prevent cutoff
       // Add 50mm buffer (25mm top + 25mm bottom) to ensure last section is included
       const finalPdfHeight = Math.max(imgHeight + 50, 297); // Min A4 height
-      
-      console.log(`Final PDF height: ${finalPdfHeight}mm (content: ${imgHeight}mm + buffer: 50mm)`);
       
       // Create PDF with custom height to fit entire content (single page)
       const pdf = new jsPDF({
@@ -673,7 +680,6 @@ export default function BrochureForm() {
       // Add image to single page - ensure full image is included
       try {
         pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight, undefined, 'FAST');
-        console.log("Image added to PDF successfully");
       } catch (error) {
         console.error("Error adding image to PDF:", error);
         // Try with lower quality if it fails
@@ -690,8 +696,6 @@ export default function BrochureForm() {
         ? `${selectedItem.name.replace(/[^a-z0-9]/gi, "_")}_brochure.pdf`
         : "brochure.pdf";
       pdf.save(fileName);
-      
-      console.log("PDF generated successfully!");
     } catch (error) {
       console.error("Error generating PDF:", error);
       
