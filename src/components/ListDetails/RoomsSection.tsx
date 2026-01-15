@@ -120,13 +120,14 @@ export default function RoomsSection({
             }`}
           >
             {room.thumb ? (
-              <Image
+              <img
                 src={optimizeCloudinaryUrl(room.thumb)}
                 alt={room.name}
                 width={180}
                 height={120}
-                className="h-[120px] w-full object-cover"
+                className="h-[120px] w-full object-cover cursor-pointer"
                 onClick={() => setSelectedRoom(room)}
+                loading="lazy"
               />
             ) : (
               <div className="h-[120px] w-full bg-gray-200 flex items-center justify-center">

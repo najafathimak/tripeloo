@@ -92,10 +92,3 @@ export async function GET(
   }
 }
 
-
-      { error: 'Failed to load trip', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
-
