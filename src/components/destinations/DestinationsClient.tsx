@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Destination } from "@/types/destination";
@@ -45,12 +44,13 @@ export default function DestinationsClient({ destinations }: DestinationsClientP
                className="flex flex-col h-full"
              >
                <div className="relative h-56 w-full overflow-hidden">
-                 <Image
+                 <img
                    src={d.coverImage}
                    alt={d.name}
-                   fill
-                   className="object-cover group-hover:scale-110 transition-transform duration-500"
-                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                   width={400}
+                   height={224}
+                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                   loading="lazy"
                  />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                  <div className="absolute bottom-2 left-2 rounded-full bg-black/60 backdrop-blur-sm px-3 py-1 text-xs text-white">

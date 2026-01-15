@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Bed, Camera, UtensilsCrossed, ArrowRight } from 'lucide-react';
 import { optimizeCloudinaryUrl } from '@/utils/cloudinary';
@@ -249,11 +248,13 @@ export function MixedCardsCarousel() {
                 >
                   {/* Image */}
                   <div className="relative h-48 sm:h-56 overflow-hidden flex-shrink-0">
-                    <Image
+                    <img
                       src={optimizeCloudinaryUrl(card.coverImage || '/placeholder-image.jpg')}
                       alt={card.name}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      width={400}
+                      height={300}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
                     />
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

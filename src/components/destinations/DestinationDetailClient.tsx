@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
@@ -396,13 +395,13 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                       transition={{ duration: 0.6, ease: "easeOut" }}
                       className="relative w-full h-full"
                     >
-                      <Image
+                      <img
                         src={optimizeCloudinaryUrl(image)}
                         alt={`${destination.name} - Image ${index + 1}`}
-                        fill
-                        className="object-cover transition-transform duration-700"
-                        priority={index === 0}
-                        sizes="100vw"
+                        width={1920}
+                        height={1080}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700"
+                        loading={index === 0 ? "eager" : "lazy"}
                       />
                     </motion.div>
                     {/* Gradient Overlay */}
@@ -644,98 +643,285 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
         </div>
       </div>
 
+      {/* Navigation Tabs */}
+      {(stays.length > 0 || activities.length > 0 || trips.length > 0) && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6"
+          >
+            {stays.length > 0 && (
+              <motion.button
+                onClick={() => {
+                  document.getElementById('section-stays')?.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                  });
+                }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="group relative px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 text-gray-900 font-semibold text-base sm:text-lg md:text-xl border-2 border-gray-900 rounded-xl hover:text-[#E51A4B] hover:border-[#E51A4B] transition-all duration-300 bg-white shadow-sm hover:shadow-lg overflow-hidden"
+              >
+                {/* Background gradient on hover */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  className="absolute inset-0 bg-gradient-to-r from-[#E51A4B]/5 to-pink-500/5"
+                  transition={{ duration: 0.3 }}
+                />
+                <span className="relative z-10">Stays</span>
+                {/* Underline animation */}
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileHover={{ width: "100%" }}
+                  className="absolute bottom-0 left-0 h-0.5 bg-[#E51A4B]"
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.button>
+            )}
+            {activities.length > 0 && (
+              <motion.button
+                onClick={() => {
+                  document.getElementById('section-activities')?.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                  });
+                }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="group relative px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 text-gray-900 font-semibold text-base sm:text-lg md:text-xl border-2 border-gray-900 rounded-xl hover:text-[#E51A4B] hover:border-[#E51A4B] transition-all duration-300 bg-white shadow-sm hover:shadow-lg overflow-hidden"
+              >
+                {/* Background gradient on hover */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  className="absolute inset-0 bg-gradient-to-r from-[#E51A4B]/5 to-pink-500/5"
+                  transition={{ duration: 0.3 }}
+                />
+                <span className="relative z-10">Things to Do</span>
+                {/* Underline animation */}
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileHover={{ width: "100%" }}
+                  className="absolute bottom-0 left-0 h-0.5 bg-[#E51A4B]"
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.button>
+            )}
+            {trips.length > 0 && (
+              <motion.button
+                onClick={() => {
+                  document.getElementById('section-trips')?.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                  });
+                }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="group relative px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 text-gray-900 font-semibold text-base sm:text-lg md:text-xl border-2 border-gray-900 rounded-xl hover:text-[#E51A4B] hover:border-[#E51A4B] transition-all duration-300 bg-white shadow-sm hover:shadow-lg overflow-hidden"
+              >
+                {/* Background gradient on hover */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  className="absolute inset-0 bg-gradient-to-r from-[#E51A4B]/5 to-pink-500/5"
+                  transition={{ duration: 0.3 }}
+                />
+                <span className="relative z-10">Restaurants & Cafes</span>
+                {/* Underline animation */}
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileHover={{ width: "100%" }}
+                  className="absolute bottom-0 left-0 h-0.5 bg-[#E51A4B]"
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.button>
+            )}
+          </motion.div>
+        </div>
+      )}
+
       {/* Overview Section with Animated Background */}
-      <section id="destination-overview-section" className="relative py-12 sm:py-16 md:py-20 z-10">
-        {/* Animated Background */}
+      <section id="destination-overview-section" className="relative py-12 sm:py-16 md:py-20 z-10 overflow-hidden">
+        {/* Enhanced Animated Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Large floating orbs */}
           <motion.div
             animate={{
               x: [0, 100, 0],
               y: [0, 50, 0],
-              scale: [1, 1.2, 1]
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3]
             }}
-            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#E51A4B]/5 to-pink-300/5 rounded-full blur-3xl"
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E51A4B]/20 via-pink-300/15 to-rose-200/10 rounded-full blur-3xl"
           />
           <motion.div
             animate={{
               x: [0, -80, 0],
               y: [0, -60, 0],
-              scale: [1, 1.3, 1]
+              scale: [1, 1.3, 1],
+              opacity: [0.3, 0.5, 0.3]
             }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-300/5 to-cyan-300/5 rounded-full blur-3xl"
+            transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-blue-300/20 via-cyan-300/15 to-sky-200/10 rounded-full blur-3xl"
           />
           <motion.div
             animate={{
               x: [0, 60, 0],
               y: [0, -40, 0],
-              scale: [1, 1.1, 1]
+              scale: [1, 1.1, 1],
+              opacity: [0.2, 0.4, 0.2]
             }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-purple-300/5 to-pink-300/5 rounded-full blur-3xl"
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-r from-purple-300/15 via-pink-300/10 to-rose-200/10 rounded-full blur-3xl"
+          />
+          
+          {/* Additional smaller animated particles */}
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{
+                x: [0, Math.random() * 200 - 100],
+                y: [0, Math.random() * 200 - 100],
+                scale: [0.5, 1, 0.5],
+                opacity: [0.1, 0.3, 0.1]
+              }}
+              transition={{
+                duration: 15 + i * 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.5
+              }}
+              className="absolute w-32 h-32 bg-gradient-to-br from-[#E51A4B]/10 to-pink-300/5 rounded-full blur-2xl"
+              style={{
+                left: `${20 + i * 15}%`,
+                top: `${30 + i * 10}%`
+              }}
+            />
+          ))}
+          
+          {/* Animated gradient mesh */}
+          <motion.div
+            animate={{
+              backgroundPosition: ['0% 0%', '100% 100%']
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "linear"
+            }}
+            className="absolute inset-0 opacity-30"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(229, 26, 75, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%)',
+              backgroundSize: '200% 200%'
+            }}
           />
         </div>
 
         {/* Content Container */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-white rounded-3xl shadow-xl p-8 sm:p-10 md:p-12 lg:p-16 border border-gray-100"
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 md:p-12 lg:p-16 border border-white/50 overflow-hidden"
           >
-            {/* Breadcrumb Style Header */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="mb-6"
-            >
-              <nav className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                <motion.div
-                  whileHover={{ x: -2 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Link href="/destinations" className="hover:text-[#E51A4B] transition-colors">
-                    Destinations
-                  </Link>
-                </motion.div>
-                <motion.div
-                  animate={{ x: [0, 2, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </motion.div>
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-gray-900 font-semibold font-display"
-                >
-                  {destination.name}
-                </motion.span>
-              </nav>
-            </motion.div>
+            {/* Card inner glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-gray-50/50 rounded-3xl opacity-90" />
             
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-display"
-            >
-              {destination.overviewHeading || `About ${destination.name}`}
-            </motion.h2>
+            {/* Animated border glow */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="prose prose-lg max-w-none"
-            >
-              <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
-                {destination.overviewDescription || destination.summary}
-              </p>
-            </motion.div>
+              animate={{
+                opacity: [0.3, 0.6, 0.3],
+                scale: [1, 1.02, 1]
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0 rounded-3xl bg-gradient-to-r from-[#E51A4B]/10 via-pink-300/10 to-[#E51A4B]/10 blur-xl -z-10"
+            />
+            
+            {/* Shine effect */}
+            <motion.div
+              animate={{
+                x: ['-100%', '200%']
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                repeatDelay: 3,
+                ease: "easeInOut"
+              }}
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -z-10"
+              style={{ transform: 'skewX(-12deg)' }}
+            />
+            
+            {/* Content wrapper with relative positioning */}
+            <div className="relative z-10">
+              {/* Breadcrumb Style Header */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="mb-6"
+              >
+                <nav className="flex items-center gap-2 text-sm sm:text-base text-gray-600 mb-6">
+                  <motion.div
+                    whileHover={{ x: -2 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link href="/destinations" className="hover:text-[#E51A4B] transition-colors font-medium">
+                      Destinations
+                    </Link>
+                  </motion.div>
+                  <motion.div
+                    animate={{ x: [0, 2, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </motion.div>
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="text-gray-900 font-semibold font-display"
+                  >
+                    {destination.name}
+                  </motion.span>
+                </nav>
+              </motion.div>
+              
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 font-display relative"
+              >
+                <span className="relative z-10 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                  {destination.overviewHeading || `About ${destination.name}`}
+                </span>
+                {/* Decorative underline */}
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 1, delay: 0.6 }}
+                  className="h-1 bg-gradient-to-r from-[#E51A4B] via-pink-500 to-[#E51A4B] mt-3 rounded-full"
+                />
+              </motion.h2>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="prose prose-lg sm:prose-xl max-w-none"
+              >
+                <p className="text-lg sm:text-xl md:text-2xl text-gray-700 leading-relaxed sm:leading-loose font-light">
+                  {destination.overviewDescription || destination.summary}
+                </p>
+              </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -748,10 +934,11 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
           return (
             <motion.section
               key={section.key}
+              id={`section-${section.key}`}
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: sectionIndex * 0.15 }}
-              className="mb-16 sm:mb-20"
+              className="mb-16 sm:mb-20 scroll-mt-24"
             >
               {/* Section Header */}
               <motion.div
@@ -824,11 +1011,13 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                         transition={{ duration: 0.5 }}
                         className="relative w-full h-full"
                       >
-                        <Image
+                        <img
                           src={optimizeCloudinaryUrl(item.coverImage)}
                           alt={item.name}
-                          fill
-                          className="object-cover"
+                          width={400}
+                          height={300}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          loading="lazy"
                         />
                         {/* Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

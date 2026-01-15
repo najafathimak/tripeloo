@@ -323,11 +323,12 @@ export default function HomePageForm() {
                 <div className="mb-4 p-3 bg-white/5 border border-white/20 rounded-lg">
                   <p className="text-xs text-white/70 mb-2 font-medium">Currently Uploaded:</p>
                   <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/30">
-                    <Image
+                    <img
                       src={optimizeCloudinaryUrl(liveImages.desktop)}
                       alt="Current Desktop Banner"
-                      fill
-                      className="object-cover"
+                      width={800}
+                      height={480}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <div className="absolute top-2 left-2 bg-[#E51A4B]/90 text-white px-2 py-1 text-xs font-semibold rounded">
                       CURRENT
@@ -345,11 +346,12 @@ export default function HomePageForm() {
                 <div className="mb-3 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                   <p className="text-xs text-blue-300 mb-2 font-medium">New image ready (will replace current after saving):</p>
                   <div className="relative w-full h-32 rounded overflow-hidden border border-blue-400/50">
-                    <Image
+                    <img
                       src={optimizeCloudinaryUrl(formData.heroDesktopImage)}
                       alt="New Desktop Banner Preview"
-                      fill
-                      className="object-cover"
+                      width={800}
+                      height={320}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <button
                       type="button"
@@ -395,11 +397,12 @@ export default function HomePageForm() {
                 <div className="mb-4 p-3 bg-white/5 border border-white/20 rounded-lg">
                   <p className="text-xs text-white/70 mb-2 font-medium">Currently Uploaded:</p>
                   <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-white/30">
-                    <Image
+                    <img
                       src={optimizeCloudinaryUrl(liveImages.mobile)}
                       alt="Current Mobile Banner"
-                      fill
-                      className="object-cover"
+                      width={400}
+                      height={533}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <div className="absolute top-2 left-2 bg-[#E51A4B]/90 text-white px-2 py-1 text-xs font-semibold rounded">
                       CURRENT
@@ -417,11 +420,12 @@ export default function HomePageForm() {
                 <div className="mb-3 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                   <p className="text-xs text-blue-300 mb-2 font-medium">New image ready (will replace current after saving):</p>
                   <div className="relative w-full aspect-[3/4] rounded overflow-hidden border border-blue-400/50">
-                    <Image
+                    <img
                       src={optimizeCloudinaryUrl(formData.heroMobileImage)}
                       alt="New Mobile Banner Preview"
-                      fill
-                      className="object-cover"
+                      width={400}
+                      height={533}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <button
                       type="button"
@@ -575,11 +579,12 @@ export default function HomePageForm() {
                     </label>
                     {banner.image ? (
                       <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/20 mb-2">
-                        <Image
+                        <img
                           src={optimizeCloudinaryUrl(banner.image)}
                           alt="Banner"
-                          fill
-                          className="object-cover"
+                          width={800}
+                          height={480}
+                          className="absolute inset-0 w-full h-full object-cover"
                         />
                         <button
                           type="button"

@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Bed, Camera, UtensilsCrossed } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { optimizeCloudinaryUrl } from '@/utils/cloudinary';
@@ -769,13 +768,13 @@ export function Hero({ banners = [] }: HeroProps) {
                                 transition={{ duration: 0.6, ease: "easeOut" }}
                                 className="relative w-full h-full"
                               >
-                                <Image
+                                <img
                                   src={optimizeCloudinaryUrl(banner.image)}
                                   alt={banner.title || 'Banner'}
-                                  fill
-                                  className="object-cover transition-transform duration-700 group-hover/banner:scale-110"
-                                  priority={index === 0}
-                                  sizes="100vw"
+                                  width={1920}
+                                  height={1080}
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-110"
+                                  loading={index === 0 ? "eager" : "lazy"}
                                 />
                                 {/* Gradient Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
@@ -830,13 +829,13 @@ export function Hero({ banners = [] }: HeroProps) {
                                 transition={{ duration: 0.6, ease: "easeOut" }}
                                 className="relative w-full h-full"
                               >
-                                <Image
+                                <img
                                   src={optimizeCloudinaryUrl(banner.image)}
                                   alt={banner.title || 'Banner'}
-                                  fill
-                                  className="object-cover transition-transform duration-700 group-hover/banner:scale-110"
-                                  priority={index === 0}
-                                  sizes="100vw"
+                                  width={1920}
+                                  height={1080}
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-110"
+                                  loading={index === 0 ? "eager" : "lazy"}
                                 />
                                 {/* Gradient Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />

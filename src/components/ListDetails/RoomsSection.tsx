@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { X } from "lucide-react";
 import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -184,12 +183,13 @@ export default function RoomsSection({
             >
               {selectedRoom.images.filter((img: string) => img && img.trim() !== "").map((img: string, i: number) => (
                 <SwiperSlide key={i}>
-                  <Image
+                  <img
                     src={optimizeCloudinaryUrl(img)}
                     alt={selectedRoom.name}
                     width={800}
                     height={500}
                     className="w-full h-80 object-cover rounded-lg"
+                    loading="lazy"
                   />
                 </SwiperSlide>
               ))}

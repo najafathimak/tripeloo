@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 import { useEffect, useState } from "react";
@@ -94,11 +93,13 @@ export function FeaturedDestinations() {
                 className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
               >
                 <div className="relative h-28 sm:h-40">
-                  <Image
+                  <img
                     src={optimizeCloudinaryUrl(d.image)}
                     alt={d.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    width={400}
+                    height={160}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
                   />
                 </div>
                 <div className="p-3 sm:p-4">

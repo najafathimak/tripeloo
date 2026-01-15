@@ -1030,7 +1030,7 @@ export default function BrochureForm() {
               {/* Carousel - Cover Image + All Carousel Images - Larger Size */}
               <div className="mb-6">
                 {selectedItem.coverImage && (
-                  <Image
+                  <img
                     src={optimizeCloudinaryUrl(selectedItem.coverImage)}
                     alt={selectedItem.name}
                     width={800}
@@ -1054,7 +1054,7 @@ export default function BrochureForm() {
                       .map((img: any, idx: number) => {
                         const imgUrl = typeof img === 'string' ? img : img?.url || '';
                         return (
-                          <Image
+                          <img
                             key={idx}
                             src={optimizeCloudinaryUrl(imgUrl)}
                             alt={`${selectedItem.name} - Image ${idx + 1}`}
@@ -1210,7 +1210,7 @@ export default function BrochureForm() {
                             {room.images
                               .filter((img: string) => img && img.trim() !== "")
                               .map((img: string, imgIdx: number) => (
-                                <Image
+                                <img
                                   key={imgIdx}
                                   src={optimizeCloudinaryUrl(img)}
                                   alt={`${room.name} - Image ${imgIdx + 1}`}
@@ -1223,7 +1223,7 @@ export default function BrochureForm() {
                           </div>
                         ) : room.thumb ? (
                           <div className="mb-4">
-                            <Image
+                            <img
                               src={optimizeCloudinaryUrl(room.thumb)}
                               alt={room.name}
                               width={800}
@@ -1277,7 +1277,7 @@ export default function BrochureForm() {
                       {packagesToShow.map((pkg: any, idx: number) => (
                       <div key={idx} className="cursor-pointer rounded-xl overflow-hidden shadow-md border border-gray-200">
                         {pkg.thumb ? (
-                          <Image
+                          <img
                             src={optimizeCloudinaryUrl(pkg.thumb)}
                             alt={pkg.name}
                             width={180}
@@ -1285,7 +1285,7 @@ export default function BrochureForm() {
                             className="h-[120px] w-full object-cover"
                           />
                         ) : pkg.images && pkg.images.length > 0 ? (
-                          <Image
+                          <img
                             src={optimizeCloudinaryUrl(pkg.images[0])}
                             alt={pkg.name}
                             width={180}
@@ -1312,7 +1312,7 @@ export default function BrochureForm() {
                                 .filter((img: string) => img && img.trim() !== "")
                                 .slice(0, 4)
                                 .map((img: string, imgIdx: number) => (
-                                  <Image
+                                  <img
                                     key={imgIdx}
                                     src={optimizeCloudinaryUrl(img)}
                                     alt={`${pkg.name} - Image ${imgIdx + 1}`}

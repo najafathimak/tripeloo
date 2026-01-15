@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 import { motion } from "framer-motion";
 import {
@@ -875,11 +874,13 @@ function StayListingsContent() {
                 className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
               >
                 <div className="relative h-64 overflow-hidden">
-                  <Image
+                  <img
                     src={optimizeCloudinaryUrl(stay.coverImage)}
                     alt={stay.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    width={400}
+                    height={256}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
                   />
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
                     <p className="text-[#E51A4B] font-bold text-lg">
@@ -982,11 +983,13 @@ function StayListingsContent() {
                 className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
               >
                 <div className="relative h-64 overflow-hidden">
-                  <Image
+                  <img
                     src={optimizeCloudinaryUrl(activity.coverImage)}
                     alt={activity.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    width={400}
+                    height={256}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
                   />
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
                     <p className="text-[#E51A4B] font-bold text-lg">
@@ -1078,11 +1081,13 @@ function StayListingsContent() {
                 className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
               >
                 <div className="relative h-64 overflow-hidden">
-                  <Image
+                  <img
                     src={optimizeCloudinaryUrl(trip.coverImage)}
                     alt={trip.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    width={400}
+                    height={256}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
                   />
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
                     <p className="text-[#E51A4B] font-bold text-lg">

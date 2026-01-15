@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { X } from "lucide-react";
 import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -150,24 +149,27 @@ export default function PackagesSection({
                   >
                     {displayImages.filter((img) => img && img.trim() !== "").map((img, i) => (
                       <SwiperSlide key={i}>
-                        <Image
+                        <img
                           src={optimizeCloudinaryUrl(img)}
                           alt={`${pkg.name} - Image ${i + 1}`}
-                          fill
-                          className="object-cover"
+                          width={400}
+                          height={200}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          loading="lazy"
                         />
                       </SwiperSlide>
                     ))}
                   </Swiper>
                 </div>
               ) : pkg.thumb ? (
-                <Image
+                <img
                   src={optimizeCloudinaryUrl(pkg.thumb)}
                   alt={pkg.name}
                   width={400}
                   height={200}
                   className="h-[200px] w-full object-cover"
                   onClick={() => setSelectedPackage(pkg)}
+                  loading="lazy"
                 />
               ) : (
                 <div className="h-[200px] w-full bg-gray-200 flex items-center justify-center">
@@ -258,12 +260,13 @@ export default function PackagesSection({
             >
               {selectedPackage.images.filter((img) => img && img.trim() !== "").map((img, i) => (
                 <SwiperSlide key={i}>
-                  <Image
+                  <img
                     src={optimizeCloudinaryUrl(img)}
                     alt={selectedPackage.name}
                     width={800}
                     height={500}
                     className="w-full h-80 object-cover rounded-lg"
+                    loading="lazy"
                   />
                 </SwiperSlide>
               ))}
