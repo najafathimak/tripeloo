@@ -65,9 +65,10 @@ export default function AdminDashboard() {
     { href: "/admin/destinations", label: "Destinations", icon: MapPin, color: "bg-green-500" },
     { href: "/admin/stays", label: "Stays", icon: Hotel, color: "bg-purple-500" },
     { href: "/admin/things", label: "Things to Do", icon: Activity, color: "bg-orange-500" },
-    { href: "/admin/trips", label: "Getaways", icon: Plane, color: "bg-cyan-500" },
+    { href: "/admin/trips", label: "Restaurants & Cafes", icon: Plane, color: "bg-cyan-500" },
     { href: "/admin/reviews", label: "Reviews", icon: MessageSquare, color: "bg-pink-500" },
     { href: "/admin/loyalty-points", label: "Loyalty Points", icon: Gift, color: "bg-red-500" },
+    { href: "/admin/leads", label: "Website Leads", icon: Users, color: "bg-indigo-500" },
   ];
 
   return (
@@ -107,7 +108,7 @@ export default function AdminDashboard() {
             iconColor="text-orange-400"
           />
           <StatCard
-            label="Getaways"
+            label="Restaurants & Cafes"
             value={stats.trips}
             icon={Plane}
             color="bg-cyan-500/20 border-cyan-500/50"
@@ -207,7 +208,7 @@ export default function AdminDashboard() {
                 href="/admin/trips/list"
                 className="block w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-4 rounded-lg transition-colors text-center border border-white/20"
               >
-                Manage Getaways
+                Manage Restaurants & Cafes
               </Link>
             </div>
           </div>

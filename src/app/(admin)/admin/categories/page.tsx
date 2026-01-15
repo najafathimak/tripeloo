@@ -116,7 +116,7 @@ export default function CategoriesPage() {
     const labels: Record<string, string> = {
       stay: "Stays",
       activity: "Activities",
-      trip: "Getaways",
+      trip: "Restaurants & Cafes",
       all: "All Types",
     };
     return labels[type] || type;
@@ -131,7 +131,7 @@ export default function CategoriesPage() {
               Manage Categories
             </h2>
             <p className="text-gray-600">
-              Add and manage categories for stays, activities, and getaways
+              Add and manage categories for stays, activities, and restaurants & cafes
             </p>
           </div>
           {!showForm && (
@@ -191,7 +191,7 @@ export default function CategoriesPage() {
                   <option value="all">All Types</option>
                   <option value="stay">Stays</option>
                   <option value="activity">Activities</option>
-                  <option value="trip">Getaways</option>
+                  <option value="trip">Restaurants & Cafes</option>
                 </select>
               </div>
               <div className="flex items-end">

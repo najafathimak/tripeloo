@@ -8,6 +8,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-playfair)', 'Georgia', 'serif'],
+        display: ['var(--font-playfair)', 'Georgia', 'serif'],
+      },
       colors: {
         brand: {
           DEFAULT: '#E51A4B',

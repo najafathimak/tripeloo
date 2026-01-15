@@ -69,6 +69,13 @@ export async function GET(
       packages: trip.packages || [],
       location: trip.location || '',
       additionalDetails: trip.additionalDetails || [],
+      nearbyStays: Array.isArray(trip.nearbyStays)
+        ? trip.nearbyStays.map((id: any) => id?.toString?.() || String(id))
+        : [],
+      nearbyActivities: Array.isArray(trip.nearbyActivities)
+        ? trip.nearbyActivities.map((id: any) => id?.toString?.() || String(id))
+        : [],
+      importantInfo: trip.importantInfo || '',
     };
     
     return NextResponse.json({ data: mappedTrip }, {
@@ -79,6 +86,13 @@ export async function GET(
   } catch (error) {
     console.error('[api/trips/[id]] error', error);
     return NextResponse.json(
+      { error: 'Failed to load trip', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+
       { error: 'Failed to load trip', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );

@@ -25,7 +25,7 @@ import {
 
 import { stayData, activitiesData, tripsData, type Stay, type Activity, type Trip } from "./DestinationData";
 
-const tabData = ["Stays", "Things to Do", "Getaways"];
+const tabData = ["Stays", "Things to Do", "Restaurants & Cafes"];
 
 // Helper function to map category based on item data
 const mapCategory = (item: any, type: 'stay' | 'activity' | 'trip'): string => {
@@ -77,7 +77,7 @@ function StayListingsContent() {
   // Map category query param to tab name
   const getDefaultTab = () => {
     if (categoryParam === "things-to-do") return "Things to Do";
-    if (categoryParam === "getaways") return "Getaways";
+    if (categoryParam === "getaways" || categoryParam === "restaurants-cafes") return "Restaurants & Cafes";
     return "Stays"; // default
   };
   
@@ -105,8 +105,8 @@ function StayListingsContent() {
   useEffect(() => {
     if (categoryParam === "things-to-do") {
       setActiveTab("Things to Do");
-    } else if (categoryParam === "getaways") {
-      setActiveTab("Getaways");
+    } else if (categoryParam === "getaways" || categoryParam === "restaurants-cafes") {
+      setActiveTab("Restaurants & Cafes");
     } else if (categoryParam === "stays") {
       setActiveTab("Stays");
     }
@@ -224,7 +224,7 @@ function StayListingsContent() {
     } else if (activeTab === "Things to Do") {
       queryParam = `things-to-do=${itemId}`;
       targetPage = "/things-to-do";
-    } else if (activeTab === "Getaways") {
+    } else if (activeTab === "Restaurants & Cafes") {
       queryParam = `trips=${itemId}`;
       targetPage = "/trips";
     }
@@ -268,7 +268,7 @@ function StayListingsContent() {
       return ["All", ...Array.from(new Set(stays.map((s) => s.category)))];
     } else if (activeTab === "Things to Do" && activities) {
       return ["All", ...Array.from(new Set(activities.map((a) => a.category)))];
-    } else if (activeTab === "Getaways" && trips) {
+    } else if (activeTab === "Restaurants & Cafes" && trips) {
       return ["All", ...Array.from(new Set(trips.map((t) => t.category)))];
     }
     return ["All"];
@@ -340,7 +340,7 @@ function StayListingsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br mt-12 from-blue-50 via-white to-pink-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br pt-4 from-blue-50 via-white to-pink-50">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -354,7 +354,7 @@ function StayListingsContent() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br mt-12 from-blue-50 via-white to-pink-50">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br pt-4 from-blue-50 via-white to-pink-50">
       {/* Dynamic Background Animation */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {activeTab === "Stays" && (
@@ -440,7 +440,7 @@ function StayListingsContent() {
           </>
         )}
 
-        {activeTab === "Getaways" && (
+        {activeTab === "Restaurants & Cafes" && (
           <>
             <motion.div
               animate={{ x: [0, 50, 0] }}
@@ -486,7 +486,7 @@ function StayListingsContent() {
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-base" />
               <input
                 type="text"
-                placeholder="Search stays, activities, getaways..."
+                placeholder="Search stays, activities, restaurants & cafes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-10 py-2.5 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent"
@@ -794,12 +794,12 @@ function StayListingsContent() {
           initial={{ opacity: 0 }}
           animate={{ opacity: isVisible ? 1 : 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 md:mb-12 bg-gradient-to-r from-[#E51A4B] to-[#FF6B6B] bg-clip-text text-transparent capitalize"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 md:mb-12 bg-gradient-to-r from-[#E51A4B] to-[#FF6B6B] bg-clip-text text-transparent capitalize font-display"
         >
           {activeTab === "Stays" && `Stays in ${decodedDestination}`}
           {activeTab === "Things to Do" &&
             `Things to Do in ${decodedDestination}`}
-          {activeTab === "Getaways" && `Getaways around ${decodedDestination}`}
+          {activeTab === "Restaurants & Cafes" && `Restaurants & Cafes in ${decodedDestination}`}
         </motion.h1>
 
         {/* No results message */}
@@ -1005,8 +1005,8 @@ function StayListingsContent() {
           </div>
         )}
 
-        {/* No results message for Getaways */}
-        {activeTab === "Getaways" && trips && trips.length > 0 && !hasTrips && (
+        {/* No results message for Restaurants & Cafes */}
+        {activeTab === "Restaurants & Cafes" && trips && trips.length > 0 && !hasTrips && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1035,8 +1035,8 @@ function StayListingsContent() {
           </motion.div>
         )}
 
-        {/* No Getaways available */}
-        {!hasTrips && activeTab === "Getaways" && (!trips || trips.length === 0) && (
+        {/* No Restaurants & Cafes available */}
+        {!hasTrips && activeTab === "Restaurants & Cafes" && (!trips || trips.length === 0) && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1045,10 +1045,10 @@ function StayListingsContent() {
           >
             <FaCarSide className="text-6xl text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              No getaway packages available for this destination right now
+              No restaurants & cafes available for this destination right now
             </h2>
             <p className="text-gray-600 mb-6">
-              We're designing perfect itineraries. For personalized getaway
+              We're adding more dining options. For personalized restaurant
               planning, reach out to our support team.
             </p>
             <motion.a
@@ -1065,8 +1065,8 @@ function StayListingsContent() {
           </motion.div>
         )}
 
-        {/* Show getaways if available */}
-        {hasTrips && activeTab === "Getaways" && (
+        {/* Show restaurants & cafes if available */}
+        {hasTrips && activeTab === "Restaurants & Cafes" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {filteredTrips.map((trip, index) => (
               <motion.div

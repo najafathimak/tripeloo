@@ -69,6 +69,13 @@ export async function GET(
       location: activity.location || '',
       activityDetails: activity.activityDetails || {},
       additionalDetails: activity.additionalDetails || [],
+      nearbyStays: Array.isArray(activity.nearbyStays) 
+        ? activity.nearbyStays.map((id: any) => id?.toString?.() || String(id))
+        : [],
+      nearbyTrips: Array.isArray(activity.nearbyTrips)
+        ? activity.nearbyTrips.map((id: any) => id?.toString?.() || String(id))
+        : [],
+      importantInfo: activity.importantInfo || '',
     };
     
     return NextResponse.json({ data: mappedActivity }, {
@@ -79,6 +86,13 @@ export async function GET(
   } catch (error) {
     console.error('[api/activities/[id]] error', error);
     return NextResponse.json(
+      { error: 'Failed to load activity', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+
       { error: 'Failed to load activity', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );

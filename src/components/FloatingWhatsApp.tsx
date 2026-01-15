@@ -73,7 +73,7 @@ export function FloatingWhatsApp() {
               fontSize="12" 
               letterSpacing="3" 
               fontWeight="700" 
-              fill="#ffffff" 
+              fill="#111827" 
               xmlSpace="preserve"
             >
               <textPath href="#circlePathFloating" startOffset="0%">

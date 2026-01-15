@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
       contactNumber,
       address,
       additionalDetails = [],
+      nearbyActivities = [],
+      nearbyTrips = [],
     } = body;
 
     // Validation
@@ -99,6 +101,8 @@ export async function POST(request: NextRequest) {
         description: detail.type === 'description' ? (detail.description?.trim() || '') : undefined,
         points: detail.type === 'points' ? (detail.points?.filter((p: string) => p.trim()) || []) : undefined,
       })),
+      nearbyActivities: Array.isArray(nearbyActivities) ? nearbyActivities.filter((id: string) => id && id.trim()) : [],
+      nearbyTrips: Array.isArray(nearbyTrips) ? nearbyTrips.filter((id: string) => id && id.trim()) : [],
       isHidden: false,
       createdAt: new Date(),
       updatedAt: new Date(),

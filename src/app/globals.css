@@ -531,3 +531,16 @@ html {
   animation: testimonial-content-exit 300ms ease-in both;
 }
 
+/* Custom Swiper Navigation for Mixed Cards Carousel */
+.swiper-button-prev-mixed,
+.swiper-button-next-mixed {
+  width: 44px !important;
+  height: 44px !important;
+  margin-top: 0 !important;
+}
+
+.swiper-button-prev-mixed::after,
+.swiper-button-next-mixed::after {
+  display: none;
+}
+

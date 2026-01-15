@@ -121,7 +121,7 @@ export default function PackagesSection({
   return (
     <div className="mt-12">
       <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
-        Packages
+        Dishes / Menu Items
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -200,7 +200,7 @@ export default function PackagesSection({
                 {pkg.highlights && pkg.highlights.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-gray-200">
                     <h4 className="text-xs font-semibold text-gray-700 mb-2">
-                      Highlights:
+                      Features:
                     </h4>
                     <div className="space-y-1">
                       {pkg.highlights.slice(0, 3).map((highlight, index) => (
@@ -271,7 +271,7 @@ export default function PackagesSection({
 
             <div className="mt-6">
               <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                Package Highlights
+                Dish Highlights
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {selectedPackage.highlights.map((highlight, index) => (

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, X, CheckCircle, AlertCircle, Loader2, Plus, Trash2, Pencil } from "lucide-react";
 import Image from "next/image";
+import MultiSelectDropdown from "../MultiSelectDropdown";
 
 interface FormErrors {
   name?: string;
@@ -57,6 +58,8 @@ interface FormData {
   contactNumber: string;
   address: string;
   additionalDetails: AdditionalDetail[];
+  nearbyStays?: string[];
+  nearbyActivities?: string[];
 }
 
 interface TripFormProps {
@@ -85,6 +88,8 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
     contactNumber: "",
     address: "",
     additionalDetails: [],
+    nearbyStays: [],
+    nearbyActivities: [],
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -96,6 +101,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
   const [loadingDestinations, setLoadingDestinations] = useState(true);
   const [categories, setCategories] = useState<Array<{ name: string }>>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [stays, setStays] = useState<Array<{ _id: string; id: string; name: string }>>([]);
+  const [loadingStays, setLoadingStays] = useState(true);
+  const [activities, setActivities] = useState<Array<{ _id: string; id: string; name: string }>>([]);
+  const [loadingActivities, setLoadingActivities] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [includeInput, setIncludeInput] = useState("");
@@ -128,6 +137,40 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
       }
     };
     fetchDestinations();
+  }, []);
+
+  useEffect(() => {
+    const fetchStays = async () => {
+      try {
+        const res = await fetch("/api/admin/stays");
+        if (res.ok) {
+          const data = await res.json();
+          setStays(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching stays:", error);
+      } finally {
+        setLoadingStays(false);
+      }
+    };
+    fetchStays();
+  }, []);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const res = await fetch("/api/admin/activities");
+        if (res.ok) {
+          const data = await res.json();
+          setActivities(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching activities:", error);
+      } finally {
+        setLoadingActivities(false);
+      }
+    };
+    fetchActivities();
   }, []);
 
   // Fetch categories
@@ -180,6 +223,8 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
         location: initialData.location || "",
         contactNumber: initialData.contactNumber || "",
         address: initialData.address || "",
+        nearbyStays: initialData.nearbyStays || [],
+        nearbyActivities: initialData.nearbyActivities || [],
         additionalDetails: (initialData.additionalDetails || []).map((detail: any, idx: number) => ({
           id: detail.id || `detail-${idx}`,
           heading: detail.heading || "",
@@ -572,11 +617,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
 
     const newErrors: FormErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = "Trip name is required";
+    if (!formData.name.trim()) newErrors.name = "Cafe name is required";
     if (!formData.destinationSlug) newErrors.destinationSlug = "Destination is required";
     if (!formData.category.trim()) newErrors.category = "Category is required";
     if (!formData.coverImage.trim()) newErrors.coverImage = "Cover image is required";
-    if (!formData.startingPrice.trim()) newErrors.startingPrice = "Starting price is required";
     if (!formData.summary.trim()) newErrors.summary = "Summary is required";
 
     if (Object.keys(newErrors).length > 0) {
@@ -601,7 +645,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
           category: formData.category.trim(),
           coverImage: formData.coverImage.trim(),
           carouselImages: formData.carouselImages,
-          startingPrice: Number(formData.startingPrice),
+          startingPrice: formData.startingPrice.trim() ? Number(formData.startingPrice) : 0,
           originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
           currency: formData.currency,
           summary: formData.summary.trim(),
@@ -621,6 +665,8 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
           address: formData.address.trim(),
           propertyName: formData.propertyName.trim(),
           additionalDetails: formData.additionalDetails,
+          nearbyStays: formData.nearbyStays || [],
+          nearbyActivities: formData.nearbyActivities || [],
         }),
       });
 
@@ -630,13 +676,13 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
         if (data.errors) {
           setErrors(data.errors);
         } else {
-          setErrors({ general: data.error || `Failed to ${isEdit ? 'update' : 'create'} trip` });
+          setErrors({ general: data.error || `Failed to ${isEdit ? 'update' : 'create'} cafe` });
         }
         setIsSubmitting(false);
         return;
       }
 
-      setSuccessMessage(`Trip ${isEdit ? 'updated' : 'created'} successfully!`);
+      setSuccessMessage(`Cafe ${isEdit ? 'updated' : 'created'} successfully!`);
       setIsSubmitting(false);
       
       // Scroll to top to show success message
@@ -657,10 +703,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
     <div className="mt-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
       <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-          {isEdit ? 'Edit Trip' : 'Add New Trip'}
+          {isEdit ? 'Edit Cafe' : 'Add New Cafe'}
         </h2>
         <p className="text-gray-600 mb-8">
-          {isEdit ? 'Update the trip details below.' : 'Fill in the details below to add a new trip under a destination.'}
+          {isEdit ? 'Update the cafe details below.' : 'Fill in the details below to add a new restaurant or cafe under a destination.'}
         </p>
 
         {successMessage && (
@@ -893,7 +939,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
           <div className="grid md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Starting Price <span className="text-red-500">*</span>
+                Starting Price <span className="text-gray-500 text-xs">(Optional)</span>
               </label>
               <input
                 type="number"
@@ -1219,19 +1265,19 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
             )}
           </div>
 
-          {/* Packages */}
+          {/* Dishes/Menu Items */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Packages <span className="text-gray-500 text-xs">(Optional)</span>
+              Dishes / Menu Items <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <p className="text-xs text-gray-500 mb-4">
-              Add different package options (e.g., 7 days, 5 days) with their own prices and highlights
+              Add different dishes or menu items (e.g., Appetizers, Main Course, Desserts) with their own prices and highlights
             </p>
             <div className="space-y-6">
               {formData.packages.map((pkg, pkgIndex) => (
                 <div key={pkg.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-semibold text-gray-800">Package {pkgIndex + 1}</h4>
+                    <h4 className="font-semibold text-gray-800">Dish {pkgIndex + 1}</h4>
                     <button
                       type="button"
                       onClick={() => removePackage(pkgIndex)}
@@ -1243,22 +1289,22 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
 
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-2">Package Name</label>
+                      <label className="block text-sm text-gray-600 mb-2">Dish Name</label>
                       <input
                         type="text"
                         value={pkg.name}
                         onChange={(e) => updatePackage(pkgIndex, "name", e.target.value)}
-                        placeholder="e.g., 7 Days Package"
+                        placeholder="e.g., Margherita Pizza"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-2">Duration</label>
+                      <label className="block text-sm text-gray-600 mb-2">Category / Type</label>
                       <input
                         type="text"
                         value={pkg.duration}
                         onChange={(e) => updatePackage(pkgIndex, "duration", e.target.value)}
-                        placeholder="e.g., 7 days / 6 nights"
+                        placeholder="e.g., Main Course, Appetizer, Dessert"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                       />
                     </div>
@@ -1283,14 +1329,14 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                       />
                       {pkg.thumb && (
                         <div className="mt-2 relative w-full h-32 rounded overflow-hidden">
-                          <Image src={pkg.thumb} alt="Package thumb" fill className="object-cover" />
+                          <Image src={pkg.thumb} alt="Dish thumbnail" fill className="object-cover" />
                         </div>
                       )}
                     </div>
                   </div>
 
                   <div className="mb-4">
-                    <label className="block text-sm text-gray-600 mb-2">Package Images</label>
+                    <label className="block text-sm text-gray-600 mb-2">Dish Images</label>
                     <input
                       type="file"
                       accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -1331,7 +1377,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                             updatePackage(pkgIndex, "images", [...pkg.images, ...uploadedUrls]);
                           }
                         } catch (error) {
-                          console.error("Error uploading package images:", error);
+                          console.error("Error uploading dish images:", error);
                         } finally {
                           setIsUploading(false);
                           // Reset input
@@ -1351,7 +1397,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                       <div className="mt-2 grid grid-cols-3 gap-2">
                         {pkg.images.map((img, imgIndex) => (
                           <div key={imgIndex} className="relative h-24 rounded overflow-hidden border border-gray-200">
-                            <Image src={img} alt={`Package ${pkgIndex + 1} image ${imgIndex + 1}`} fill className="object-cover" />
+                            <Image src={img} alt={`Dish ${pkgIndex + 1} image ${imgIndex + 1}`} fill className="object-cover" />
                             <button
                               type="button"
                               onClick={() => updatePackage(pkgIndex, "images", pkg.images.filter((_, i) => i !== imgIndex))}
@@ -1364,7 +1410,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                       </div>
                     )}
                     <p className="mt-1 text-xs text-gray-500">
-                      Upload multiple images for this package. They will be displayed in a carousel on the package card.
+                      Upload multiple images for this dish. They will be displayed in a carousel on the dish card.
                     </p>
                   </div>
 
@@ -1420,7 +1466,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                 className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#E51A4B] hover:bg-[#E51A4B]/5 transition-all w-full justify-center"
               >
                 <Plus size={20} />
-                <span className="font-medium">Add Package</span>
+                <span className="font-medium">Add Dish</span>
               </button>
             </div>
           </div>
@@ -1438,6 +1484,40 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
               placeholder="e.g., Wayanad, Kerala"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             />
+          </div>
+
+          {/* Nearby Stays */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Nearby Stays <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <MultiSelectDropdown
+              options={stays.map(s => ({ id: s._id || s.id || '', name: s.name }))}
+              selectedIds={formData.nearbyStays || []}
+              onChange={(selected) => setFormData({ ...formData, nearbyStays: selected })}
+              placeholder="Select Stays..."
+              loading={loadingStays}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Click to select multiple items. These will be displayed as "Nearby Stays" cards on the restaurant/cafe detail page.
+            </p>
+          </div>
+
+          {/* Nearby Things To Do */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Nearby Things To Do <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <MultiSelectDropdown
+              options={activities.map(a => ({ id: a._id || a.id || '', name: a.name }))}
+              selectedIds={formData.nearbyActivities || []}
+              onChange={(selected) => setFormData({ ...formData, nearbyActivities: selected })}
+              placeholder="Select Things To Do..."
+              loading={loadingActivities}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Click to select multiple items. These will be displayed as "Nearby Things To Do" cards on the restaurant/cafe detail page.
+            </p>
           </div>
 
           {/* Contact Number */}
@@ -1682,7 +1762,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                   {isEdit ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                isEdit ? "Update Trip" : "Create Trip"
+                isEdit ? "Update Cafe" : "Create Cafe"
               )}
             </button>
             <button

@@ -5,6 +5,7 @@ import PriceSection from "@/components/ListDetails/PriceSection";
 import ReviewsSection from "@/components/ListDetails/ReviewsSection";
 import PackagesSection from "@/components/ListDetails/PackagesSection";
 import BookingSidebar from "@/components/ListDetails/ListingDetailsClient";
+import NearbyItems from "@/components/NearbyItems";
 import { Star, Car, Hotel, Utensils, Mountain, Calendar, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -146,7 +147,7 @@ const TripDetailsContent = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E51A4B] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading getaway details...</p>
+          <p className="mt-4 text-gray-600">Loading restaurant/cafe details...</p>
         </div>
       </div>
     );
@@ -174,13 +175,13 @@ const TripDetailsContent = () => {
               </svg>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-              Getaway Not Found
+              Restaurant/Cafe Not Found
             </h1>
             <p className="text-gray-600 mb-2">
-              We couldn't find the getaway you're looking for.
+              We couldn't find the restaurant/cafe you're looking for.
             </p>
             <p className="text-sm text-gray-500 mb-6">
-              The getaway may have been removed or the link might be incorrect.
+              The restaurant/cafe may have been removed or the link might be incorrect.
             </p>
           </div>
           <button
@@ -196,7 +197,7 @@ const TripDetailsContent = () => {
 
   return (
     <div className="mx-0 pt-0 sm:pt-11 sm:mx-[10%] relative">
-      {/* Carousel with getaway cover image */}
+      {/* Carousel with restaurant/cafe cover image */}
       <ListCarousel 
         carouselImages={tripData.carouselImages || []} 
         coverImage={tripData.coverImage} 
@@ -241,11 +242,11 @@ const TripDetailsContent = () => {
 
             {/* Includes section hidden */}
 
-            {/* Getaway Properties */}
+            {/* Restaurant/Cafe Properties */}
             {tripData.properties && tripData.properties.length > 0 && (
               <div className="mt-8 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
                 <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
-                  Getaway Features
+                  Restaurant/Cafe Features
                 </h2>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
@@ -261,13 +262,13 @@ const TripDetailsContent = () => {
               <div className="px-4 sm:px-6 mb-5 mt-8 relative">
                 <div className="flex items-center gap-2 mb-2">
                   <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-                    Choose Your Package
+                    Choose Your Dish/Menu Item
                   </h2>
                 </div>
 
                 {/* Info Badge */}
                 <div className="inline-block bg-[#7E22CE]/10 text-[#7E22CE] text-xs font-medium px-3 py-1 rounded-full mb-4">
-                  💡 Select your preferred package duration to continue booking
+                  💡 Select your preferred dish/menu item to continue booking
                 </div>
 
                 <PackagesSection 
@@ -339,6 +340,25 @@ const TripDetailsContent = () => {
                 destinationName={tripData.destinationName} 
               />
             </div>
+
+            {/* Nearby Stays */}
+            {tripData.nearbyStays && tripData.nearbyStays.length > 0 && (
+              <NearbyItems
+                title="Nearby Stays"
+                itemIds={tripData.nearbyStays}
+                itemType="stay"
+              />
+            )}
+
+            {/* Nearby Things To Do */}
+            {tripData.nearbyActivities && tripData.nearbyActivities.length > 0 && (
+              <NearbyItems
+                title="Nearby Things To Do"
+                itemIds={tripData.nearbyActivities}
+                itemType="activity"
+              />
+            )}
+
             <div className="px-4 sm:px-6 mb-5">
               {tripData && (
                 <ReviewsSection
@@ -387,7 +407,7 @@ const TripDetails = () => {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E51A4B] mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading getaway details...</p>
+            <p className="mt-4 text-gray-600">Loading restaurant/cafe details...</p>
           </div>
         </div>
       }

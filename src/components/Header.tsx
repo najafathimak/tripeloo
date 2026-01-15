@@ -53,8 +53,8 @@ export function Header() {
     const destinationName = encodeURIComponent(selectedDestination);
     let categoryParam = '';
     
-    if (selectedCategory === 'getaways') {
-      categoryParam = 'getaways';
+    if (selectedCategory === 'getaways' || selectedCategory === 'restaurants-cafes') {
+      categoryParam = 'restaurants-cafes';
     } else if (selectedCategory === 'things-to-do') {
       categoryParam = 'things-to-do';
     }
@@ -89,7 +89,7 @@ export function Header() {
     <header className={`${isHomePage ? 'absolute' : 'relative'} top-0 z-30 w-full ${isHomePage ? 'bg-transparent' : 'bg-white shadow-md'}`}>
       <div className="container flex items-center justify-between py-4">
         <div className="flex items-center gap-3">
-          <button aria-label="Open Menu" className={`md:hidden ${isHomePage ? 'text-white' : 'text-gray-900'}`} onClick={openMenu}>
+          <button aria-label="Open Menu" className="md:hidden text-gray-900" onClick={openMenu}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-6 w-6">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -106,17 +106,17 @@ export function Header() {
           </Link>
         </div>
 
-        <nav className={`hidden md:flex items-center gap-6 text-sm ${isHomePage ? 'text-white' : 'text-gray-900 font-semibold'}`}>
-          <Link href="/" className={`${isHomePage ? 'hover:text-brand' : 'hover:text-[#E51A4B] font-semibold'}`}>Home</Link>
-          <Link href="/destinations" className={`${isHomePage ? 'hover:text-brand' : 'hover:text-[#E51A4B] font-semibold'}`}>Destinations</Link>
-          <Link href="/about" className={`${isHomePage ? 'hover:text-brand' : 'hover:text-[#E51A4B] font-semibold'}`}>About / Contact</Link>
+        <nav className={`hidden md:flex items-center gap-6 text-sm text-gray-900 font-semibold`}>
+          <Link href="/" className="hover:text-[#E51A4B] font-semibold">Home</Link>
+          <Link href="/destinations" className="hover:text-[#E51A4B] font-semibold">Destinations</Link>
+          <Link href="/about" className="hover:text-[#E51A4B] font-semibold">About / Contact</Link>
         </nav>
 
         <div className="flex items-center gap-3">
           {/* Search Icon - Mobile & Desktop */}
           <button
             onClick={() => setShowSearchModal(true)}
-            className={`${isHomePage ? 'text-white hover:text-brand' : 'text-gray-900 hover:text-[#E51A4B]'} transition-colors p-2`}
+            className="text-gray-900 hover:text-[#E51A4B] transition-colors p-2"
             aria-label="Search"
           >
             <Search size={20} />
@@ -125,7 +125,7 @@ export function Header() {
           {/* Call Assistance - Desktop */}
           <a
             href="tel:7066444430"
-            className={`hidden md:inline-flex items-center gap-2 rounded-full border ${isHomePage ? 'border-white/60 text-white hover:bg-white/10' : 'border-gray-300 text-gray-900 hover:bg-gray-50'} px-4 py-2 text-sm font-semibold transition`}
+            className="hidden md:inline-flex items-center gap-2 rounded-full border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm font-semibold transition"
           >
             <Phone size={16} />
             <span>Call Assistance</span>
@@ -134,7 +134,7 @@ export function Header() {
           {/* Call Icon - Mobile */}
           <a
             href="tel:7066444430"
-            className={`md:hidden ${isHomePage ? 'text-white hover:text-brand' : 'text-gray-900 hover:text-[#E51A4B]'} transition-colors p-2`}
+            className="md:hidden text-gray-900 hover:text-[#E51A4B] transition-colors p-2"
             aria-label="Call Assistance"
           >
             <Phone size={20} />
@@ -144,7 +144,7 @@ export function Header() {
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className={`inline-flex items-center gap-2 rounded-full border ${isHomePage ? 'border-white/60 text-white hover:bg-white/10' : 'border-gray-300 text-gray-900 hover:bg-gray-50'} px-4 py-2 text-sm font-semibold transition`}
+                className="inline-flex items-center gap-2 rounded-full border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm font-semibold transition"
               >
                 {session.user.image ? (
                   <Image
@@ -191,9 +191,9 @@ export function Header() {
               )}
             </div>
           ) : mounted ? (
-            <Link href="/login" className={`inline-flex items-center justify-center rounded-full border ${isHomePage ? 'border-white/60 text-white hover:bg-white/10' : 'border-gray-300 text-gray-900 hover:bg-gray-50'} px-4 py-2 text-sm font-semibold transition`}>Login</Link>
+            <Link href="/login" className="inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm font-semibold transition">Login</Link>
           ) : (
-            <div className={`inline-flex items-center justify-center rounded-full border ${isHomePage ? 'border-white/60 text-white' : 'border-gray-300 text-gray-900'} px-4 py-2 text-sm font-semibold opacity-0`}>Login</div>
+            <div className="inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-900 px-4 py-2 text-sm font-semibold opacity-0">Login</div>
           )}
         </div>
       </div>
@@ -342,14 +342,14 @@ export function Header() {
                     Things to Do
                   </button>
                   <button
-                    onClick={() => setSelectedCategory('getaways')}
+                    onClick={() => setSelectedCategory('restaurants-cafes')}
                     className={`px-4 py-3 rounded-lg border-2 text-sm font-semibold transition ${
-                      selectedCategory === 'getaways'
+                      selectedCategory === 'restaurants-cafes' || selectedCategory === 'getaways'
                         ? 'border-[#E51A4B] bg-[#E51A4B] text-white'
                         : 'border-gray-300 text-gray-700 hover:border-gray-400'
                     }`}
                   >
-                    Getaways
+                    Restaurants & Cafes
                   </button>
                 </div>
               </div>

@@ -77,9 +77,11 @@ export async function PUT(
       contactNumber,
       address,
       additionalDetails = [],
+      nearbyStays = [],
+      nearbyActivities = [],
     } = body;
 
-    if (!name || !destinationSlug || !category || !coverImage || !startingPrice || !summary) {
+    if (!name || !destinationSlug || !category || !coverImage || !summary) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -114,7 +116,7 @@ export async function PUT(
           category: category.trim(),
           coverImage: coverImage.trim(),
           carouselImages: Array.isArray(carouselImages) ? carouselImages : [],
-          startingPrice: Number(startingPrice),
+          startingPrice: startingPrice ? Number(startingPrice) : 0,
           originalPrice: originalPrice ? Number(originalPrice) : null,
           currency: currency || 'INR',
           summary: summary.trim(),
@@ -139,6 +141,8 @@ export async function PUT(
             description: detail.type === 'description' ? (detail.description?.trim() || '') : undefined,
             points: detail.type === 'points' ? (detail.points?.filter((p: string) => p.trim()) || []) : undefined,
           })),
+          nearbyStays: Array.isArray(nearbyStays) ? nearbyStays.filter((id: string) => id && id.trim()) : [],
+          nearbyActivities: Array.isArray(nearbyActivities) ? nearbyActivities.filter((id: string) => id && id.trim()) : [],
           updatedAt: new Date(),
         }
       }

@@ -16,6 +16,9 @@ export async function POST(request: NextRequest) {
       currency = 'INR',
       summary,
       tags = [],
+      carouselImages = [],
+      overviewHeading,
+      overviewDescription,
     } = body;
 
     // Validation
@@ -86,10 +89,13 @@ export async function POST(request: NextRequest) {
       currency: currency.trim().toUpperCase(),
       summary: summary.trim(),
       tags: tags.filter((tag: string) => tag.trim().length > 0).map((tag: string) => tag.trim()),
+      carouselImages: Array.isArray(carouselImages) ? carouselImages.filter((img: string) => img && img.trim().length > 0).map((img: string) => img.trim()) : [],
+      overviewHeading: overviewHeading?.trim() || '',
+      overviewDescription: overviewDescription?.trim() || '',
       isHidden: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
+    } as any);
 
     return NextResponse.json({
       success: true,
