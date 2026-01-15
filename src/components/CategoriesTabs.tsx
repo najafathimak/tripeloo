@@ -34,7 +34,7 @@ export function CategoriesTabs() {
           {([
             { key: 'stays', label: 'Stays' },
             { key: 'activities', label: 'Things to Do' },
-            { key: 'trips', label: 'Getaways' }
+            { key: 'trips', label: 'Restaurants & Cafes' }
           ] as const).map(({ key, label }) => (
             <button
               key={key}

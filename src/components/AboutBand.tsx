@@ -57,7 +57,7 @@ export function AboutBand({
   }, []);
 
   return (
-    <section className="bg-gray-50 border-y border-gray-100">
+    <section id="discover-section" className="bg-gray-50 border-y border-gray-100">
       <div className="container py-10 sm:py-14">
         <div className="text-center space-y-4">
           <h2 className="text-2xl sm:text-3xl font-serif font-semibold text-gray-900">

@@ -4,6 +4,7 @@ import ReviewsSection from "@/components/ThingsToDo/ReviewsSection";
 import ThingsCarousel from "@/components/ThingsToDo/ThingsCarousel";
 import LocationSection from "@/components/ListDetails/LocationSection";
 import BookingSidebar from "@/components/ListDetails/ListingDetailsClient";
+import NearbyItems from "@/components/NearbyItems";
 import {
   Star,
   Users,
@@ -89,6 +90,14 @@ const ActivityDetailsContent = () => {
         
         if (res.ok) {
           const data = await res.json();
+          console.log('[things-to-do] Activity data:', {
+            id: data.data?.id,
+            name: data.data?.name,
+            nearbyStays: data.data?.nearbyStays,
+            nearbyTrips: data.data?.nearbyTrips,
+            nearbyStaysLength: data.data?.nearbyStays?.length,
+            nearbyTripsLength: data.data?.nearbyTrips?.length,
+          });
           setActivityData(data.data);
         } else {
           const errorData = await res.json();
@@ -300,6 +309,24 @@ const ActivityDetailsContent = () => {
                 destinationName={activityData.destinationName || activityData.destinationSlug} 
               />
             </div>
+
+            {/* Nearby Stays */}
+            {activityData.nearbyStays && Array.isArray(activityData.nearbyStays) && activityData.nearbyStays.length > 0 && (
+              <NearbyItems
+                title="Nearby Stays"
+                itemIds={activityData.nearbyStays}
+                itemType="stay"
+              />
+            )}
+
+            {/* Nearby Restaurants & Cafes */}
+            {activityData.nearbyTrips && Array.isArray(activityData.nearbyTrips) && activityData.nearbyTrips.length > 0 && (
+              <NearbyItems
+                title="Nearby Restaurants & Cafes"
+                itemIds={activityData.nearbyTrips}
+                itemType="trip"
+              />
+            )}
 
             {/* Mobile Booking Button - Fixed at bottom */}
             <div className="md:hidden">

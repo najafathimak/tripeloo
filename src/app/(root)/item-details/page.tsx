@@ -5,6 +5,7 @@ import PriceSection from "@/components/ListDetails/PriceSection";
 import ReviewsSection from "@/components/ListDetails/ReviewsSection";
 import RoomsSection from "@/components/ListDetails/RoomsSection";
 import BookingSidebar from "@/components/ListDetails/ListingDetailsClient";
+import NearbyItems from "@/components/NearbyItems";
 import { Star, Car, Hotel, Utensils, Mountain, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -352,6 +353,24 @@ const ListingDetailsContent = () => {
                 destinationName={stayData.destinationName || stayData.destinationSlug} 
               />
             </div>
+
+            {/* Nearby Things To Do */}
+            {stayData.nearbyActivities && stayData.nearbyActivities.length > 0 && (
+              <NearbyItems
+                title="Nearby Things To Do"
+                itemIds={stayData.nearbyActivities}
+                itemType="activity"
+              />
+            )}
+
+            {/* Nearby Restaurants & Cafes */}
+            {stayData.nearbyTrips && stayData.nearbyTrips.length > 0 && (
+              <NearbyItems
+                title="Nearby Restaurants & Cafes"
+                itemIds={stayData.nearbyTrips}
+                itemType="trip"
+              />
+            )}
 
             {/* Mobile Booking Button - Fixed at bottom */}
             <div className="md:hidden">

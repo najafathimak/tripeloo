@@ -69,6 +69,13 @@ export async function GET(
       location: activity.location || '',
       activityDetails: activity.activityDetails || {},
       additionalDetails: activity.additionalDetails || [],
+      nearbyStays: Array.isArray(activity.nearbyStays) 
+        ? activity.nearbyStays.map((id: any) => id?.toString?.() || String(id))
+        : [],
+      nearbyTrips: Array.isArray(activity.nearbyTrips)
+        ? activity.nearbyTrips.map((id: any) => id?.toString?.() || String(id))
+        : [],
+      importantInfo: activity.importantInfo || '',
     };
     
     return NextResponse.json({ data: mappedActivity }, {

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, X, CheckCircle, AlertCircle, Loader2, Plus, Trash2, Pencil } from "lucide-react";
 import Image from "next/image";
+import MultiSelectDropdown from "../MultiSelectDropdown";
 
 interface FormErrors {
   name?: string;
@@ -57,6 +58,8 @@ interface FormData {
   contactNumber: string;
   address: string;
   additionalDetails: AdditionalDetail[];
+  nearbyActivities?: string[];
+  nearbyTrips?: string[];
 }
 
 interface StayFormProps {
@@ -86,6 +89,8 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
     contactNumber: "",
     address: "",
     additionalDetails: [],
+    nearbyActivities: [],
+    nearbyTrips: [],
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -97,6 +102,10 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   const [loadingDestinations, setLoadingDestinations] = useState(true);
   const [categories, setCategories] = useState<Array<{ name: string }>>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [activities, setActivities] = useState<Array<{ _id: string; id: string; name: string }>>([]);
+  const [loadingActivities, setLoadingActivities] = useState(true);
+  const [trips, setTrips] = useState<Array<{ _id: string; id: string; name: string }>>([]);
+  const [loadingTrips, setLoadingTrips] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [includeInput, setIncludeInput] = useState("");
@@ -132,6 +141,40 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
       }
     };
     fetchDestinations();
+  }, []);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const res = await fetch("/api/admin/activities");
+        if (res.ok) {
+          const data = await res.json();
+          setActivities(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching activities:", error);
+      } finally {
+        setLoadingActivities(false);
+      }
+    };
+    fetchActivities();
+  }, []);
+
+  useEffect(() => {
+    const fetchTrips = async () => {
+      try {
+        const res = await fetch("/api/admin/trips");
+        if (res.ok) {
+          const data = await res.json();
+          setTrips(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching trips:", error);
+      } finally {
+        setLoadingTrips(false);
+      }
+    };
+    fetchTrips();
   }, []);
 
   // Fetch categories
@@ -184,6 +227,8 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
         location: initialData.location || "",
         contactNumber: initialData.contactNumber || "",
         address: initialData.address || "",
+        nearbyActivities: initialData.nearbyActivities || [],
+        nearbyTrips: initialData.nearbyTrips || [],
         additionalDetails: (initialData.additionalDetails || []).map((detail: any, idx: number) => ({
           id: detail.id || `detail-${idx}`,
           heading: detail.heading || "",
@@ -680,6 +725,8 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
           address: formData.address.trim(),
           propertyName: formData.propertyName.trim(),
           additionalDetails: formData.additionalDetails,
+          nearbyActivities: formData.nearbyActivities || [],
+          nearbyTrips: formData.nearbyTrips || [],
         }),
       });
 
@@ -1531,6 +1578,40 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
               placeholder="e.g., Wayanad, Kerala"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             />
+          </div>
+
+          {/* Nearby Things To Do */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Nearby Things To Do <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <MultiSelectDropdown
+              options={activities.map(a => ({ id: a._id || a.id || '', name: a.name }))}
+              selectedIds={formData.nearbyActivities || []}
+              onChange={(selected) => setFormData({ ...formData, nearbyActivities: selected })}
+              placeholder="Select Things To Do..."
+              loading={loadingActivities}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Click to select multiple items. These will be displayed as "Nearby Things To Do" cards on the stay detail page.
+            </p>
+          </div>
+
+          {/* Nearby Restaurants & Cafes */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Nearby Restaurants & Cafes <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <MultiSelectDropdown
+              options={trips.map(t => ({ id: t._id || t.id || '', name: t.name }))}
+              selectedIds={formData.nearbyTrips || []}
+              onChange={(selected) => setFormData({ ...formData, nearbyTrips: selected })}
+              placeholder="Select Restaurants & Cafes..."
+              loading={loadingTrips}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Click to select multiple items. These will be displayed as "Nearby Restaurants & Cafes" cards on the stay detail page.
+            </p>
           </div>
 
           {/* Property Name (Admin Only) - Highlighted */}

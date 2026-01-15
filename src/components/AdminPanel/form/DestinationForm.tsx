@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, X, CheckCircle, AlertCircle, Loader2, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 
 interface FormErrors {
   name?: string;
@@ -25,6 +26,9 @@ interface FormData {
   currency: string;
   summary: string;
   tags: string[];
+  carouselImages: string[];
+  overviewHeading: string;
+  overviewDescription: string;
 }
 
 interface DestinationFormProps {
@@ -43,6 +47,9 @@ export default function DestinationForm({ initialData, isEdit = false }: Destina
     currency: "INR",
     summary: "",
     tags: [],
+    carouselImages: [],
+    overviewHeading: "",
+    overviewDescription: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -66,6 +73,9 @@ export default function DestinationForm({ initialData, isEdit = false }: Destina
         currency: initialData.currency || "INR",
         summary: initialData.summary || "",
         tags: initialData.tags || [],
+        carouselImages: initialData.carouselImages || [],
+        overviewHeading: initialData.overviewHeading || "",
+        overviewDescription: initialData.overviewDescription || "",
       });
       setImagePreview(initialData.coverImage || "");
     }
@@ -184,6 +194,63 @@ export default function DestinationForm({ initialData, isEdit = false }: Destina
     });
   };
 
+  const handleCarouselImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Image size should be less than 10MB");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadFormData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Upload failed");
+      }
+
+      const data = await response.json();
+      const imageUrl = data.url || data.secure_url;
+
+      if (index !== undefined) {
+        const updatedImages = [...formData.carouselImages];
+        updatedImages[index] = imageUrl;
+        setFormData({ ...formData, carouselImages: updatedImages });
+      } else {
+        setFormData({
+          ...formData,
+          carouselImages: [...formData.carouselImages, imageUrl],
+        });
+      }
+    } catch (error: any) {
+      alert(error.message || "Failed to upload image");
+    } finally {
+      setIsUploading(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
+  const removeCarouselImage = (index: number) => {
+    setFormData({
+      ...formData,
+      carouselImages: formData.carouselImages.filter((_, i) => i !== index),
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -247,6 +314,9 @@ export default function DestinationForm({ initialData, isEdit = false }: Destina
           currency: formData.currency,
           summary: formData.summary.trim(),
           tags: formData.tags,
+          carouselImages: formData.carouselImages.filter(img => img.trim() !== ""),
+          overviewHeading: formData.overviewHeading.trim(),
+          overviewDescription: formData.overviewDescription.trim(),
         }),
       });
 
@@ -537,6 +607,108 @@ export default function DestinationForm({ initialData, isEdit = false }: Destina
             )}
           </div>
 
+          {/* Carousel Images */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Carousel Images <span className="text-gray-500 font-normal text-xs">(Optional)</span>
+            </label>
+            <p className="text-xs text-gray-500 mb-3">
+              Upload multiple images for the destination carousel. These will be displayed on the destination detail page.
+            </p>
+            <div className="space-y-4">
+              {formData.carouselImages.map((image, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div className="grid md:grid-cols-2 gap-4 mb-2">
+                    <div>
+                      <div className="relative w-full h-32 rounded overflow-hidden border border-gray-200">
+                        <Image
+                          src={optimizeCloudinaryUrl(image)}
+                          alt={`Carousel ${index + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600 mb-2">Image {index + 1}</p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleCarouselImageUpload(e, index)}
+                          className="w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeCarouselImage(index)}
+                        className="mt-2 text-red-600 hover:text-red-700 text-sm flex items-center gap-1"
+                      >
+                        <Trash2 size={14} />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = "image/*";
+                  input.onchange = (e) => handleCarouselImageUpload(e as any);
+                  input.click();
+                }}
+                className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-[#E51A4B] hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+              >
+                <Plus size={20} />
+                <span className="text-gray-700 font-medium">Add Carousel Image</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Overview Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Overview Section</h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="overviewHeading" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Overview Heading <span className="text-gray-500 font-normal text-xs">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  id="overviewHeading"
+                  name="overviewHeading"
+                  value={formData.overviewHeading}
+                  onChange={handleInputChange}
+                  placeholder={`e.g., About ${formData.name || "Destination"}`}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent transition-all"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Leave empty to use default: &quot;About [destination name]&quot;
+                </p>
+              </div>
+              <div>
+                <label htmlFor="overviewDescription" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Overview Description <span className="text-gray-500 font-normal text-xs">(Optional)</span>
+                </label>
+                <textarea
+                  id="overviewDescription"
+                  name="overviewDescription"
+                  value={formData.overviewDescription}
+                  onChange={handleInputChange}
+                  placeholder="Detailed description about the destination..."
+                  rows={6}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent transition-all resize-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Leave empty to use the summary text
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Tags */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -613,6 +785,9 @@ export default function DestinationForm({ initialData, isEdit = false }: Destina
                   currency: "INR",
                   summary: "",
                   tags: [],
+                  carouselImages: [],
+                  overviewHeading: "",
+                  overviewDescription: "",
                 });
                 setImagePreview("");
                 setErrors({});

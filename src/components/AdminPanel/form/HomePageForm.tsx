@@ -15,6 +15,13 @@ interface Testimonial {
   location: string;
 }
 
+interface HeroBanner {
+  id: string;
+  image: string;
+  title: string;
+  link: string;
+}
+
 interface FormData {
   heroDesktopImage: string;
   heroMobileImage: string;
@@ -24,6 +31,7 @@ interface FormData {
   discoverButtonLink: string;
   testimonialsHeading: string;
   testimonials: Testimonial[];
+  heroBanners: HeroBanner[];
 }
 
 export default function HomePageForm() {
@@ -37,6 +45,7 @@ export default function HomePageForm() {
     discoverButtonLink: "mailto:hello@tripeloo.com",
     testimonialsHeading: "Testimonials",
     testimonials: [],
+    heroBanners: [],
   });
 
   const [uploading, setUploading] = useState<string | null>(null);
@@ -80,6 +89,7 @@ export default function HomePageForm() {
             discoverButtonLink: data.data.discoverButtonLink || "mailto:hello@tripeloo.com",
             testimonialsHeading: data.data.testimonialsHeading || "Testimonials",
             testimonials: data.data.testimonials || [],
+            heroBanners: data.data.heroBanners || [],
           });
         }
       }
@@ -90,7 +100,7 @@ export default function HomePageForm() {
     }
   };
 
-  const handleImageUpload = async (file: File, type: "desktop" | "mobile" | "testimonial", testimonialId?: string) => {
+  const handleImageUpload = async (file: File, type: "desktop" | "mobile" | "testimonial" | "banner", testimonialId?: string, bannerId?: string) => {
     if (!file.type.startsWith("image/")) {
       alert("Please select an image file");
       return;
@@ -102,7 +112,7 @@ export default function HomePageForm() {
     }
 
     try {
-      const uploadKey = type === "testimonial" ? `testimonial-${testimonialId}` : type;
+      const uploadKey = type === "testimonial" ? `testimonial-${testimonialId}` : type === "banner" ? `banner-${bannerId}` : type;
       setUploading(uploadKey);
 
       const formData = new FormData();
@@ -134,6 +144,13 @@ export default function HomePageForm() {
           ...prev,
           testimonials: prev.testimonials.map((t) =>
             t.id === testimonialId ? { ...t, image: imageUrl } : t
+          ),
+        }));
+      } else if (type === "banner" && bannerId) {
+        setFormData((prev) => ({
+          ...prev,
+          heroBanners: prev.heroBanners.map((b) =>
+            b.id === bannerId ? { ...b, image: imageUrl } : b
           ),
         }));
       }
@@ -181,6 +198,35 @@ export default function HomePageForm() {
       ...prev,
       testimonials: prev.testimonials.map((t) =>
         t.id === id ? { ...t, [field]: value } : t
+      ),
+    }));
+  };
+
+  const addHeroBanner = () => {
+    const newBanner: HeroBanner = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      image: "",
+      title: "",
+      link: "",
+    };
+    setFormData((prev) => ({
+      ...prev,
+      heroBanners: [...prev.heroBanners, newBanner],
+    }));
+  };
+
+  const removeHeroBanner = (id: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      heroBanners: prev.heroBanners.filter((b) => b.id !== id),
+    }));
+  };
+
+  const updateHeroBanner = (id: string, field: keyof HeroBanner, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      heroBanners: prev.heroBanners.map((b) =>
+        b.id === id ? { ...b, [field]: value } : b
       ),
     }));
   };
@@ -277,11 +323,12 @@ export default function HomePageForm() {
                 <div className="mb-4 p-3 bg-white/5 border border-white/20 rounded-lg">
                   <p className="text-xs text-white/70 mb-2 font-medium">Currently Uploaded:</p>
                   <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/30">
-                    <Image
+                    <img
                       src={optimizeCloudinaryUrl(liveImages.desktop)}
                       alt="Current Desktop Banner"
-                      fill
-                      className="object-cover"
+                      width={800}
+                      height={480}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <div className="absolute top-2 left-2 bg-[#E51A4B]/90 text-white px-2 py-1 text-xs font-semibold rounded">
                       CURRENT
@@ -299,11 +346,12 @@ export default function HomePageForm() {
                 <div className="mb-3 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                   <p className="text-xs text-blue-300 mb-2 font-medium">New image ready (will replace current after saving):</p>
                   <div className="relative w-full h-32 rounded overflow-hidden border border-blue-400/50">
-                    <Image
+                    <img
                       src={optimizeCloudinaryUrl(formData.heroDesktopImage)}
                       alt="New Desktop Banner Preview"
-                      fill
-                      className="object-cover"
+                      width={800}
+                      height={320}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <button
                       type="button"
@@ -349,11 +397,12 @@ export default function HomePageForm() {
                 <div className="mb-4 p-3 bg-white/5 border border-white/20 rounded-lg">
                   <p className="text-xs text-white/70 mb-2 font-medium">Currently Uploaded:</p>
                   <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-white/30">
-                    <Image
+                    <img
                       src={optimizeCloudinaryUrl(liveImages.mobile)}
                       alt="Current Mobile Banner"
-                      fill
-                      className="object-cover"
+                      width={400}
+                      height={533}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <div className="absolute top-2 left-2 bg-[#E51A4B]/90 text-white px-2 py-1 text-xs font-semibold rounded">
                       CURRENT
@@ -371,11 +420,12 @@ export default function HomePageForm() {
                 <div className="mb-3 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                   <p className="text-xs text-blue-300 mb-2 font-medium">New image ready (will replace current after saving):</p>
                   <div className="relative w-full aspect-[3/4] rounded overflow-hidden border border-blue-400/50">
-                    <Image
+                    <img
                       src={optimizeCloudinaryUrl(formData.heroMobileImage)}
                       alt="New Mobile Banner Preview"
-                      fill
-                      className="object-cover"
+                      width={400}
+                      height={533}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <button
                       type="button"
@@ -483,6 +533,124 @@ export default function HomePageForm() {
                 />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Hero Banners Section */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-white">Hero Banners Carousel</h2>
+            <button
+              type="button"
+              onClick={addHeroBanner}
+              className="px-4 py-2 bg-[#E51A4B] text-white rounded-lg hover:bg-[#c91742] transition-colors flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Add Banner
+            </button>
+          </div>
+
+          <p className="text-sm text-white/60 mb-4">
+            Add dynamic banners that will appear in the carousel below the search bar on the home page.
+          </p>
+
+          <div className="space-y-6">
+            {formData.heroBanners.map((banner, index) => (
+              <div
+                key={banner.id}
+                className="bg-white/5 rounded-lg p-4 border border-white/10"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white">Banner {index + 1}</h3>
+                  <button
+                    type="button"
+                    onClick={() => removeHeroBanner(banner.id)}
+                    className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Image */}
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-2">
+                      Banner Image
+                    </label>
+                    {banner.image ? (
+                      <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/20 mb-2">
+                        <img
+                          src={optimizeCloudinaryUrl(banner.image)}
+                          alt="Banner"
+                          width={800}
+                          height={480}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateHeroBanner(banner.id, "image", "")}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : null}
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/30 rounded-lg cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
+                      <Upload className="w-6 h-6 text-white/60 mb-1" />
+                      <span className="text-xs text-white/80">
+                        {uploading === `banner-${banner.id}` ? "Uploading..." : "Upload Banner Image"}
+                      </span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload(file, "banner", undefined, banner.id);
+                        }}
+                        disabled={uploading === `banner-${banner.id}`}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Title and Link */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        Title (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={banner.title}
+                        onChange={(e) => updateHeroBanner(banner.id, "title", e.target.value)}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#E51A4B]"
+                        placeholder="Banner title"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        Link (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={banner.link}
+                        onChange={(e) => updateHeroBanner(banner.id, "link", e.target.value)}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#E51A4B]"
+                        placeholder="https://example.com or /page"
+                      />
+                      <p className="text-xs text-white/50 mt-1">Leave empty if banner should not be clickable</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {formData.heroBanners.length === 0 && (
+              <div className="text-center py-8 text-white/60">
+                <p>No banners added yet. Click "Add Banner" to get started.</p>
+              </div>
+            )}
           </div>
         </div>
 

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, X, CheckCircle, AlertCircle, Loader2, Plus, Trash2, Pencil } from "lucide-react";
 import Image from "next/image";
+import MultiSelectDropdown from "../MultiSelectDropdown";
 
 interface FormErrors {
   name?: string;
@@ -56,6 +57,8 @@ interface FormData {
   address: string;
   activityDetails: ActivityDetails;
   additionalDetails: AdditionalDetail[];
+  nearbyStays?: string[];
+  nearbyTrips?: string[];
 }
 
 interface ActivityFormProps {
@@ -91,6 +94,8 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
       maxGroupSize: "",
     },
     additionalDetails: [],
+    nearbyStays: [],
+    nearbyTrips: [],
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -102,6 +107,10 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
   const [loadingDestinations, setLoadingDestinations] = useState(true);
   const [categories, setCategories] = useState<Array<{ name: string }>>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [stays, setStays] = useState<Array<{ _id: string; id: string; name: string }>>([]);
+  const [loadingStays, setLoadingStays] = useState(true);
+  const [trips, setTrips] = useState<Array<{ _id: string; id: string; name: string }>>([]);
+  const [loadingTrips, setLoadingTrips] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [includeInput, setIncludeInput] = useState("");
@@ -130,6 +139,40 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
       }
     };
     fetchDestinations();
+  }, []);
+
+  useEffect(() => {
+    const fetchStays = async () => {
+      try {
+        const res = await fetch("/api/admin/stays");
+        if (res.ok) {
+          const data = await res.json();
+          setStays(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching stays:", error);
+      } finally {
+        setLoadingStays(false);
+      }
+    };
+    fetchStays();
+  }, []);
+
+  useEffect(() => {
+    const fetchTrips = async () => {
+      try {
+        const res = await fetch("/api/admin/trips");
+        if (res.ok) {
+          const data = await res.json();
+          setTrips(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching trips:", error);
+      } finally {
+        setLoadingTrips(false);
+      }
+    };
+    fetchTrips();
   }, []);
 
   // Fetch categories
@@ -172,6 +215,8 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
         location: initialData.location || "",
         contactNumber: initialData.contactNumber || "",
         address: initialData.address || "",
+        nearbyStays: initialData.nearbyStays || [],
+        nearbyTrips: initialData.nearbyTrips || [],
         activityDetails: {
           ages: initialData.activityDetails?.ages || "",
           duration: initialData.activityDetails?.duration || "",
@@ -488,7 +533,6 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
     if (!formData.destinationSlug) newErrors.destinationSlug = "Destination is required";
     if (!formData.category.trim()) newErrors.category = "Category is required";
     if (!formData.coverImage.trim()) newErrors.coverImage = "Cover image is required";
-    if (!formData.startingPrice.trim()) newErrors.startingPrice = "Starting price is required";
     if (!formData.about.trim()) newErrors.about = "About/Description is required";
 
     if (Object.keys(newErrors).length > 0) {
@@ -513,7 +557,7 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
           category: formData.category.trim(),
           coverImage: formData.coverImage.trim(),
           carouselImages: formData.carouselImages,
-          startingPrice: Number(formData.startingPrice),
+          startingPrice: formData.startingPrice.trim() ? Number(formData.startingPrice) : 0,
           originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
           currency: formData.currency,
           about: formData.about.trim(),
@@ -525,6 +569,8 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
           propertyName: formData.propertyName.trim(),
           activityDetails: formData.activityDetails,
           additionalDetails: formData.additionalDetails,
+          nearbyStays: formData.nearbyStays || [],
+          nearbyTrips: formData.nearbyTrips || [],
         }),
       });
 
@@ -797,7 +843,7 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
           <div className="grid md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Starting Price <span className="text-red-500">*</span>
+                Starting Price <span className="text-gray-500 text-xs">(Optional)</span>
               </label>
               <input
                 type="number"
@@ -1120,9 +1166,43 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
               name="location"
               value={formData.location}
               onChange={handleInputChange}
-              placeholder="e.g., Denver, Colorado"
+              placeholder="e.g., Wayanad, Kerala"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             />
+          </div>
+
+          {/* Nearby Stays */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Nearby Stays <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <MultiSelectDropdown
+              options={stays.map(s => ({ id: s._id || s.id || '', name: s.name }))}
+              selectedIds={formData.nearbyStays || []}
+              onChange={(selected) => setFormData({ ...formData, nearbyStays: selected })}
+              placeholder="Select Stays..."
+              loading={loadingStays}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Click to select multiple items. These will be displayed as "Nearby Stays" cards on the activity detail page.
+            </p>
+          </div>
+
+          {/* Nearby Restaurants & Cafes */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Nearby Restaurants & Cafes <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <MultiSelectDropdown
+              options={trips.map(t => ({ id: t._id || t.id || '', name: t.name }))}
+              selectedIds={formData.nearbyTrips || []}
+              onChange={(selected) => setFormData({ ...formData, nearbyTrips: selected })}
+              placeholder="Select Restaurants & Cafes..."
+              loading={loadingTrips}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Click to select multiple items. These will be displayed as "Nearby Restaurants & Cafes" cards on the activity detail page.
+            </p>
           </div>
 
           {/* Contact Number */}

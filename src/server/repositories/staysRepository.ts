@@ -114,7 +114,12 @@ function mapStayData(stay: any): any {
     rooms: stay.rooms || [],
     location: stay.location || '',
     additionalDetails: stay.additionalDetails || [],
+    nearbyActivities: Array.isArray(stay.nearbyActivities)
+      ? stay.nearbyActivities.map((id: any) => id?.toString?.() || String(id))
+      : [],
+    nearbyTrips: Array.isArray(stay.nearbyTrips)
+      ? stay.nearbyTrips.map((id: any) => id?.toString?.() || String(id))
+      : [],
   };
 }
-    
 

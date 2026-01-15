@@ -22,6 +22,7 @@ export async function GET() {
           discoverButtonLink: 'mailto:hello@tripeloo.com',
           testimonialsHeading: 'Testimonials',
           testimonials: [],
+          heroBanners: [],
         },
       });
     }
@@ -36,6 +37,12 @@ export async function GET() {
       discoverButtonLink: homeData.discoverButtonLink || 'mailto:hello@tripeloo.com',
       testimonialsHeading: homeData.testimonialsHeading || 'Testimonials',
       testimonials: Array.isArray(homeData.testimonials) ? homeData.testimonials : [],
+      heroBanners: Array.isArray(homeData.heroBanners) ? homeData.heroBanners.map((banner: any) => ({
+        id: banner.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        image: banner.image?.trim() || '',
+        title: banner.title?.trim() || '',
+        link: banner.link?.trim() || '',
+      })) : [],
     };
 
     return NextResponse.json({ data: mappedData }, {
@@ -64,6 +71,7 @@ export async function PUT(request: NextRequest) {
       discoverButtonLink,
       testimonialsHeading,
       testimonials = [],
+      heroBanners = [],
     } = body;
 
     // All fields are optional - no validation required
@@ -88,6 +96,12 @@ export async function PUT(request: NextRequest) {
         experience: t.experience?.trim() || '',
         name: t.name?.trim() || '',
         location: t.location?.trim() || '',
+      })) : [],
+      heroBanners: Array.isArray(heroBanners) ? heroBanners.map((banner: any) => ({
+        id: banner.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        image: banner.image?.trim() || '',
+        title: banner.title?.trim() || '',
+        link: banner.link?.trim() || '',
       })) : [],
       updatedAt: new Date(),
     };

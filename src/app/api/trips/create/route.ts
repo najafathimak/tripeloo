@@ -25,6 +25,8 @@ export async function POST(request: NextRequest) {
       contactNumber,
       address,
       additionalDetails = [],
+      nearbyStays = [],
+      nearbyActivities = [],
     } = body;
 
     // Validation
@@ -52,8 +54,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!startingPrice || typeof startingPrice !== 'number' || startingPrice <= 0) {
-      errors.startingPrice = 'Starting price must be a positive number';
+    // Starting price is optional - only validate if provided
+    if (startingPrice !== undefined && startingPrice !== null && startingPrice !== '') {
+      const priceNum = Number(startingPrice);
+      if (isNaN(priceNum) || priceNum < 0) {
+        errors.startingPrice = 'Starting price must be a positive number';
+      }
     }
 
     if (!summary || summary.trim().length === 0) {
@@ -73,7 +79,7 @@ export async function POST(request: NextRequest) {
       category: category.trim(),
       coverImage: coverImage.trim(),
       carouselImages: carouselImages.filter((img: any) => img.url && img.url.trim()),
-      startingPrice: Number(startingPrice),
+      startingPrice: startingPrice ? Number(startingPrice) : 0,
       originalPrice: originalPrice ? Number(originalPrice) : null,
       currency: currency.trim().toUpperCase(),
       summary: summary.trim(),
@@ -97,6 +103,8 @@ export async function POST(request: NextRequest) {
         description: detail.type === 'description' ? (detail.description?.trim() || '') : undefined,
         points: detail.type === 'points' ? (detail.points?.filter((p: string) => p.trim()) || []) : undefined,
       })),
+      nearbyStays: Array.isArray(nearbyStays) ? nearbyStays.filter((id: string) => id && id.trim()) : [],
+      nearbyActivities: Array.isArray(nearbyActivities) ? nearbyActivities.filter((id: string) => id && id.trim()) : [],
       isHidden: false,
       createdAt: new Date(),
       updatedAt: new Date(),

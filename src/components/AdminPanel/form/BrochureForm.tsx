@@ -153,7 +153,7 @@ export default function BrochureForm() {
       return;
     }
 
-    // Clear selectedItem immediately to prevent showing stale rooms/packages from previous stay/getaway
+    // Clear selectedItem immediately to prevent showing stale rooms/packages from previous stay/restaurant/cafe
     setSelectedItem(null);
 
     const fetchItemDetails = async () => {
@@ -812,7 +812,7 @@ export default function BrochureForm() {
                 }`}
               >
                 <Plane size={18} />
-                <span className="text-sm font-medium">Getaways</span>
+                <span className="text-sm font-medium">Restaurants & Cafes</span>
               </button>
             </div>
           </div>
@@ -885,11 +885,11 @@ export default function BrochureForm() {
             </div>
           )}
 
-          {/* Package Selection (for Getaways) - Only show if packages exist for this specific getaway */}
+          {/* Dish Selection (for Restaurants & Cafes) - Only show if dishes exist for this specific restaurant/cafe */}
           {selectedItem && String(selectedItem.id) === String(selectedItemId) && itemType === "trip" && selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-white/90 mb-2">
-                Select Packages to Include (Optional - Leave empty to include all)
+                Select Dishes/Menu Items to Include (Optional - Leave empty to include all)
               </label>
               <div className="max-h-40 overflow-y-auto bg-gray-800 rounded-lg p-3 border border-gray-600">
                 {selectedItem.packages.map((pkg: any, idx: number) => {
@@ -909,15 +909,15 @@ export default function BrochureForm() {
                         }}
                         className="w-4 h-4 text-[#E51A4B] bg-gray-700 border-gray-600 rounded focus:ring-[#E51A4B]"
                       />
-                      <span className="text-sm text-white/90">{pkg.name || `Package ${idx + 1}`}</span>
+                      <span className="text-sm text-white/90">{pkg.name || `Dish ${idx + 1}`}</span>
                     </label>
                   );
                 })}
               </div>
               <p className="text-xs text-white/60 mt-1">
                 {selectedPackages.length === 0 
-                  ? "All packages will be included in the brochure" 
-                  : `${selectedPackages.length} package(s) selected`}
+                  ? "All dishes will be included in the brochure" 
+                  : `${selectedPackages.length} dish(es) selected`}
               </p>
             </div>
           )}
@@ -1030,7 +1030,7 @@ export default function BrochureForm() {
               {/* Carousel - Cover Image + All Carousel Images - Larger Size */}
               <div className="mb-6">
                 {selectedItem.coverImage && (
-                  <Image
+                  <img
                     src={optimizeCloudinaryUrl(selectedItem.coverImage)}
                     alt={selectedItem.name}
                     width={800}
@@ -1054,7 +1054,7 @@ export default function BrochureForm() {
                       .map((img: any, idx: number) => {
                         const imgUrl = typeof img === 'string' ? img : img?.url || '';
                         return (
-                          <Image
+                          <img
                             key={idx}
                             src={optimizeCloudinaryUrl(imgUrl)}
                             alt={`${selectedItem.name} - Image ${idx + 1}`}
@@ -1086,7 +1086,7 @@ export default function BrochureForm() {
                 )}
               </div>
 
-              {/* Summary (for Stays/Getaways) */}
+              {/* Summary (for Stays/Restaurants & Cafes) */}
               {selectedItem.summary && itemType !== "activity" && (
                 <p className="mt-4 mb-6 text-gray-600 text-sm sm:text-base">
                   {selectedItem.summary}
@@ -1171,10 +1171,10 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* Getaway Features (for Getaways) */}
+              {/* Restaurant/Cafe Features (for Restaurants & Cafes) */}
               {selectedItem.properties && Array.isArray(selectedItem.properties) && selectedItem.properties.length > 0 && itemType === "trip" && (
                 <div className="mt-8 mb-6 bg-white rounded-2xl p-5 sm:p-6 shadow-inner">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Getaway Features</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Restaurant/Cafe Features</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
                     {selectedItem.properties.map((prop: string, index: number) => (
                       <div key={index}>{prop}</div>
@@ -1210,7 +1210,7 @@ export default function BrochureForm() {
                             {room.images
                               .filter((img: string) => img && img.trim() !== "")
                               .map((img: string, imgIdx: number) => (
-                                <Image
+                                <img
                                   key={imgIdx}
                                   src={optimizeCloudinaryUrl(img)}
                                   alt={`${room.name} - Image ${imgIdx + 1}`}
@@ -1223,7 +1223,7 @@ export default function BrochureForm() {
                           </div>
                         ) : room.thumb ? (
                           <div className="mb-4">
-                            <Image
+                            <img
                               src={optimizeCloudinaryUrl(room.thumb)}
                               alt={room.name}
                               width={800}
@@ -1258,7 +1258,7 @@ export default function BrochureForm() {
                 );
               })()}
 
-              {/* Packages Section (for Getaways) - Only show if packages exist for this specific getaway */}
+              {/* Dishes Section (for Restaurants & Cafes) - Only show if dishes exist for this specific restaurant/cafe */}
               {selectedItem && String(selectedItem.id) === String(selectedItemId) && itemType === "trip" && selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && (() => {
                 // Filter packages based on selection
                 const packagesToShow = selectedPackages.length > 0
@@ -1277,7 +1277,7 @@ export default function BrochureForm() {
                       {packagesToShow.map((pkg: any, idx: number) => (
                       <div key={idx} className="cursor-pointer rounded-xl overflow-hidden shadow-md border border-gray-200">
                         {pkg.thumb ? (
-                          <Image
+                          <img
                             src={optimizeCloudinaryUrl(pkg.thumb)}
                             alt={pkg.name}
                             width={180}
@@ -1285,7 +1285,7 @@ export default function BrochureForm() {
                             className="h-[120px] w-full object-cover"
                           />
                         ) : pkg.images && pkg.images.length > 0 ? (
-                          <Image
+                          <img
                             src={optimizeCloudinaryUrl(pkg.images[0])}
                             alt={pkg.name}
                             width={180}
@@ -1312,7 +1312,7 @@ export default function BrochureForm() {
                                 .filter((img: string) => img && img.trim() !== "")
                                 .slice(0, 4)
                                 .map((img: string, imgIdx: number) => (
-                                  <Image
+                                  <img
                                     key={imgIdx}
                                     src={optimizeCloudinaryUrl(img)}
                                     alt={`${pkg.name} - Image ${imgIdx + 1}`}
@@ -1354,7 +1354,7 @@ export default function BrochureForm() {
                 );
               })()}
 
-              {/* Price Section (for Stays/Getaways) - Keep Price Includes and Price Excludes */}
+              {/* Price Section (for Stays/Restaurants & Cafes) - Keep Price Includes and Price Excludes */}
               {(itemType === "stay" || itemType === "trip") && (
                 ((selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0) || 
                  (selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0)) && (
@@ -1525,7 +1525,7 @@ export default function BrochureForm() {
                 </div>
                 <div className="text-center mb-4">
                   <p className="text-sm text-gray-700 font-semibold mb-2">
-                    Tripeloo Travel Management LLP
+                    Tripelo Travel Company
                   </p>
                   <p className="text-sm text-gray-600 mb-2">
                     South Beach, Calicut, Kerala
@@ -1562,7 +1562,7 @@ export default function BrochureForm() {
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 text-center mt-4">
-                  © {new Date().getFullYear()} Tripeloo. All rights reserved.
+                  © {new Date().getFullYear()} Tripelo Travel Company. All rights reserved.
                 </p>
               </div>
             </div>

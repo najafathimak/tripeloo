@@ -457,7 +457,7 @@ export default function BrochurePreviewPage() {
               {/* Carousel - Cover Image + All Carousel Images */}
               <div className="mb-6">
                 {selectedItem.coverImage && (
-                  <Image
+                  <img
                     src={optimizeCloudinaryUrl(selectedItem.coverImage)}
                     alt={selectedItem.name}
                     width={800}
@@ -481,7 +481,7 @@ export default function BrochurePreviewPage() {
                       .map((img: any, idx: number) => {
                         const imgUrl = typeof img === 'string' ? img : img?.url || '';
                         return (
-                          <Image
+                          <img
                             key={idx}
                             src={optimizeCloudinaryUrl(imgUrl)}
                             alt={`${selectedItem.name} - Image ${idx + 1}`}
@@ -512,7 +512,7 @@ export default function BrochurePreviewPage() {
                 )}
               </div>
 
-              {/* Summary (for Stays/Getaways) */}
+              {/* Summary (for Stays/Restaurants & Cafes) */}
               {selectedItem.summary && itemType !== "activity" && (
                 <p className="mt-4 mb-6 text-gray-600 text-sm sm:text-base">
                   {selectedItem.summary}
@@ -583,10 +583,10 @@ export default function BrochurePreviewPage() {
                 </div>
               )}
 
-              {/* Getaway Features (for Getaways) */}
+              {/* Restaurant/Cafe Features (for Restaurants & Cafes) */}
               {selectedItem.properties && Array.isArray(selectedItem.properties) && selectedItem.properties.length > 0 && itemType === "trip" && (
                 <div className="mt-8 mb-6 bg-white rounded-2xl p-5 sm:p-6 shadow-inner">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Getaway Features</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Restaurant/Cafe Features</h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
                     {selectedItem.properties.map((prop: string, index: number) => (
                       <div key={index}>{prop}</div>
@@ -619,7 +619,7 @@ export default function BrochurePreviewPage() {
                             {room.images
                               .filter((img: string) => img && img.trim() !== "")
                               .map((img: string, imgIdx: number) => (
-                                <Image
+                                <img
                                   key={imgIdx}
                                   src={optimizeCloudinaryUrl(img)}
                                   alt={`${room.name} - Image ${imgIdx + 1}`}
@@ -632,7 +632,7 @@ export default function BrochurePreviewPage() {
                           </div>
                         ) : room.thumb ? (
                           <div className="mb-4">
-                            <Image
+                            <img
                               src={optimizeCloudinaryUrl(room.thumb)}
                               alt={room.name}
                               width={800}
@@ -666,11 +666,11 @@ export default function BrochurePreviewPage() {
                 );
               })()}
 
-              {/* Packages Section (for Getaways) */}
+              {/* Dishes Section (for Restaurants & Cafes) */}
               {itemType === "trip" && selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && (() => {
                 const packagesToShow = selectedPackages.length > 0
                   ? selectedItem.packages.filter((pkg: any, idx: number) => {
-                      const pkgKey = pkg.name || `package-${idx}`;
+                      const pkgKey = pkg.name || `dish-${idx}`;
                       return selectedPackages.includes(pkgKey);
                     })
                   : selectedItem.packages;
@@ -679,12 +679,12 @@ export default function BrochurePreviewPage() {
                 
                 return (
                   <div className="mb-6 mt-8">
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Choose Your Package</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Choose Your Dish/Menu Item</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
                       {packagesToShow.map((pkg: any, idx: number) => (
                       <div key={idx} className="cursor-pointer rounded-xl overflow-hidden shadow-md border border-gray-200">
                         {pkg.thumb ? (
-                          <Image
+                          <img
                             src={optimizeCloudinaryUrl(pkg.thumb)}
                             alt={pkg.name}
                             width={180}
@@ -692,7 +692,7 @@ export default function BrochurePreviewPage() {
                             className="h-[120px] w-full object-cover"
                           />
                         ) : pkg.images && pkg.images.length > 0 ? (
-                          <Image
+                          <img
                             src={optimizeCloudinaryUrl(pkg.images[0])}
                             alt={pkg.name}
                             width={180}
@@ -717,7 +717,7 @@ export default function BrochurePreviewPage() {
                                 .filter((img: string) => img && img.trim() !== "")
                                 .slice(0, 4)
                                 .map((img: string, imgIdx: number) => (
-                                  <Image
+                                  <img
                                     key={imgIdx}
                                     src={optimizeCloudinaryUrl(img)}
                                     alt={`${pkg.name} - Image ${imgIdx + 1}`}

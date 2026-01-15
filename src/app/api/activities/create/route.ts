@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
       address,
       activityDetails = {},
       additionalDetails = [],
+      nearbyStays = [],
+      nearbyTrips = [],
     } = body;
 
     // Validation
@@ -51,8 +53,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!startingPrice || typeof startingPrice !== 'number' || startingPrice <= 0) {
-      errors.startingPrice = 'Starting price must be a positive number';
+    // Starting price is optional - only validate if provided
+    if (startingPrice !== undefined && startingPrice !== null && startingPrice !== '') {
+      const priceNum = Number(startingPrice);
+      if (isNaN(priceNum) || priceNum < 0) {
+        errors.startingPrice = 'Starting price must be a positive number';
+      }
     }
 
     if (!about || about.trim().length === 0) {
@@ -72,7 +78,7 @@ export async function POST(request: NextRequest) {
       category: category.trim(),
       coverImage: coverImage.trim(),
       carouselImages: carouselImages.filter((img: any) => img.url && img.url.trim()),
-      startingPrice: Number(startingPrice),
+      startingPrice: startingPrice ? Number(startingPrice) : 0,
       originalPrice: originalPrice ? Number(originalPrice) : null,
       currency: currency.trim().toUpperCase(),
       about: about.trim(),

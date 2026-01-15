@@ -78,6 +78,8 @@ export async function PUT(
       contactNumber,
       address,
       additionalDetails = [],
+      nearbyActivities = [],
+      nearbyTrips = [],
     } = body;
 
     if (!name || !destinationSlug || !category || !coverImage || !startingPrice || !summary) {
@@ -140,6 +142,8 @@ export async function PUT(
             description: detail.type === 'description' ? (detail.description?.trim() || '') : undefined,
             points: detail.type === 'points' ? (detail.points?.filter((p: string) => p.trim()) || []) : undefined,
           })),
+          nearbyActivities: Array.isArray(nearbyActivities) ? nearbyActivities.filter((id: string) => id && id.trim()) : [],
+          nearbyTrips: Array.isArray(nearbyTrips) ? nearbyTrips.filter((id: string) => id && id.trim()) : [],
           updatedAt: new Date(),
         }
       }

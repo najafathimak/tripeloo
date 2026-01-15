@@ -69,6 +69,13 @@ export async function GET(
       packages: trip.packages || [],
       location: trip.location || '',
       additionalDetails: trip.additionalDetails || [],
+      nearbyStays: Array.isArray(trip.nearbyStays)
+        ? trip.nearbyStays.map((id: any) => id?.toString?.() || String(id))
+        : [],
+      nearbyActivities: Array.isArray(trip.nearbyActivities)
+        ? trip.nearbyActivities.map((id: any) => id?.toString?.() || String(id))
+        : [],
+      importantInfo: trip.importantInfo || '',
     };
     
     return NextResponse.json({ data: mappedTrip }, {

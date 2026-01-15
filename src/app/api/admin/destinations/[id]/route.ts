@@ -67,6 +67,9 @@ export async function PUT(
       currency,
       summary,
       tags = [],
+      carouselImages = [],
+      overviewHeading,
+      overviewDescription,
     } = body;
 
     if (!name || !slug || !location || !coverImage || !startingPrice || !summary) {
@@ -106,6 +109,9 @@ export async function PUT(
           currency: currency?.trim().toUpperCase() || 'INR',
           summary: summary.trim(),
           tags: Array.isArray(tags) ? tags.filter((tag: string) => tag.trim().length > 0).map((tag: string) => tag.trim()) : [],
+          carouselImages: Array.isArray(carouselImages) ? carouselImages.filter((img: string) => img && img.trim().length > 0).map((img: string) => img.trim()) : [],
+          overviewHeading: overviewHeading?.trim() || '',
+          overviewDescription: overviewDescription?.trim() || '',
           updatedAt: new Date(),
         }
       }
