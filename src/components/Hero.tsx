@@ -622,11 +622,11 @@ export function Hero({ banners = [] }: HeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex justify-center gap-2 sm:gap-4 mb-8 px-4 sm:px-6 overflow-x-auto scrollbar-hide"
+          className="flex justify-center items-center gap-1.5 sm:gap-4 mb-8 w-full max-w-full overflow-hidden"
         >
           <button
             onClick={() => handleTabClick('stays')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
               activeTab === 'stays'
                 ? 'bg-[#E51A4B] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -637,7 +637,7 @@ export function Hero({ banners = [] }: HeroProps) {
           </button>
           <button 
             onClick={() => handleTabClick('things-to-do')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
               activeTab === 'things-to-do'
                 ? 'bg-[#E51A4B] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -648,14 +648,14 @@ export function Hero({ banners = [] }: HeroProps) {
           </button>
           <button 
             onClick={() => handleTabClick('restaurants-cafes')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
+            className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink ${
               activeTab === 'restaurants-cafes'
                 ? 'bg-[#E51A4B] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             <UtensilsCrossed className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
-            <span className="whitespace-nowrap">Restaurants & Cafes</span>
+            <span className="text-center leading-tight">Restaurants & Cafes</span>
           </button>
         </motion.div>
 
@@ -897,7 +897,7 @@ export function Hero({ banners = [] }: HeroProps) {
                       onClick={scrollPrev}
                       whileHover={{ scale: 1.1, x: -5 }}
                       whileTap={{ scale: 0.95 }}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-3 sm:p-4 rounded-full shadow-2xl transition-all z-20 backdrop-blur-sm border border-gray-200/50 group/btn"
+                      className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-3 sm:p-4 rounded-full shadow-2xl transition-all z-20 backdrop-blur-sm border border-gray-200/50 group/btn"
                       aria-label="Previous banner"
                     >
                       <motion.svg
