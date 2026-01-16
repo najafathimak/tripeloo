@@ -310,7 +310,7 @@ Thank you!`);
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-md overflow-hidden"
             onClick={onClose}
           >
         {/* Decorative gradient orbs */}
@@ -353,7 +353,7 @@ Thank you!`);
             damping: 25,
             mass: 0.8
           }}
-          className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-gray-100"
+          className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-gray-100 mx-2 sm:mx-4 overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           style={{
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(229, 26, 75, 0.1)',
@@ -371,13 +371,13 @@ Thank you!`);
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="sticky top-0 bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 px-6 py-5 flex items-center justify-between z-10 backdrop-blur-sm"
+            className="sticky top-0 bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between z-10 backdrop-blur-sm"
           >
             <motion.h2
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-[#E51A4B] to-gray-900 bg-clip-text text-transparent font-display"
+              className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 via-[#E51A4B] to-gray-900 bg-clip-text text-transparent font-display truncate flex-1 min-w-0 mr-2"
             >
               {(formAlreadyFilled || submitted) ? 'Connect Tripeloo Support' : itemName ? itemName : 'Plan Your Trip'}
             </motion.h2>
@@ -395,7 +395,7 @@ Thank you!`);
           </motion.div>
 
           {/* Content */}
-          <div className="p-6 sm:p-8 overflow-y-auto flex-1">
+          <div className="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1 overflow-x-hidden">
             {(formAlreadyFilled || submitted) ? (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -558,7 +558,7 @@ Thank you!`);
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
+                    className={`w-full min-w-0 px-3 sm:px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
                       errors.fullName ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
                     }`}
                     placeholder="Enter your full name"
@@ -589,7 +589,7 @@ Thank you!`);
                   <div className="flex items-center">
                     <motion.span
                       whileHover={{ scale: 1.05 }}
-                      className="px-4 py-3 bg-gradient-to-r from-gray-100 to-gray-50 border border-r-0 border-gray-300 rounded-l-lg text-gray-700 font-medium"
+                      className="px-3 sm:px-4 py-3 bg-gradient-to-r from-gray-100 to-gray-50 border border-r-0 border-gray-300 rounded-l-lg text-gray-700 font-medium flex-shrink-0"
                     >
                       +91
                     </motion.span>
@@ -601,7 +601,7 @@ Thank you!`);
                         const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                         handleInputChange('mobileNumber', value);
                       }}
-                      className={`flex-1 px-4 py-3 border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
+                      className={`flex-1 min-w-0 px-3 sm:px-4 py-3 border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
                         errors.mobileNumber ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
                       }`}
                       placeholder="Enter your mobile number"
@@ -636,7 +636,7 @@ Thank you!`);
                       whileFocus={{ scale: 1.02 }}
                       value={formData.destination}
                       onChange={(e) => handleInputChange('destination', e.target.value)}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
+                      className={`w-full min-w-0 px-3 sm:px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
                         errors.destination ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
                       }`}
                     >
@@ -801,7 +801,7 @@ Thank you!`);
                       onClick={handleSkip}
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.95 }}
-                      className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all shadow-sm"
+                      className="flex-1 px-4 sm:px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all shadow-sm min-w-0"
                     >
                       Skip
                     </motion.button>
@@ -811,7 +811,7 @@ Thank you!`);
                     disabled={loading}
                     whileHover={!loading ? { scale: 1.05, y: -2 } : {}}
                     whileTap={!loading ? { scale: 0.95 } : {}}
-                    className={`${itemName ? 'w-full' : 'flex-1'} px-6 py-3 bg-gradient-to-r from-[#E51A4B] to-red-600 text-white rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden`}
+                    className={`${itemName ? 'w-full' : 'flex-1'} px-4 sm:px-6 py-3 bg-gradient-to-r from-[#E51A4B] to-red-600 text-white rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden min-w-0`}
                   >
                     {loading ? (
                       <span className="flex items-center justify-center gap-2">
