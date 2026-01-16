@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     if (startingPrice !== undefined && startingPrice !== null && startingPrice !== '') {
       const priceNum = Number(startingPrice);
       if (isNaN(priceNum) || priceNum < 0) {
-        errors.startingPrice = 'Starting price must be a positive number';
+      errors.startingPrice = 'Starting price must be a positive number';
       }
     }
 

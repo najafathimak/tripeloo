@@ -36,21 +36,30 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState<string>('');
+  const [formAlreadyFilled, setFormAlreadyFilled] = useState(false);
   
-  // Reset form when popup opens/closes
+  // Check if form has been filled
   useEffect(() => {
     if (isOpen) {
-      setFormData({
-        fullName: '',
-        mobileNumber: '',
-        destination: itemDestination || '',
-        travelCount: '',
-        travelDate: '',
-        location: '',
-      });
-      setSubmitted(false);
-      setErrors({});
-      setLocationError('');
+      const filled = localStorage.getItem('leadFormFilled') === 'true';
+      setFormAlreadyFilled(filled);
+      
+      if (!filled) {
+        setFormData({
+          fullName: '',
+          mobileNumber: '',
+          destination: itemDestination || '',
+          travelCount: '',
+          travelDate: '',
+          location: '',
+        });
+        setSubmitted(false);
+        setErrors({});
+        setLocationError('');
+      } else {
+        // If form is already filled, show contact options directly
+        setSubmitted(true);
+      }
     }
   }, [isOpen, itemDestination]);
 
@@ -344,7 +353,7 @@ Thank you!`);
             damping: 25,
             mass: 0.8
           }}
-          className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-gray-100"
+          className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-gray-100"
           onClick={(e) => e.stopPropagation()}
           style={{
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(229, 26, 75, 0.1)',
@@ -370,7 +379,7 @@ Thank you!`);
               transition={{ delay: 0.3, duration: 0.5 }}
               className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-[#E51A4B] to-gray-900 bg-clip-text text-transparent font-display"
             >
-              {submitted ? 'Connect Tripeloo Support' : itemName ? itemName : 'Plan Your Trip'}
+              {(formAlreadyFilled || submitted) ? 'Connect Tripeloo Support' : itemName ? itemName : 'Plan Your Trip'}
             </motion.h2>
             <motion.button
               initial={{ scale: 0, rotate: -180 }}
@@ -386,8 +395,8 @@ Thank you!`);
           </motion.div>
 
           {/* Content */}
-          <div className="p-6 sm:p-8">
-            {submitted ? (
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1">
+            {(formAlreadyFilled || submitted) ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

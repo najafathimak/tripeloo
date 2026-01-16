@@ -110,14 +110,17 @@ export default function RoomsSection({
       </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-        {rooms.map((room) => (
+        {rooms.map((room) => {
+          const isSelected = selectedRooms.find((r) => r.id === room.id);
+          return (
           <div
             key={room.id}
-            className={`cursor-pointer rounded-xl overflow-hidden shadow-md border transition-all duration-200 hover:shadow-lg hover:border-red-500 ${
-              selectedRooms.find((r) => r.id === room.id)
-                ? "border-red-500 ring-1 ring-red-300"
+            className={`cursor-pointer rounded-xl overflow-hidden shadow-md border transition-all duration-300 hover:shadow-lg hover:border-red-500 ${
+              isSelected
+                ? "border-red-500 ring-2 ring-red-300 ring-offset-2 scale-[1.02] shadow-lg"
                 : "border-gray-200"
             }`}
+            onClick={() => handleRoomToggle(room)}
           >
             {room.thumb ? (
               <img
@@ -136,24 +139,34 @@ export default function RoomsSection({
             )}
             <div className="p-3 flex flex-col gap-1">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-sm text-gray-800 flex items-center gap-1">
+                <h3 className={`font-semibold text-sm flex items-center gap-1 transition-colors ${
+                  isSelected ? "text-red-600" : "text-gray-800"
+                }`}>
                   {room.name}
                 </h3>
-                <input
-                  type="checkbox"
-                  checked={!!selectedRooms.find((r) => r.id === room.id)}
-                  onChange={() => handleRoomToggle(room)}
-                  className="accent-red-500 w-4 h-4"
-                />
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                  isSelected 
+                    ? "bg-red-500 border-red-500 scale-110" 
+                    : "border-gray-300"
+                }`}>
+                  {isSelected && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  )}
+                </div>
               </div>
 
               {/* 🔥 Highlighted Price */}
-              <p className="text-[15px] font-semibold text-red-600 mt-1">
+              <p className={`text-[15px] font-semibold mt-1 transition-colors ${
+                isSelected ? "text-red-600" : "text-red-600"
+              }`}>
                 {room.rate}
               </p>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Room modal view */}

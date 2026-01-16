@@ -5,6 +5,8 @@ import ThingsCarousel from "@/components/ThingsToDo/ThingsCarousel";
 import LocationSection from "@/components/ListDetails/LocationSection";
 import BookingSidebar from "@/components/ListDetails/ListingDetailsClient";
 import NearbyItems from "@/components/NearbyItems";
+import { BottomBookingTab } from "@/components/ListDetails/BottomBookingTab";
+import { LeadFormPopup } from "@/components/LeadFormPopup";
 import {
   Star,
   Users,
@@ -75,6 +77,7 @@ const ActivityDetailsContent = () => {
   const [activityData, setActivityData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [reviewSummary, setReviewSummary] = useState({ average: 0, totalReviews: 0 });
+  const [showLeadPopup, setShowLeadPopup] = useState(false);
   const bookingRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -136,6 +139,61 @@ const ActivityDetailsContent = () => {
       fetchReviewSummary();
     }
   }, [activityId]);
+
+  // Scroll detection for Additional Information section (only on mobile)
+  useEffect(() => {
+    // Only show popup on mobile, not desktop
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+
+    // Check if form has been filled
+    const formFilled = localStorage.getItem('leadFormFilled') === 'true';
+    if (formFilled) return;
+
+    // Check if popup was already shown for this page
+    const popupShownKey = `leadPopupShown_${activityId || 'things-to-do'}`;
+    const popupShown = sessionStorage.getItem(popupShownKey) === 'true';
+    if (popupShown) return;
+
+    let hasTriggered = false;
+
+    const handleScroll = () => {
+      if (hasTriggered) return;
+
+      const section = document.getElementById('additional-information-section');
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+      const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
+
+      if (isVisible && !showLeadPopup) {
+        hasTriggered = true;
+        sessionStorage.setItem(popupShownKey, 'true');
+        
+        // Small delay to ensure smooth UX
+        setTimeout(() => {
+          setShowLeadPopup(true);
+        }, 500);
+      }
+    };
+
+    // Debounce scroll events
+    let timeoutId: NodeJS.Timeout;
+    const debouncedScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleScroll, 200);
+    };
+
+    window.addEventListener('scroll', debouncedScroll);
+    
+    // Initial check after page load
+    setTimeout(handleScroll, 1500);
+
+    return () => {
+      window.removeEventListener('scroll', debouncedScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [showLeadPopup, activityId]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -291,7 +349,7 @@ const ActivityDetailsContent = () => {
               });
               
               return validDetails.length > 0 ? (
-                <div className="px-4 sm:px-6 mb-5">
+                <div id="additional-information-section" className="px-4 sm:px-6 mb-5">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">Additional Details</h2>
                   <div className="space-y-4">
                     {validDetails.map((detail: any, index: number) => (
@@ -371,6 +429,30 @@ const ActivityDetailsContent = () => {
           </div>
         </div>
       </div>
+
+      {/* Lead Form Popup for scroll detection */}
+      {activityData && (
+        <LeadFormPopup
+          isOpen={showLeadPopup}
+          onClose={() => setShowLeadPopup(false)}
+          onSkip={() => setShowLeadPopup(false)}
+          itemName={activityData.name}
+          itemType="activity"
+          itemPrice={activityData.startingPrice ? formatPrice(activityData.startingPrice) : undefined}
+          itemDestination={destination || activityData.destinationName || activityData.destinationSlug}
+        />
+      )}
+
+      {/* Bottom Booking Tab - Always show */}
+      {activityData && (
+        <BottomBookingTab
+          selectedRooms={[]}
+          title={activityData.name}
+          price={activityData.startingPrice ? formatPrice(activityData.startingPrice) : 'Price on request'}
+          itemType="activity"
+          destination={destination || activityData.destinationName || activityData.destinationSlug}
+        />
+      )}
     </div>
   );
 };

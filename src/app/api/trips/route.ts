@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { listTripsByDestination } from '@/server/services/tripsService';
 import { findDestinationBySlugOrName } from '@/server/repositories/destinationsRepository';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 1800;
 
 export async function GET(request: NextRequest) {
