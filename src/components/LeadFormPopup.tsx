@@ -37,14 +37,65 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState<string>('');
   const [formAlreadyFilled, setFormAlreadyFilled] = useState(false);
+  const [savedFormData, setSavedFormData] = useState<typeof formData | null>(null);
   
-  // Check if form has been filled
+  // Check if form has been filled and load saved data
   useEffect(() => {
     if (isOpen) {
       const filled = localStorage.getItem('leadFormFilled') === 'true';
-      setFormAlreadyFilled(filled);
+      const savedDataStr = localStorage.getItem('leadFormData');
+      const savedTimestampStr = localStorage.getItem('leadFormTimestamp');
       
-      if (!filled) {
+      if (filled && savedDataStr && savedTimestampStr) {
+        const savedTimestamp = parseInt(savedTimestampStr);
+        const now = Date.now();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        
+        // Check if data is still valid (within 24 hours)
+        if (now - savedTimestamp < twentyFourHours) {
+          try {
+            const savedData = JSON.parse(savedDataStr);
+            setSavedFormData(savedData);
+            setFormData(savedData); // Load saved data into form
+            setFormAlreadyFilled(true);
+            setSubmitted(true);
+          } catch (error) {
+            console.error('Error parsing saved form data:', error);
+            // If parsing fails, clear saved data
+            localStorage.removeItem('leadFormData');
+            localStorage.removeItem('leadFormTimestamp');
+            localStorage.removeItem('leadFormFilled');
+            setFormAlreadyFilled(false);
+            setFormData({
+              fullName: '',
+              mobileNumber: '',
+              destination: itemDestination || '',
+              travelCount: '',
+              travelDate: '',
+              location: '',
+            });
+            setSubmitted(false);
+          }
+        } else {
+          // Data expired, clear it
+          localStorage.removeItem('leadFormData');
+          localStorage.removeItem('leadFormTimestamp');
+          localStorage.removeItem('leadFormFilled');
+          setFormAlreadyFilled(false);
+          setFormData({
+            fullName: '',
+            mobileNumber: '',
+            destination: itemDestination || '',
+            travelCount: '',
+            travelDate: '',
+            location: '',
+          });
+          setSubmitted(false);
+        }
+      } else {
+        // No saved data or form not filled
+        setFormAlreadyFilled(false);
+        setSavedFormData(null);
         setFormData({
           fullName: '',
           mobileNumber: '',
@@ -56,9 +107,6 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
         setSubmitted(false);
         setErrors({});
         setLocationError('');
-      } else {
-        // If form is already filled, show contact options directly
-        setSubmitted(true);
       }
     }
   }, [isOpen, itemDestination]);
@@ -239,9 +287,20 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
 
       if (res.ok) {
         setSubmitted(true);
-        // Mark form as filled/submitted in localStorage
+        // Save form data to localStorage with timestamp
         if (typeof window !== 'undefined') {
+          const formDataToSave = {
+            fullName: formData.fullName.trim(),
+            mobileNumber: formData.mobileNumber.trim(),
+            destination: destination,
+            travelCount: formData.travelCount,
+            travelDate: formData.travelDate,
+            location: formData.location.trim() || '',
+          };
           localStorage.setItem('leadFormFilled', 'true');
+          localStorage.setItem('leadFormData', JSON.stringify(formDataToSave));
+          localStorage.setItem('leadFormTimestamp', Date.now().toString());
+          setSavedFormData(formDataToSave);
         }
       } else {
         const data = await res.json();
@@ -256,16 +315,18 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
   };
 
   const handleWhatsApp = () => {
+    // Use saved form data if available, otherwise use current form data
+    const dataToUse = savedFormData || formData;
     const phoneNumber = formatWhatsAppNumber(getNextWhatsAppNumber());
     const itemInfo = itemName ? `\n\nItem: ${itemName}${itemPrice ? `\nPrice: ${itemPrice}` : ''}` : '';
-    const locationInfo = formData.location ? `\nLocation: ${formData.location}` : '';
+    const locationInfo = dataToUse.location ? `\nLocation: ${dataToUse.location}` : '';
     const message = `Hi Tripeloo!
 
-Name: ${formData.fullName}
-Mobile: +91${formData.mobileNumber}
-Destination: ${formData.destination || itemDestination || 'N/A'}
-Total Members: ${formData.travelCount}
-Travel Date: ${formData.travelDate}${locationInfo}${itemInfo}
+Name: ${dataToUse.fullName}
+Mobile: +91${dataToUse.mobileNumber}
+Destination: ${dataToUse.destination || itemDestination || 'N/A'}
+Total Members: ${dataToUse.travelCount}
+Travel Date: ${dataToUse.travelDate}${locationInfo}${itemInfo}
 
 I would like to discuss my travel plans.`;
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -278,19 +339,21 @@ I would like to discuss my travel plans.`;
   };
 
   const handleMail = () => {
+    // Use saved form data if available, otherwise use current form data
+    const dataToUse = savedFormData || formData;
     const itemInfo = itemName ? `\nItem: ${itemName}${itemPrice ? `\nPrice: ${itemPrice}` : ''}` : '';
-    const locationInfo = formData.location ? `\nLocation: ${formData.location}` : '';
+    const locationInfo = dataToUse.location ? `\nLocation: ${dataToUse.location}` : '';
     const subject = encodeURIComponent('Travel Inquiry - Lead Form Submission');
     const body = encodeURIComponent(`Hi Tripeloo,
 
 I submitted a lead form and would like to discuss my travel plans.
 
 Details:
-Name: ${formData.fullName}
-Mobile: +91${formData.mobileNumber}
-Destination: ${formData.destination || itemDestination || 'N/A'}
-Total Members: ${formData.travelCount}
-Travel Date: ${formData.travelDate}${locationInfo}${itemInfo}
+Name: ${dataToUse.fullName}
+Mobile: +91${dataToUse.mobileNumber}
+Destination: ${dataToUse.destination || itemDestination || 'N/A'}
+Total Members: ${dataToUse.travelCount}
+Travel Date: ${dataToUse.travelDate}${locationInfo}${itemInfo}
 
 Thank you!`);
     window.location.href = `mailto:hello@tripeloo.com?subject=${subject}&body=${body}`;
