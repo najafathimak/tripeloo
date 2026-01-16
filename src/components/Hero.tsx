@@ -916,7 +916,7 @@ export function Hero({ banners = [] }: HeroProps) {
                       onClick={scrollNext}
                       whileHover={{ scale: 1.1, x: 5 }}
                       whileTap={{ scale: 0.95 }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-3 sm:p-4 rounded-full shadow-2xl transition-all z-20 backdrop-blur-sm border border-gray-200/50 group/btn"
+                      className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-3 sm:p-4 rounded-full shadow-2xl transition-all z-20 backdrop-blur-sm border border-gray-200/50 group/btn"
                       aria-label="Next banner"
                     >
                       <motion.svg

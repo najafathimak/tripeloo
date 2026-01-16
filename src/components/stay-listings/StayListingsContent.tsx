@@ -467,7 +467,7 @@ function StayListingsContent() {
       </div>
 
       {/* Foreground Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-12">
         {/* Mobile Search and Filter Bar - Top */}
         <div className="md:hidden mb-4 space-y-3">
           {/* Search Bar */}
@@ -793,7 +793,7 @@ function StayListingsContent() {
           initial={{ opacity: 0 }}
           animate={{ opacity: isVisible ? 1 : 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 md:mb-12 bg-gradient-to-r from-[#E51A4B] to-[#FF6B6B] bg-clip-text text-transparent capitalize font-display"
+          className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-center mb-6 sm:mb-8 md:mb-12 px-2 bg-gradient-to-r from-[#E51A4B] to-[#FF6B6B] bg-clip-text text-transparent capitalize font-display"
         >
           {activeTab === "Stays" && `Stays in ${decodedDestination}`}
           {activeTab === "Things to Do" &&
@@ -863,7 +863,7 @@ function StayListingsContent() {
 
         {/* Show stays if available */}
         {hasStays && activeTab === "Stays" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {filteredStays.map((stay, index) => (
               <motion.div
                 key={stay.id}
@@ -882,25 +882,25 @@ function StayListingsContent() {
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     loading="lazy"
                   />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
-                    <p className="text-[#E51A4B] font-bold text-lg">
+                  <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/90 backdrop-blur-sm px-2 py-1 sm:px-4 sm:py-2 rounded-full">
+                    <p className="text-[#E51A4B] font-bold text-sm sm:text-base md:text-lg">
                       ₹{stay.startingPrice}
-                      <span className="text-sm text-gray-600"> / night</span>
+                      <span className="text-xs sm:text-sm text-gray-600"> / night</span>
                     </p>
                   </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-[#E51A4B] transition">
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-800 mb-2 sm:mb-3 group-hover:text-[#E51A4B] transition line-clamp-2">
                     {stay.name}
                   </h3>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5 sm:space-y-2">
                     {stay.highlights.map((highlight, i) => (
                       <li
                         key={i}
-                        className="flex items-center gap-2 text-gray-600"
+                        className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600"
                       >
-                        <span className="w-1.5 h-1.5 bg-[#E51A4B] rounded-full" />
-                        {highlight}
+                        <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-[#E51A4B] rounded-full flex-shrink-0" />
+                        <span className="line-clamp-1">{highlight}</span>
                       </li>
                     ))}
                   </ul>
@@ -972,7 +972,7 @@ function StayListingsContent() {
 
         {/* Show activities if available */}
         {hasActivities && activeTab === "Things to Do" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {filteredActivities.map((activity, index) => (
               <motion.div
                 key={activity.id}
@@ -980,7 +980,7 @@ function StayListingsContent() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 onClick={() => handleItemClick(activity.id)}
-                className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
+                className="group bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
               >
                 <div className="relative h-64 overflow-hidden">
                   <img
@@ -991,17 +991,17 @@ function StayListingsContent() {
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     loading="lazy"
                   />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
-                    <p className="text-[#E51A4B] font-bold text-lg">
+                  <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/90 backdrop-blur-sm px-2 py-1 sm:px-4 sm:py-2 rounded-full">
+                    <p className="text-[#E51A4B] font-bold text-sm sm:text-base md:text-lg">
                       ₹{(activity.startingPrice ?? activity.price) || 0}
                     </p>
                   </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-[#E51A4B] transition">
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-800 mb-2 group-hover:text-[#E51A4B] transition line-clamp-2">
                     {activity.name}
                   </h3>
-                  <p className="text-gray-600">Duration: {activity.duration}</p>
+                  <p className="text-sm sm:text-base text-gray-600">Duration: {activity.duration}</p>
                 </div>
               </motion.div>
             ))}
@@ -1070,7 +1070,7 @@ function StayListingsContent() {
 
         {/* Show restaurants & cafes if available */}
         {hasTrips && activeTab === "Restaurants & Cafes" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {filteredTrips.map((trip, index) => (
               <motion.div
                 key={trip.id}
@@ -1078,7 +1078,7 @@ function StayListingsContent() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 onClick={() => handleItemClick(trip.id)}
-                className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
+                className="group bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
               >
                 <div className="relative h-64 overflow-hidden">
                   <img
@@ -1089,17 +1089,17 @@ function StayListingsContent() {
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     loading="lazy"
                   />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
-                    <p className="text-[#E51A4B] font-bold text-lg">
+                  <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/90 backdrop-blur-sm px-2 py-1 sm:px-4 sm:py-2 rounded-full">
+                    <p className="text-[#E51A4B] font-bold text-sm sm:text-base md:text-lg">
                       ₹{trip.price}
                     </p>
                   </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-[#E51A4B] transition">
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-800 mb-2 group-hover:text-[#E51A4B] transition line-clamp-2">
                     {trip.name}
                   </h3>
-                  <p className="text-gray-600">Duration: {trip.duration}</p>
+                  <p className="text-sm sm:text-base text-gray-600">Duration: {trip.duration}</p>
                 </div>
               </motion.div>
             ))}
