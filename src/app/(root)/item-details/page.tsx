@@ -6,8 +6,10 @@ import ReviewsSection from "@/components/ListDetails/ReviewsSection";
 import RoomsSection from "@/components/ListDetails/RoomsSection";
 import BookingSidebar from "@/components/ListDetails/ListingDetailsClient";
 import NearbyItems from "@/components/NearbyItems";
+import { BottomBookingTab } from "@/components/ListDetails/BottomBookingTab";
+import { LeadFormPopup } from "@/components/LeadFormPopup";
 import { Star, Car, Hotel, Utensils, Mountain, ChevronDown, ChevronUp } from "lucide-react";
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { siteConfig } from "@/config/site";
@@ -69,6 +71,7 @@ const ListingDetailsContent = () => {
   const [stayData, setStayData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [reviewSummary, setReviewSummary] = useState({ average: 0, totalReviews: 0 });
+  const [showLeadPopup, setShowLeadPopup] = useState(false);
   const bookingRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -123,7 +126,60 @@ const ListingDetailsContent = () => {
     }
   }, [stayId]);
 
+  // Scroll detection for Additional Information section (only on mobile)
+  useEffect(() => {
+    // Only show popup on mobile, not desktop
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
 
+    // Check if form has been filled
+    const formFilled = localStorage.getItem('leadFormFilled') === 'true';
+    if (formFilled) return;
+
+    // Check if popup was already shown for this page
+    const popupShownKey = `leadPopupShown_${stayId || 'item-details'}`;
+    const popupShown = sessionStorage.getItem(popupShownKey) === 'true';
+    if (popupShown) return;
+
+    let hasTriggered = false;
+
+    const handleScroll = () => {
+      if (hasTriggered) return;
+
+      const section = document.getElementById('additional-information-section');
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+      const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
+
+      if (isVisible && !showLeadPopup) {
+        hasTriggered = true;
+        sessionStorage.setItem(popupShownKey, 'true');
+        
+        // Small delay to ensure smooth UX
+        setTimeout(() => {
+          setShowLeadPopup(true);
+        }, 500);
+      }
+    };
+
+    // Debounce scroll events
+    let timeoutId: NodeJS.Timeout;
+    const debouncedScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleScroll, 200);
+    };
+
+    window.addEventListener('scroll', debouncedScroll);
+    
+    // Initial check after page load
+    setTimeout(handleScroll, 1500);
+
+    return () => {
+      window.removeEventListener('scroll', debouncedScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [showLeadPopup, stayId]);
 
 
 
@@ -265,7 +321,7 @@ const ListingDetailsContent = () => {
 
             {/* Important Info - Good to Know (Right after description) */}
             {stayData.importantInfo && typeof stayData.importantInfo === 'string' && stayData.importantInfo.trim().length > 0 && (
-              <div className="mt-6 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
+              <div id="additional-information-section" className="mt-6 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
                 <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
                   Good to Know
                 </h2>
@@ -417,6 +473,29 @@ const ListingDetailsContent = () => {
         </div>
       </div>
 
+      {/* Lead Form Popup for scroll detection */}
+      {stayData && (
+        <LeadFormPopup
+          isOpen={showLeadPopup}
+          onClose={() => setShowLeadPopup(false)}
+          onSkip={() => setShowLeadPopup(false)}
+          itemName={stayData.name}
+          itemType="stay"
+          itemPrice={formatPrice(stayData.startingPrice)}
+          itemDestination={destination || stayData.destinationName || stayData.destinationSlug}
+        />
+      )}
+
+      {/* Bottom Booking Tab - Always show */}
+      {stayData && (
+        <BottomBookingTab
+          selectedRooms={selectedRooms}
+          title={stayData.name}
+          price={formatPrice(stayData.startingPrice)}
+          itemType="stay"
+          destination={destination || stayData.destinationName || stayData.destinationSlug}
+        />
+      )}
     </div>
   );
 };

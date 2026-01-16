@@ -622,41 +622,41 @@ export function Hero({ banners = [] }: HeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex justify-center gap-2 sm:gap-4 mb-8"
+          className="flex justify-center gap-2 sm:gap-4 mb-8 px-4 sm:px-6 overflow-x-auto scrollbar-hide"
         >
           <button
             onClick={() => handleTabClick('stays')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
               activeTab === 'stays'
                 ? 'bg-[#E51A4B] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <Bed className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-            <span>Stays</span>
+            <Bed className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
+            <span className="whitespace-nowrap">Stays</span>
           </button>
-              <button 
+          <button 
             onClick={() => handleTabClick('things-to-do')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
               activeTab === 'things-to-do'
                 ? 'bg-[#E51A4B] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <Camera className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+            <Camera className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
             <span className="whitespace-nowrap">Things to Do</span>
-              </button>
-              <button 
+          </button>
+          <button 
             onClick={() => handleTabClick('restaurants-cafes')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
               activeTab === 'restaurants-cafes'
                 ? 'bg-[#E51A4B] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <UtensilsCrossed className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+            <UtensilsCrossed className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
             <span className="whitespace-nowrap">Restaurants & Cafes</span>
-              </button>
+          </button>
         </motion.div>
 
         {/* Big Search Bar */}

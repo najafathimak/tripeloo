@@ -6,6 +6,7 @@ import ReviewsSection from "@/components/ListDetails/ReviewsSection";
 import PackagesSection from "@/components/ListDetails/PackagesSection";
 import BookingSidebar from "@/components/ListDetails/ListingDetailsClient";
 import NearbyItems from "@/components/NearbyItems";
+import { BottomBookingTab } from "@/components/ListDetails/BottomBookingTab";
 import { Star, Car, Hotel, Utensils, Mountain, Calendar, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -387,6 +388,17 @@ const TripDetailsContent = () => {
           </div>
         </div>
       </div>
+
+      {/* Bottom Booking Tab - Always show */}
+      {tripData && (
+        <BottomBookingTab
+          selectedPackages={selectedPackages}
+          title={tripData.name}
+          price={formatPrice(displayPrice)}
+          itemType="trip"
+          destination={destination || tripData.destinationName}
+        />
+      )}
 
       {/* ✅ Floating Book Now Button */}
       <button
