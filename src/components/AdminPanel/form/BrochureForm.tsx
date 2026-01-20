@@ -812,7 +812,7 @@ export default function BrochureForm() {
                 }`}
               >
                 <Plane size={18} />
-                <span className="text-sm font-medium">Restaurants & Cafes</span>
+                <span className="text-sm font-medium">Food spots</span>
               </button>
             </div>
           </div>
@@ -885,7 +885,7 @@ export default function BrochureForm() {
             </div>
           )}
 
-          {/* Dish Selection (for Restaurants & Cafes) - Only show if dishes exist for this specific restaurant/cafe */}
+          {/* Dish Selection (for Food spots) - Only show if dishes exist for this specific restaurant/cafe */}
           {selectedItem && String(selectedItem.id) === String(selectedItemId) && itemType === "trip" && selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-white/90 mb-2">
@@ -1086,7 +1086,7 @@ export default function BrochureForm() {
                 )}
               </div>
 
-              {/* Summary (for Stays/Restaurants & Cafes) */}
+              {/* Summary (for Stays/Food spots) */}
               {selectedItem.summary && itemType !== "activity" && (
                 <p className="mt-4 mb-6 text-gray-600 text-sm sm:text-base">
                   {selectedItem.summary}
@@ -1171,7 +1171,7 @@ export default function BrochureForm() {
                 </div>
               )}
 
-              {/* Restaurant/Cafe Features (for Restaurants & Cafes) */}
+              {/* Restaurant/Cafe Features (for Food spots) */}
               {selectedItem.properties && Array.isArray(selectedItem.properties) && selectedItem.properties.length > 0 && itemType === "trip" && (
                 <div className="mt-8 mb-6 bg-white rounded-2xl p-5 sm:p-6 shadow-inner">
                   <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Restaurant/Cafe Features</h2>
@@ -1258,7 +1258,7 @@ export default function BrochureForm() {
                 );
               })()}
 
-              {/* Dishes Section (for Restaurants & Cafes) - Only show if dishes exist for this specific restaurant/cafe */}
+              {/* Dishes Section (for Food spots) - Only show if dishes exist for this specific restaurant/cafe */}
               {selectedItem && String(selectedItem.id) === String(selectedItemId) && itemType === "trip" && selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && (() => {
                 // Filter packages based on selection
                 const packagesToShow = selectedPackages.length > 0
@@ -1354,7 +1354,7 @@ export default function BrochureForm() {
                 );
               })()}
 
-              {/* Price Section (for Stays/Restaurants & Cafes) - Keep Price Includes and Price Excludes */}
+              {/* Price Section (for Stays/Food spots) - Keep Price Includes and Price Excludes */}
               {(itemType === "stay" || itemType === "trip") && (
                 ((selectedItem.includes && Array.isArray(selectedItem.includes) && selectedItem.includes.length > 0) || 
                  (selectedItem.excludes && Array.isArray(selectedItem.excludes) && selectedItem.excludes.length > 0)) && (

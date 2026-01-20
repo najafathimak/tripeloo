@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Bed, Camera, UtensilsCrossed } from 'lucide-react';
 import { motion } from 'framer-motion';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -71,6 +71,52 @@ const defaultBanners: HeroBanner[] = [
   },
 ];
 
+// Helper component to safely animate SVG paths without framer-motion d attribute animation
+function AnimatedPath({ paths, stroke, strokeWidth, duration }: { 
+  paths: string[]; 
+  stroke: string; 
+  strokeWidth: string | number;
+  duration: number;
+}) {
+  const pathRef = useRef<SVGPathElement>(null);
+  const [currentPath, setCurrentPath] = useState<string>(paths[0] || "");
+
+  useEffect(() => {
+    if (!paths || paths.length < 2) return;
+    
+    let index = 0;
+    const stepDuration = (duration * 1000) / paths.length;
+    
+    const interval = setInterval(() => {
+      index = (index + 1) % paths.length;
+      const nextPath = paths[index];
+      if (nextPath && typeof nextPath === 'string') {
+        setCurrentPath(nextPath);
+        if (pathRef.current) {
+          pathRef.current.setAttribute('d', nextPath);
+        }
+      }
+    }, stepDuration);
+
+    return () => clearInterval(interval);
+  }, [paths, duration]);
+
+  // Ensure we always have a valid path string
+  const safePath = currentPath || paths[0] || "";
+
+  if (!safePath) return null;
+
+  return (
+    <path
+      ref={pathRef}
+      d={safePath}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      fill="none"
+    />
+  );
+}
+
 export function Hero({ banners = [] }: HeroProps) {
   // Use provided banners or default banners
   const displayBanners = banners.length > 0 ? banners : defaultBanners;
@@ -83,6 +129,9 @@ export function Hero({ banners = [] }: HeroProps) {
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Carousel setup
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -333,300 +382,197 @@ export function Hero({ banners = [] }: HeroProps) {
     }
   };
 
+  // Handle mobile keyboard visibility
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleFocus = () => {
+      setIsInputFocused(true);
+      // On mobile, scroll search container to top when keyboard opens
+      if (window.innerWidth < 768 && searchContainerRef.current) {
+        setTimeout(() => {
+          // Scroll the search container to the top of the viewport
+          const containerTop = searchContainerRef.current?.getBoundingClientRect().top || 0;
+          const currentScroll = window.scrollY;
+          window.scrollTo({ 
+            top: currentScroll + containerTop - 20, // 20px padding from top
+            behavior: 'smooth' 
+          });
+        }, 150); // Delay to allow keyboard animation
+      }
+    };
+
+    const handleBlur = () => {
+      // Delay blur to allow click events on dropdown items
+      setTimeout(() => {
+        setIsInputFocused(false);
+      }, 200);
+    };
+
+    const input = searchInputRef.current;
+    if (input) {
+      input.addEventListener('focus', handleFocus);
+      input.addEventListener('blur', handleBlur);
+    }
+
+    return () => {
+      if (input) {
+        input.removeEventListener('focus', handleFocus);
+        input.removeEventListener('blur', handleBlur);
+      }
+    };
+  }, []);
+
   return (
     <section className="relative bg-gradient-to-br from-white via-blue-50/30 to-pink-50/30 min-h-screen overflow-hidden">
-      {/* Animated Background Elements */}
+      {/* Beautiful Background Animations */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Gradient Orbs */}
+        {/* Large gradient orbs with Tripeloo colors */}
         <motion.div
           animate={{ 
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.2, 1]
+            x: [0, 50, 0],
+            y: [0, 30, 0],
+            scale: [1, 1.1, 1],
+            opacity: [0.08, 0.15, 0.08]
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E51A4B]/12 to-white/15 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ 
+            x: [0, -40, 0],
+            y: [0, -25, 0],
+            scale: [1, 1.12, 1],
+            opacity: [0.1, 0.18, 0.1]
           }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#E51A4B]/10 to-pink-300/10 rounded-full blur-3xl"
+          className="absolute bottom-0 left-0 w-[480px] h-[480px] bg-gradient-to-tr from-white/12 to-[#E51A4B]/10 rounded-full blur-3xl"
         />
         <motion.div
           animate={{ 
-            x: [0, -80, 0],
-            y: [0, -60, 0],
-            scale: [1, 1.3, 1]
+            x: [0, 35, 0],
+            y: [0, -30, 0],
+            scale: [1, 1.08, 1],
+            opacity: [0.06, 0.12, 0.06]
           }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-300/10 to-cyan-300/10 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-r from-[#E51A4B]/8 to-white/10 rounded-full blur-3xl"
         />
+        
+        {/* Medium floating orbs */}
         <motion.div
           animate={{ 
             x: [0, 60, 0],
             y: [0, -40, 0],
-            scale: [1, 1.1, 1]
+            scale: [1, 1.15, 1],
+            opacity: [0.1, 0.2, 0.1]
           }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"
-        />
-
-        {/* Floating Geometric Shapes */}
-        <motion.div
-          animate={{ 
-            rotate: [0, 360],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-10 left-10 w-20 h-20 border-2 border-[#E51A4B]/20 rounded-lg"
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute top-1/4 right-1/4 w-[300px] h-[300px] bg-gradient-to-br from-white/15 to-[#E51A4B]/10 rounded-full blur-2xl"
         />
         <motion.div
           animate={{ 
-            rotate: [360, 0],
-            y: [0, 30, 0]
+            x: [0, -50, 0],
+            y: [0, 35, 0],
+            scale: [1, 1.1, 1],
+            opacity: [0.08, 0.16, 0.08]
           }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-32 right-20 w-16 h-16 border-2 border-blue-400/20 rounded-full"
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute bottom-1/4 left-1/4 w-[280px] h-[280px] bg-gradient-to-tr from-[#E51A4B]/12 to-white/12 rounded-full blur-2xl"
         />
-        <motion.div
-          animate={{ 
-            rotate: [0, -360],
-            x: [0, 40, 0]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-32 left-20 w-12 h-12 border-2 border-green-400/20 transform rotate-45"
-        />
-
-        {/* Floating Particles */}
+        
+        {/* Small floating particles */}
         {[...Array(8)].map((_, i) => (
           <motion.div
             key={`particle-${i}`}
             animate={{
-              y: [0, -100, 0],
-              x: [0, Math.sin(i) * 50, 0],
-              opacity: [0.3, 0.6, 0.3],
+              y: [0, -60, 0],
+              x: [0, Math.sin(i) * 30, 0],
+              opacity: [0.2, 0.5, 0.2],
+              scale: [1, 1.2, 1]
             }}
             transition={{
-              duration: 3 + i * 0.5,
+              duration: 5 + i * 0.6,
               repeat: Infinity,
               delay: i * 0.3,
               ease: "easeInOut",
             }}
-            className="absolute w-2 h-2 bg-[#E51A4B]/30 rounded-full"
+            className={`absolute w-3 h-3 rounded-full ${
+              i % 2 === 0 ? 'bg-[#E51A4B]/25' : 'bg-white/35'
+            } blur-sm`}
             style={{
-              left: `${10 + i * 12}%`,
-              top: `${20 + (i % 3) * 25}%`,
+              left: `${10 + i * 11}%`,
+              top: `${20 + (i % 4) * 20}%`,
             }}
           />
         ))}
-
-        {/* Floating elements based on active tab */}
-        {activeTab === 'stays' && (
-          <>
-            <motion.div
-              animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-20 right-10 opacity-10"
-            >
-              <Bed className="w-32 h-32 text-[#E51A4B]" />
-            </motion.div>
-            <motion.div
-              animate={{ x: [0, 50, 0], scale: [1, 1.1, 1] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-20 left-10 opacity-10"
-            >
-              <Bed className="w-24 h-24 text-green-600" />
-            </motion.div>
-            <motion.div
-              animate={{ 
-                y: [0, -40, 0],
-                rotate: [0, 10, -10, 0],
-                scale: [1, 1.15, 1]
-              }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-1/3 left-1/4 opacity-10"
-            >
-              <Bed className="w-20 h-20 text-blue-500" />
-            </motion.div>
-            <motion.div
-              animate={{ 
-                x: [0, -30, 0],
-                y: [0, 20, 0],
-                rotate: [0, -5, 5, 0]
-              }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-1/3 right-1/4 opacity-10"
-            >
-              <Bed className="w-16 h-16 text-purple-500" />
-            </motion.div>
-          </>
-        )}
-
-        {activeTab === 'things-to-do' && (
-          <>
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute top-20 right-10 opacity-10"
-            >
-              <Camera className="w-32 h-32 text-[#E51A4B]" />
-            </motion.div>
-            <motion.div
-              animate={{ y: [0, -30, 0], x: [0, 20, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-20 left-10 opacity-10"
-            >
-              <Camera className="w-24 h-24 text-blue-600" />
-            </motion.div>
-            <motion.div
-              animate={{ 
-                scale: [1, 1.2, 1],
-                rotate: [0, 180, 360]
-              }}
-              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-1/2 right-1/3 opacity-10"
-            >
-              <Camera className="w-20 h-20 text-green-500" />
-            </motion.div>
-            <motion.div
-              animate={{ 
-                y: [0, -25, 0],
-                x: [0, 15, 0],
-                rotate: [0, -15, 15, 0]
-              }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-1/4 left-1/3 opacity-10"
-            >
-              <Camera className="w-16 h-16 text-orange-500" />
-            </motion.div>
-          </>
-        )}
-
-        {activeTab === 'restaurants-cafes' && (
-          <>
-            <motion.div
-              animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.1, 1] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-20 right-10 opacity-10"
-            >
-              <UtensilsCrossed className="w-32 h-32 text-[#E51A4B]" />
-            </motion.div>
-            <motion.div
-              animate={{ y: [0, -25, 0], rotate: [0, -10, 10, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-20 left-10 opacity-10"
-            >
-              <UtensilsCrossed className="w-24 h-24 text-orange-600" />
-            </motion.div>
-            <motion.div
-              animate={{ 
-                x: [0, 30, 0],
-                y: [0, -20, 0],
-                rotate: [0, 20, -20, 0]
-              }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-1/3 right-1/4 opacity-10"
-            >
-              <UtensilsCrossed className="w-20 h-20 text-red-500" />
-            </motion.div>
-            <motion.div
-              animate={{ 
-                scale: [1, 1.25, 1],
-                rotate: [0, -20, 20, 0]
-              }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-1/3 left-1/4 opacity-10"
-            >
-              <UtensilsCrossed className="w-16 h-16 text-yellow-500" />
-            </motion.div>
-          </>
-        )}
-
-        {/* Animated Lines/Waves */}
-        <svg
-          className="absolute top-0 left-0 w-full h-full opacity-5"
-          viewBox="0 0 1920 1080"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <motion.path
-            d="M0,540 Q480,270 960,540 T1920,540"
-            stroke="#E51A4B"
-            strokeWidth="2"
-            fill="none"
-            animate={{
-              d: [
-                "M0,540 Q480,270 960,540 T1920,540",
-                "M0,540 Q480,810 960,540 T1920,540",
-                "M0,540 Q480,270 960,540 T1920,540",
-              ],
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.path
-            d="M0,270 Q640,135 1280,270 T2560,270"
-            stroke="#3B82F6"
-            strokeWidth="2"
-            fill="none"
-            animate={{
-              d: [
-                "M0,270 Q640,135 1280,270 T2560,270",
-                "M0,270 Q640,405 1280,270 T2560,270",
-                "M0,270 Q640,135 1280,270 T2560,270",
-              ],
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </svg>
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 pt-28 sm:pt-32 md:pt-36 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 pt-28 sm:pt-32 md:pt-36 pb-2 sm:pb-8 px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-8 sm:mb-10"
-        >
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-4 font-display relative inline-block"
-          >
+        <div className="text-center mb-8 sm:mb-10 relative">
+          {/* Beautiful background glow under heading */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <motion.div
+              animate={{
+                scale: [1, 1.4, 1],
+                opacity: [0.2, 0.4, 0.2],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute w-80 h-80 bg-[#E51A4B]/25 rounded-full blur-3xl"
+            />
+            <motion.div
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.25, 0.45, 0.25],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.7,
+              }}
+              className="absolute w-64 h-64 bg-white/35 rounded-full blur-2xl"
+            />
+            <motion.div
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.15, 0.35, 0.15],
+              }}
+              transition={{
+                duration: 7,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1.2,
+              }}
+              className="absolute w-72 h-72 bg-gradient-to-r from-[#E51A4B]/20 to-white/30 rounded-full blur-3xl"
+            />
+          </div>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-4 font-display relative inline-block z-10">
             <span className="relative z-10 text-gray-900 tracking-tight">
               Where next
             </span>
-            <motion.span
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.6, type: "spring", stiffness: 200 }}
-              className="inline-block ml-2 text-[#E51A4B]"
-            >
+            <span className="inline-block ml-2 text-[#E51A4B]">
               ?
-            </motion.span>
-            {/* Subtle shadow effect */}
-            <motion.div
-              animate={{
-                textShadow: [
-                  "0 0 0px rgba(229, 26, 75, 0)",
-                  "0 0 20px rgba(229, 26, 75, 0.3)",
-                  "0 0 0px rgba(229, 26, 75, 0)",
-                ],
-              }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="absolute inset-0 text-5xl sm:text-6xl md:text-7xl font-extrabold text-[#E51A4B] blur-sm opacity-30 -z-10"
-            >
-              Where next?
-            </motion.div>
-          </motion.h1>
-        </motion.div>
+            </span>
+          </h1>
+        </div>
 
         {/* Filter Tabs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex justify-center items-center gap-1.5 sm:gap-4 mb-8 w-full max-w-full overflow-hidden"
+          className="flex flex-nowrap justify-center items-center gap-1 sm:gap-4 mb-8 w-full max-w-full overflow-x-auto px-2"
         >
           <button
             onClick={() => handleTabClick('stays')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
               activeTab === 'stays'
                 ? 'bg-[#E51A4B] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -637,7 +583,7 @@ export function Hero({ banners = [] }: HeroProps) {
           </button>
           <button 
             onClick={() => handleTabClick('things-to-do')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
               activeTab === 'things-to-do'
                 ? 'bg-[#E51A4B] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -648,14 +594,14 @@ export function Hero({ banners = [] }: HeroProps) {
           </button>
           <button 
             onClick={() => handleTabClick('restaurants-cafes')}
-            className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
               activeTab === 'restaurants-cafes'
                 ? 'bg-[#E51A4B] text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             <UtensilsCrossed className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
-            <span className="text-center leading-tight">Restaurants & Cafes</span>
+            <span className="whitespace-nowrap">Food spots</span>
           </button>
         </motion.div>
 
@@ -665,6 +611,7 @@ export function Hero({ banners = [] }: HeroProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           className="max-w-4xl mx-auto mb-12"
+          ref={searchContainerRef}
         >
           <div className="relative">
             <div className="flex items-center bg-gray-50 rounded-full border-2 border-gray-200 focus-within:border-[#E51A4B] transition-all shadow-lg">
@@ -672,18 +619,24 @@ export function Hero({ banners = [] }: HeroProps) {
                 <Search className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
               </div>
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Destinations, stays, things to do, restaurants & cafes"
+                onFocus={() => setIsInputFocused(true)}
+                placeholder="Destinations, stays, things to do, food spots"
                 className="flex-1 px-4 sm:px-6 py-4 sm:py-5 bg-transparent border-none outline-none text-sm sm:text-base text-gray-900 placeholder-gray-400"
               />
             </div>
 
             {/* Search Dropdown */}
             {showSearchDropdown && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-80 overflow-y-auto z-50">
+              <div className={`${
+                isInputFocused && typeof window !== 'undefined' && window.innerWidth < 768
+                  ? 'fixed top-20 left-4 right-4 mt-2 max-h-[calc(100vh-250px)] z-[100]'
+                  : 'absolute top-full left-0 right-0 mt-2 max-h-80 z-50'
+              } bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto`}>
                 {searchResults.map((result, index) => {
                   const getTypeLabel = () => {
                     switch (result.type) {

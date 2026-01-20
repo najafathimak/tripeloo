@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Phone, Mail, Calendar, Users, MapPin, Navigation, MapPinOff } from 'lucide-react';
+import { X, Phone, Mail, Calendar, Users, MapPin, MessageSquare } from 'lucide-react';
 import { getNextWhatsAppNumber, formatWhatsAppNumber, getPrimaryWhatsAppNumber } from '@/utils/whatsapp';
 
 interface LeadFormPopupProps {
@@ -28,20 +28,33 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
     destination: '',
     travelCount: '',
     travelDate: '',
-    location: '',
+    message: '',
   });
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [locationLoading, setLocationLoading] = useState(false);
-  const [locationError, setLocationError] = useState<string>('');
   const [formAlreadyFilled, setFormAlreadyFilled] = useState(false);
   const [savedFormData, setSavedFormData] = useState<typeof formData | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMessageField, setShowMessageField] = useState(false);
+
+  // Detect mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Check if form has been filled and load saved data
   useEffect(() => {
     if (isOpen) {
+      // Reset message field visibility when popup opens
+      setShowMessageField(false);
+      
       const filled = localStorage.getItem('leadFormFilled') === 'true';
       const savedDataStr = localStorage.getItem('leadFormData');
       const savedTimestampStr = localStorage.getItem('leadFormTimestamp');
@@ -72,7 +85,7 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
               destination: itemDestination || '',
               travelCount: '',
               travelDate: '',
-              location: '',
+              message: '',
             });
             setSubmitted(false);
           }
@@ -88,7 +101,7 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
             destination: itemDestination || '',
             travelCount: '',
             travelDate: '',
-            location: '',
+            message: '',
           });
           setSubmitted(false);
         }
@@ -102,96 +115,13 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
           destination: itemDestination || '',
           travelCount: '',
           travelDate: '',
-          location: '',
+          message: '',
         });
         setSubmitted(false);
         setErrors({});
-        setLocationError('');
       }
     }
   }, [isOpen, itemDestination]);
-
-  // Function to get location from GPS
-  const getLocationFromGPS = async () => {
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by your browser');
-      return;
-    }
-
-    setLocationLoading(true);
-    setLocationError('');
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          
-          // Use reverse geocoding to get location name
-          // Using OpenStreetMap Nominatim API (free, no API key needed)
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
-          );
-          
-          if (response.ok) {
-            const data = await response.json();
-            const address = data.address;
-            
-            // Build location string from address components
-            let locationParts: string[] = [];
-            
-            if (address.city || address.town || address.village) {
-              locationParts.push(address.city || address.town || address.village);
-            }
-            if (address.state) {
-              locationParts.push(address.state);
-            }
-            if (address.country) {
-              locationParts.push(address.country);
-            }
-            
-            const locationString = locationParts.length > 0 
-              ? locationParts.join(', ')
-              : data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-            
-            setFormData(prev => ({ ...prev, location: locationString }));
-          } else {
-            // Fallback to coordinates if reverse geocoding fails
-            setFormData(prev => ({ 
-              ...prev, 
-              location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` 
-            }));
-          }
-        } catch (error) {
-          console.error('Error getting location:', error);
-          setLocationError('Failed to get location name. You can type it manually.');
-        } finally {
-          setLocationLoading(false);
-        }
-      },
-      (error) => {
-        setLocationLoading(false);
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            setLocationError('Location access denied. Please type your location manually.');
-            break;
-          case error.POSITION_UNAVAILABLE:
-            setLocationError('Location information unavailable. Please type your location manually.');
-            break;
-          case error.TIMEOUT:
-            setLocationError('Location request timed out. Please type your location manually.');
-            break;
-          default:
-            setLocationError('Error getting location. Please type your location manually.');
-            break;
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-    );
-  };
 
   useEffect(() => {
     // Fetch destinations for dropdown
@@ -278,7 +208,7 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
           destination: destination,
           travelCount: parseInt(formData.travelCount || '1'),
           travelDate: formData.travelDate,
-          location: formData.location.trim() || undefined,
+          message: formData.message.trim() || undefined,
           itemName: itemName || '',
           itemType: itemType || '',
           itemPrice: itemPrice || '',
@@ -295,7 +225,7 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
             destination: destination,
             travelCount: formData.travelCount,
             travelDate: formData.travelDate,
-            location: formData.location.trim() || '',
+            message: formData.message.trim() || '',
           };
           localStorage.setItem('leadFormFilled', 'true');
           localStorage.setItem('leadFormData', JSON.stringify(formDataToSave));
@@ -319,14 +249,14 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
     const dataToUse = savedFormData || formData;
     const phoneNumber = formatWhatsAppNumber(getNextWhatsAppNumber());
     const itemInfo = itemName ? `\n\nItem: ${itemName}${itemPrice ? `\nPrice: ${itemPrice}` : ''}` : '';
-    const locationInfo = dataToUse.location ? `\nLocation: ${dataToUse.location}` : '';
+    const messageText = dataToUse.message ? `\n\nMessage: ${dataToUse.message}` : '';
     const message = `Hi Tripeloo!
 
 Name: ${dataToUse.fullName}
 Mobile: +91${dataToUse.mobileNumber}
 Destination: ${dataToUse.destination || itemDestination || 'N/A'}
 Total Members: ${dataToUse.travelCount}
-Travel Date: ${dataToUse.travelDate}${locationInfo}${itemInfo}
+Travel Date: ${dataToUse.travelDate}${messageText}${itemInfo}
 
 I would like to discuss my travel plans.`;
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -342,7 +272,7 @@ I would like to discuss my travel plans.`;
     // Use saved form data if available, otherwise use current form data
     const dataToUse = savedFormData || formData;
     const itemInfo = itemName ? `\nItem: ${itemName}${itemPrice ? `\nPrice: ${itemPrice}` : ''}` : '';
-    const locationInfo = dataToUse.location ? `\nLocation: ${dataToUse.location}` : '';
+    const messageText = dataToUse.message ? `\n\nMessage: ${dataToUse.message}` : '';
     const subject = encodeURIComponent('Travel Inquiry - Lead Form Submission');
     const body = encodeURIComponent(`Hi Tripeloo,
 
@@ -353,7 +283,7 @@ Name: ${dataToUse.fullName}
 Mobile: +91${dataToUse.mobileNumber}
 Destination: ${dataToUse.destination || itemDestination || 'N/A'}
 Total Members: ${dataToUse.travelCount}
-Travel Date: ${dataToUse.travelDate}${locationInfo}${itemInfo}
+Travel Date: ${dataToUse.travelDate}${messageText}${itemInfo}
 
 Thank you!`);
     window.location.href = `mailto:hello@tripeloo.com?subject=${subject}&body=${body}`;
@@ -373,7 +303,7 @@ Thank you!`);
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-md overflow-hidden"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-2 sm:p-4 bg-black/60 backdrop-blur-md overflow-hidden"
             onClick={onClose}
           >
         {/* Decorative gradient orbs */}
@@ -392,31 +322,37 @@ Thank you!`);
 
         {/* Main Popup */}
         <motion.div
-          initial={{ 
-            scale: 0.5, 
-            opacity: 0, 
-            y: 50,
-            rotateX: -15
+          initial={isMobile ? { 
+            y: '100%',
+            opacity: 0
+          } : {
+            scale: 0.5,
+            opacity: 0,
+            y: 50
           }}
-          animate={{ 
-            scale: 1, 
-            opacity: 1, 
+          animate={isMobile ? {
             y: 0,
-            rotateX: 0
+            opacity: 1
+          } : {
+            scale: 1,
+            opacity: 1,
+            y: 0
           }}
-          exit={{ 
-            scale: 0.8, 
-            opacity: 0, 
-            y: 30,
-            rotateX: 10
+          exit={isMobile ? {
+            y: '100%',
+            opacity: 0
+          } : {
+            scale: 0.8,
+            opacity: 0,
+            y: 30
           }}
           transition={{ 
             type: "spring", 
             stiffness: 300,
-            damping: 25,
+            damping: 30,
             mass: 0.8
           }}
-          className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-gray-100 mx-2 sm:mx-4 overflow-hidden"
+          className="relative bg-white rounded-t-3xl sm:rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full h-[75vh] sm:max-h-[90vh] flex flex-col border border-gray-100 mx-0 sm:mx-4 overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           style={{
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(229, 26, 75, 0.1)',
@@ -429,18 +365,20 @@ Thank you!`);
             transition={{ delay: 0.3, duration: 0.6 }}
             className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#E51A4B] via-pink-500 to-[#E51A4B]"
           />
+          {/* Mobile drag handle */}
+          <div className="sm:hidden absolute top-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-300 rounded-full" />
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="sticky top-0 bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between z-10 backdrop-blur-sm"
+            className="sticky top-0 bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 px-4 sm:px-5 py-3 flex items-center justify-between z-10 backdrop-blur-sm"
           >
             <motion.h2
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 via-[#E51A4B] to-gray-900 bg-clip-text text-transparent font-display truncate flex-1 min-w-0 mr-2"
+              className="text-base sm:text-lg font-bold bg-gradient-to-r from-gray-900 via-[#E51A4B] to-gray-900 bg-clip-text text-transparent font-display truncate flex-1 min-w-0 mr-2"
             >
               {(formAlreadyFilled || submitted) ? 'Connect Tripeloo Support' : itemName ? itemName : 'Plan Your Trip'}
             </motion.h2>
@@ -458,7 +396,7 @@ Thank you!`);
           </motion.div>
 
           {/* Content */}
-          <div className="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1 overflow-x-hidden">
+          <div className="p-4 sm:p-5 flex-1 overflow-x-hidden sm:overflow-y-auto">
             {(formAlreadyFilled || submitted) ? (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -592,17 +530,17 @@ Thank you!`);
                 </motion.div>
               </motion.div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 {/* Item Info Display (if item booking) */}
                 {itemName && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200"
+                    className="bg-gray-50 rounded-lg p-3 mb-2 border border-gray-200"
                   >
-                    <h3 className="font-semibold text-gray-900 mb-1">{itemName}</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm mb-0.5">{itemName}</h3>
                     {itemPrice && (
-                      <p className="text-lg font-bold text-[#E51A4B]">{itemPrice}</p>
+                      <p className="text-base font-bold text-[#E51A4B]">{itemPrice}</p>
                     )}
                   </motion.div>
                 )}
@@ -613,15 +551,15 @@ Thank you!`);
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
                 >
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                     Full Name
                   </label>
                   <motion.input
-                    whileFocus={{ scale: 1.02 }}
+                    whileFocus={{ scale: 1.01 }}
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
-                    className={`w-full min-w-0 px-3 sm:px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
+                    className={`w-full min-w-0 px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
                       errors.fullName ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
                     }`}
                     placeholder="Enter your full name"
@@ -646,25 +584,25 @@ Thank you!`);
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4, duration: 0.5 }}
                 >
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                     Mobile Number
                   </label>
                   <div className="flex items-center">
                     <motion.span
-                      whileHover={{ scale: 1.05 }}
-                      className="px-3 sm:px-4 py-3 bg-gradient-to-r from-gray-100 to-gray-50 border border-r-0 border-gray-300 rounded-l-lg text-gray-700 font-medium flex-shrink-0"
+                      whileHover={{ scale: 1.02 }}
+                      className="px-3 py-2.5 text-sm bg-gradient-to-r from-gray-100 to-gray-50 border border-r-0 border-gray-300 rounded-l-lg text-gray-700 font-medium flex-shrink-0"
                     >
                       +91
                     </motion.span>
                     <motion.input
-                      whileFocus={{ scale: 1.02 }}
+                      whileFocus={{ scale: 1.01 }}
                       type="tel"
                       value={formData.mobileNumber}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                         handleInputChange('mobileNumber', value);
                       }}
-                      className={`flex-1 min-w-0 px-3 sm:px-4 py-3 border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
+                      className={`flex-1 min-w-0 px-3 py-2.5 text-sm border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
                         errors.mobileNumber ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
                       }`}
                       placeholder="Enter your mobile number"
@@ -691,15 +629,15 @@ Thank you!`);
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5, duration: 0.5 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-[#E51A4B]" />
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#E51A4B]" />
                       Pick Your Wished Destination
                     </label>
                     <motion.select
-                      whileFocus={{ scale: 1.02 }}
+                      whileFocus={{ scale: 1.01 }}
                       value={formData.destination}
                       onChange={(e) => handleInputChange('destination', e.target.value)}
-                      className={`w-full min-w-0 px-3 sm:px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
+                      className={`w-full min-w-0 px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
                         errors.destination ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
                       }`}
                     >
@@ -725,146 +663,128 @@ Thank you!`);
                   </motion.div>
                 )}
 
-                {/* Location - Optional */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6, duration: 0.5 }}
-                >
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-[#E51A4B]" />
-                    Your Location <span className="text-xs text-gray-500 font-normal">(Optional)</span>
-                  </label>
-                  <div className="flex items-center gap-2">
+                {/* Total Members and Date of Travel - Single Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Total Members */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                  >
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-[#E51A4B]" />
+                      Total Members
+                    </label>
                     <motion.input
-                      whileFocus={{ scale: 1.02 }}
-                      type="text"
-                      value={formData.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all hover:border-gray-400"
-                      placeholder="City, State or use GPS"
+                      whileFocus={{ scale: 1.01 }}
+                      type="number"
+                      min="1"
+                      value={formData.travelCount}
+                      onChange={(e) => handleInputChange('travelCount', e.target.value)}
+                      className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
+                        errors.travelCount ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                      placeholder="Members"
                     />
+                    <AnimatePresence>
+                      {errors.travelCount && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="mt-1 text-xs text-red-500"
+                        >
+                          {errors.travelCount}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+
+                  {/* Date of Travel */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
+                  >
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Date of Travel
+                    </label>
+                    <motion.input
+                      whileFocus={{ scale: 1.01 }}
+                      type="date"
+                      value={formData.travelDate}
+                      onChange={(e) => handleInputChange('travelDate', e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
+                        errors.travelDate ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    />
+                    <AnimatePresence>
+                      {errors.travelDate && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="mt-1 text-xs text-red-500"
+                        >
+                          {errors.travelDate}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                </div>
+
+                {/* Message - Optional - Show only if clicked */}
+                <AnimatePresence>
+                  {showMessageField ? (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                        <MessageSquare className="w-3.5 h-3.5 text-[#E51A4B]" />
+                        Message <span className="text-xs text-gray-500 font-normal">(Optional)</span>
+                      </label>
+                      <motion.textarea
+                        whileFocus={{ scale: 1.01 }}
+                        value={formData.message}
+                        onChange={(e) => handleInputChange('message', e.target.value)}
+                        rows={2}
+                        className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all hover:border-gray-400 resize-none"
+                        placeholder="Any special requests or questions..."
+                      />
+                    </motion.div>
+                  ) : (
                     <motion.button
                       type="button"
-                      onClick={getLocationFromGPS}
-                      disabled={locationLoading}
-                      whileHover={!locationLoading ? { scale: 1.05 } : {}}
-                      whileTap={!locationLoading ? { scale: 0.95 } : {}}
-                      className={`px-4 py-3 border rounded-lg transition-all flex items-center gap-2 ${
-                        locationLoading
-                          ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'border-[#E51A4B] bg-white text-[#E51A4B] hover:bg-[#E51A4B] hover:text-white'
-                      }`}
-                      title="Get location from GPS"
+                      onClick={() => setShowMessageField(true)}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.7, duration: 0.5 }}
+                      className="w-full text-left text-xs text-[#E51A4B] hover:text-red-600 font-medium py-2 flex items-center gap-1.5 transition-colors"
                     >
-                      {locationLoading ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                          className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"
-                        />
-                      ) : (
-                        <Navigation className="w-4 h-4" />
-                      )}
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      Any other info?
                     </motion.button>
-                  </div>
-                  <AnimatePresence>
-                    {locationError && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="mt-1 text-sm text-amber-600 flex items-center gap-1"
-                      >
-                        <MapPinOff className="w-3 h-3" />
-                        {locationError}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-
-                {/* Total Members */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.7, duration: 0.5 }}
-                >
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-[#E51A4B]" />
-                    Total Members
-                  </label>
-                  <motion.input
-                    whileFocus={{ scale: 1.02 }}
-                    type="number"
-                    min="1"
-                    value={formData.travelCount}
-                    onChange={(e) => handleInputChange('travelCount', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
-                      errors.travelCount ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                    placeholder="Enter number of travelers"
-                  />
-                  <AnimatePresence>
-                    {errors.travelCount && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="mt-1 text-sm text-red-500"
-                      >
-                        {errors.travelCount}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-
-                {/* Date of Travel */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8, duration: 0.5 }}
-                >
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Date of Travel
-                  </label>
-                  <motion.input
-                    whileFocus={{ scale: 1.02 }}
-                    type="date"
-                    value={formData.travelDate}
-                    onChange={(e) => handleInputChange('travelDate', e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E51A4B] transition-all ${
-                      errors.travelDate ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  />
-                  <AnimatePresence>
-                    {errors.travelDate && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="mt-1 text-sm text-red-500"
-                      >
-                        {errors.travelDate}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Buttons */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9, duration: 0.5 }}
-                  className="flex items-center gap-4 pt-6"
+                  transition={{ delay: 0.8, duration: 0.5 }}
+                  className="flex items-center gap-3 pt-4"
                 >
                   {!itemName && (
                     <motion.button
                       type="button"
                       onClick={handleSkip}
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex-1 px-4 sm:px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all shadow-sm min-w-0"
+                      whileHover={{ scale: 1.02, y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1 px-4 py-2.5 text-sm border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all shadow-sm min-w-0"
                     >
                       Skip
                     </motion.button>
@@ -872,9 +792,9 @@ Thank you!`);
                   <motion.button
                     type="submit"
                     disabled={loading}
-                    whileHover={!loading ? { scale: 1.05, y: -2 } : {}}
-                    whileTap={!loading ? { scale: 0.95 } : {}}
-                    className={`${itemName ? 'w-full' : 'flex-1'} px-4 sm:px-6 py-3 bg-gradient-to-r from-[#E51A4B] to-red-600 text-white rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden min-w-0`}
+                    whileHover={!loading ? { scale: 1.02, y: -1 } : {}}
+                    whileTap={!loading ? { scale: 0.98 } : {}}
+                    className={`${itemName ? 'w-full' : 'flex-1'} px-4 py-2.5 text-sm bg-gradient-to-r from-[#E51A4B] to-red-600 text-white rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden min-w-0`}
                   >
                     {loading ? (
                       <span className="flex items-center justify-center gap-2">

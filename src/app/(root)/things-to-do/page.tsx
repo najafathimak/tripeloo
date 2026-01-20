@@ -140,59 +140,80 @@ const ActivityDetailsContent = () => {
     }
   }, [activityId]);
 
-  // Scroll detection for Additional Information section (only on mobile)
+  // Popup trigger logic for both mobile and desktop
   useEffect(() => {
-    // Only show popup on mobile, not desktop
+    if (typeof window === 'undefined') return;
+
     const isMobile = window.innerWidth < 768;
-    if (!isMobile) return;
-
-    // Check if form has been filled
     const formFilled = localStorage.getItem('leadFormFilled') === 'true';
-    if (formFilled) return;
+    const popupKey = `leadPopup_${activityId || 'things-to-do'}`;
 
-    // Check if popup was already shown for this page
-    const popupShownKey = `leadPopupShown_${activityId || 'things-to-do'}`;
-    const popupShown = sessionStorage.getItem(popupShownKey) === 'true';
-    if (popupShown) return;
+    // Check cooldown based on form filled status
+    const lastShownTimestamp = localStorage.getItem(popupKey);
+    if (lastShownTimestamp) {
+      const lastShown = parseInt(lastShownTimestamp, 10);
+      const now = Date.now();
+      const cooldownMs = formFilled 
+        ? 24 * 60 * 60 * 1000  // 24 hours if filled
+        : 30 * 60 * 1000;      // 30 minutes if not filled
+      
+      if (now - lastShown < cooldownMs) {
+        return; // Still in cooldown period
+      }
+    }
 
+    let timeoutId: NodeJS.Timeout;
+    let scrollTimeoutId: NodeJS.Timeout;
     let hasTriggered = false;
 
-    const handleScroll = () => {
-      if (hasTriggered) return;
+    if (isMobile) {
+      // Mobile: Trigger on scroll to additional-information-section
+      const handleScroll = () => {
+        if (hasTriggered) return;
 
-      const section = document.getElementById('additional-information-section');
-      if (!section) return;
+        const section = document.getElementById('additional-information-section');
+        if (!section) return;
 
-      const rect = section.getBoundingClientRect();
-      const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
+        const rect = section.getBoundingClientRect();
+        const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
 
-      if (isVisible && !showLeadPopup) {
-        hasTriggered = true;
-        sessionStorage.setItem(popupShownKey, 'true');
-        
-        // Small delay to ensure smooth UX
-        setTimeout(() => {
+        if (isVisible && !showLeadPopup) {
+          hasTriggered = true;
+          localStorage.setItem(popupKey, Date.now().toString());
+          
+          setTimeout(() => {
+            setShowLeadPopup(true);
+          }, 500);
+        }
+      };
+
+      const debouncedScroll = () => {
+        if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
+        scrollTimeoutId = setTimeout(handleScroll, 200);
+      };
+
+      window.addEventListener('scroll', debouncedScroll);
+      timeoutId = setTimeout(handleScroll, 1500);
+
+      return () => {
+        window.removeEventListener('scroll', debouncedScroll);
+        if (timeoutId) clearTimeout(timeoutId);
+        if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
+      };
+    } else {
+      // Desktop: Show after 7 seconds
+      timeoutId = setTimeout(() => {
+        if (!hasTriggered && !showLeadPopup) {
+          hasTriggered = true;
+          localStorage.setItem(popupKey, Date.now().toString());
           setShowLeadPopup(true);
-        }, 500);
-      }
-    };
+        }
+      }, 7000);
 
-    // Debounce scroll events
-    let timeoutId: NodeJS.Timeout;
-    const debouncedScroll = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleScroll, 200);
-    };
-
-    window.addEventListener('scroll', debouncedScroll);
-    
-    // Initial check after page load
-    setTimeout(handleScroll, 1500);
-
-    return () => {
-      window.removeEventListener('scroll', debouncedScroll);
-      clearTimeout(timeoutId);
-    };
+      return () => {
+        if (timeoutId) clearTimeout(timeoutId);
+      };
+    }
   }, [showLeadPopup, activityId]);
 
   const formatPrice = (price: number) => {
@@ -377,10 +398,10 @@ const ActivityDetailsContent = () => {
               />
             )}
 
-            {/* Nearby Restaurants & Cafes */}
+            {/* Nearby Food spots */}
             {activityData.nearbyTrips && Array.isArray(activityData.nearbyTrips) && activityData.nearbyTrips.length > 0 && (
               <NearbyItems
-                title="Nearby Restaurants & Cafes"
+                title="Nearby Food spots"
                 itemIds={activityData.nearbyTrips}
                 itemType="trip"
               />

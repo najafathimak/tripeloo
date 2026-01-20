@@ -25,7 +25,7 @@ export function TripsStaysGrid() {
     <section className="py-10 sm:py-12">
       <div className="container">
         <div className="flex items-baseline justify-between mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold">Restaurants, Cafes & Stays</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold">Food spots & Stays</h2>
           <a href="#trips" className="text-brand text-sm font-semibold hover:underline">Explore all</a>
         </div>
 

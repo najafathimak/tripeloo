@@ -31,7 +31,7 @@ export function AdminHeader() {
     { href: "/admin/destinations", label: "Destinations", icon: MapPin },
     { href: "/admin/stays", label: "Stays", icon: Hotel },
     { href: "/admin/things", label: "Things to Do", icon: Activity },
-    { href: "/admin/trips", label: "Restaurants & Cafes", icon: Plane },
+    { href: "/admin/trips", label: "Food spots", icon: Plane },
   ];
 
   // Secondary navigation links (less frequently used - in dropdown)

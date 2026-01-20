@@ -22,6 +22,11 @@ interface HeroBanner {
   link: string;
 }
 
+interface FeaturedDestination {
+  slug: string;
+  order: number;
+}
+
 interface FormData {
   heroDesktopImage: string;
   heroMobileImage: string;
@@ -32,6 +37,7 @@ interface FormData {
   testimonialsHeading: string;
   testimonials: Testimonial[];
   heroBanners: HeroBanner[];
+  featuredDestinations: FeaturedDestination[];
 }
 
 export default function HomePageForm() {
@@ -46,7 +52,11 @@ export default function HomePageForm() {
     testimonialsHeading: "Testimonials",
     testimonials: [],
     heroBanners: [],
+    featuredDestinations: [],
   });
+  
+  const [availableDestinations, setAvailableDestinations] = useState<Array<{ slug: string; name: string }>>([]);
+  const [loadingDestinations, setLoadingDestinations] = useState(true);
 
   const [uploading, setUploading] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,7 +70,25 @@ export default function HomePageForm() {
 
   useEffect(() => {
     fetchHomeData();
+    fetchDestinations();
   }, []);
+  
+  const fetchDestinations = async () => {
+    try {
+      const res = await fetch("/api/destinations");
+      if (res.ok) {
+        const data = await res.json();
+        setAvailableDestinations((data.data || []).map((d: any) => ({
+          slug: d.slug,
+          name: d.name,
+        })));
+      }
+    } catch (error) {
+      console.error("Error fetching destinations:", error);
+    } finally {
+      setLoadingDestinations(false);
+    }
+  };
 
   const fetchHomeData = async () => {
     try {
@@ -90,6 +118,7 @@ export default function HomePageForm() {
             testimonialsHeading: data.data.testimonialsHeading || "Testimonials",
             testimonials: data.data.testimonials || [],
             heroBanners: data.data.heroBanners || [],
+            featuredDestinations: data.data.featuredDestinations || [],
           });
         }
       }
@@ -219,6 +248,47 @@ export default function HomePageForm() {
     setFormData((prev) => ({
       ...prev,
       heroBanners: prev.heroBanners.filter((b) => b.id !== id),
+    }));
+  };
+
+  const addFeaturedDestination = (slug: string) => {
+    if (formData.featuredDestinations.some((d) => d.slug === slug)) {
+      return; // Already added
+    }
+    const maxOrder = formData.featuredDestinations.length > 0
+      ? Math.max(...formData.featuredDestinations.map((d) => d.order))
+      : -1;
+    setFormData((prev) => ({
+      ...prev,
+      featuredDestinations: [...prev.featuredDestinations, { slug, order: maxOrder + 1 }],
+    }));
+  };
+
+  const removeFeaturedDestination = (slug: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      featuredDestinations: prev.featuredDestinations
+        .filter((d) => d.slug !== slug)
+        .map((d, index) => ({ ...d, order: index })),
+    }));
+  };
+
+  const moveFeaturedDestination = (slug: string, direction: "up" | "down") => {
+    const currentIndex = formData.featuredDestinations.findIndex((d) => d.slug === slug);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= formData.featuredDestinations.length) return;
+
+    const newDestinations = [...formData.featuredDestinations];
+    [newDestinations[currentIndex], newDestinations[newIndex]] = [
+      newDestinations[newIndex],
+      newDestinations[currentIndex],
+    ];
+
+    setFormData((prev) => ({
+      ...prev,
+      featuredDestinations: newDestinations.map((d, index) => ({ ...d, order: index })),
     }));
   };
 
@@ -805,6 +875,91 @@ export default function HomePageForm() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Featured Destinations Section */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+          <h2 className="text-xl font-semibold text-white mb-4">Featured Destinations</h2>
+          <p className="text-sm text-white/70 mb-4">
+            Select up to 8 destinations to feature on the home page. Drag to reorder.
+          </p>
+
+          {/* Selected Featured Destinations */}
+          <div className="space-y-2 mb-4">
+            {formData.featuredDestinations
+              .sort((a, b) => a.order - b.order)
+              .map((featured, index) => {
+                const dest = availableDestinations.find((d) => d.slug === featured.slug);
+                return (
+                  <div
+                    key={featured.slug}
+                    className="flex items-center gap-2 bg-white/5 p-3 rounded-lg border border-white/10"
+                  >
+                    <span className="text-white/60 text-sm w-6">{index + 1}.</span>
+                    <span className="flex-1 text-white">{dest?.name || featured.slug}</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => moveFeaturedDestination(featured.slug, "up")}
+                        disabled={index === 0}
+                        className="px-2 py-1 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-sm"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveFeaturedDestination(featured.slug, "down")}
+                        disabled={index === formData.featuredDestinations.length - 1}
+                        className="px-2 py-1 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-sm"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeFeaturedDestination(featured.slug)}
+                        className="px-2 py-1 bg-red-500/50 hover:bg-red-500 text-white rounded text-sm"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* Add Destination Dropdown */}
+          {formData.featuredDestinations.length < 8 && (
+            <div>
+              <label className="block text-sm font-semibold text-white mb-2">
+                Add Destination
+              </label>
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    addFeaturedDestination(e.target.value);
+                    e.target.value = "";
+                  }
+                }}
+                className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E51A4B]"
+                defaultValue=""
+              >
+                <option value="">Select a destination...</option>
+                {availableDestinations
+                  .filter((d) => !formData.featuredDestinations.some((fd) => fd.slug === d.slug))
+                  .map((dest) => (
+                    <option key={dest.slug} value={dest.slug} className="bg-gray-800">
+                      {dest.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+
+          {formData.featuredDestinations.length === 0 && (
+            <div className="text-center py-4 text-white/60 text-sm">
+              No featured destinations selected. Default behavior will show first 8 destinations.
+            </div>
+          )}
         </div>
 
         {/* Submit Button */}

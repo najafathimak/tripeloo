@@ -114,6 +114,7 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   const [pointInputs, setPointInputs] = useState<Record<string, string>>({});
   const [roomFeatureInputs, setRoomFeatureInputs] = useState<Record<string, string>>({});
   const [editingFeature, setEditingFeature] = useState<{roomIndex: number, featureIndex: number} | null>(null);
+  const addingFeatureRef = useRef<{roomIndex: number, feature: string} | null>(null);
   const [editingFeatureValue, setEditingFeatureValue] = useState("");
   const [editingInclude, setEditingInclude] = useState<number | null>(null);
   const [editingIncludeValue, setEditingIncludeValue] = useState("");
@@ -500,13 +501,55 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
   };
 
   const addRoomFeature = (roomIndex: number) => {
+    // Get room and input key from current state
     const room = formData.rooms[roomIndex];
+    if (!room) return;
+    
     const inputKey = room.id;
-    const feature = roomFeatureInputs[inputKey]?.trim();
-    if (feature && !room.features.includes(feature)) {
-      updateRoom(roomIndex, "features", [...room.features, feature]);
-      setRoomFeatureInputs({ ...roomFeatureInputs, [inputKey]: "" });
-    }
+    
+    // Use functional update to get latest input value and prevent race conditions
+    setRoomFeatureInputs((prevInputs) => {
+      const feature = (prevInputs[inputKey] || "").trim();
+      
+      if (!feature) return prevInputs;
+      
+      // Check if we're already adding this exact feature (prevent rapid duplicate calls)
+      if (addingFeatureRef.current?.roomIndex === roomIndex && addingFeatureRef.current?.feature === feature) {
+        return prevInputs; // Already processing this feature
+      }
+      
+      // Mark that we're adding this feature
+      addingFeatureRef.current = { roomIndex, feature };
+      
+      // Use functional update to check against latest room features and prevent duplicates
+      setFormData((prevFormData) => {
+        const currentRoom = prevFormData.rooms[roomIndex];
+        if (!currentRoom) {
+          addingFeatureRef.current = null;
+          return prevFormData;
+        }
+        
+        // Check against the latest room features to prevent duplicates
+        if (currentRoom.features.includes(feature)) {
+          addingFeatureRef.current = null;
+          return prevFormData; // Feature already exists, don't add
+        }
+        
+        const updatedRooms = [...prevFormData.rooms];
+        updatedRooms[roomIndex] = {
+          ...updatedRooms[roomIndex],
+          features: [...updatedRooms[roomIndex].features, feature]
+        };
+        
+        // Clear the ref after successful add
+        addingFeatureRef.current = null;
+        
+        return { ...prevFormData, rooms: updatedRooms };
+      });
+      
+      // Clear the input after adding
+      return { ...prevInputs, [inputKey]: "" };
+    });
   };
 
   const removeRoomFeature = (roomIndex: number, featureIndex: number) => {
@@ -1467,7 +1510,7 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
                       {room.features.map((feature, featureIndex) => (
                         editingFeature?.roomIndex === roomIndex && editingFeature?.featureIndex === featureIndex ? (
                           <div
-                            key={featureIndex}
+                            key={`${room.id}-feature-${featureIndex}-${feature}`}
                             className="inline-flex items-center gap-1 px-2 py-1 bg-white border-2 border-[#E51A4B] rounded text-sm"
                           >
                             <input
@@ -1505,7 +1548,7 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
                           </div>
                         ) : (
                           <span
-                            key={featureIndex}
+                            key={`${room.id}-feature-${featureIndex}-${feature}`}
                             className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
                           >
                             {feature}
@@ -1533,8 +1576,13 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
                       <input
                         type="text"
                         value={roomFeatureInputs[room.id] || ""}
-                        onChange={(e) => setRoomFeatureInputs({ ...roomFeatureInputs, [room.id]: e.target.value })}
-                        onKeyPress={(e) => {
+                        onChange={(e) => {
+                          setRoomFeatureInputs((prev) => ({
+                            ...prev,
+                            [room.id]: e.target.value
+                          }));
+                        }}
+                        onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
                             addRoomFeature(roomIndex);
@@ -1597,20 +1645,20 @@ export default function StayForm({ initialData, isEdit = false }: StayFormProps 
             </p>
           </div>
 
-          {/* Nearby Restaurants & Cafes */}
+          {/* Nearby Food spots */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Nearby Restaurants & Cafes <span className="text-gray-500 text-xs">(Optional)</span>
+              Nearby Food spots <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <MultiSelectDropdown
               options={trips.map(t => ({ id: t._id || t.id || '', name: t.name }))}
               selectedIds={formData.nearbyTrips || []}
               onChange={(selected) => setFormData({ ...formData, nearbyTrips: selected })}
-              placeholder="Select Restaurants & Cafes..."
+              placeholder="Select Food spots..."
               loading={loadingTrips}
             />
             <p className="mt-1 text-xs text-gray-500">
-              Click to select multiple items. These will be displayed as "Nearby Restaurants & Cafes" cards on the stay detail page.
+              Click to select multiple items. These will be displayed as "Nearby Food spots" cards on the stay detail page.
             </p>
           </div>
 

@@ -15,6 +15,44 @@ export function FeaturedDestinations() {
     const fetchFeatured = async () => {
       try {
         const base = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+        
+        // First, try to get featured destinations from home API
+        const homeRes = await fetch(`${base}/api/home`, { cache: "no-store" });
+        if (homeRes.ok) {
+          const homeData = await homeRes.json();
+          const featuredSlugs = homeData.data?.featuredDestinations || [];
+          
+          if (featuredSlugs.length > 0) {
+            // Fetch all destinations to match with featured slugs
+            const destRes = await fetch(`${base}/api/destinations`, { cache: "no-store" });
+            if (destRes.ok) {
+              const destJson = await destRes.json();
+              const allDestinations = (destJson.data as Array<any>) || [];
+              
+              // Map featured slugs to destinations in order
+              const featured = featuredSlugs
+                .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                .map((featured: any) => {
+                  const dest = allDestinations.find((d: any) => d.slug === featured.slug);
+                  return dest ? {
+                    slug: dest.slug,
+                    name: dest.name,
+                    image: dest.coverImage,
+                  } : null;
+                })
+                .filter((d: any) => d !== null)
+                .slice(0, 8);
+              
+              if (featured.length > 0) {
+                setDestinations(featured);
+                setLoading(false);
+                return;
+              }
+            }
+          }
+        }
+        
+        // Fallback to default: first 8 destinations
         const res = await fetch(`${base}/api/destinations`, { cache: "no-store" });
         if (!res.ok) throw new Error("Failed");
         const json = await res.json();
@@ -46,7 +84,7 @@ export function FeaturedDestinations() {
         <div className="container">
           <div className="flex items-end justify-between">
             <h2 className="text-lg sm:text-2xl font-bold">
-              Featured Destinations
+              Tripeloo highlights
             </h2>
             <Link href="/destinations" className="text-brand text-sm">
               View all
@@ -76,7 +114,7 @@ export function FeaturedDestinations() {
       <div className="container">
         <div className="flex items-end justify-between">
           <h2 className="text-lg sm:text-2xl font-bold">
-            Featured Destinations
+            Tripeloo highlights
           </h2>
           <Link href="/destinations" className="text-brand text-sm">
             View all
@@ -85,11 +123,10 @@ export function FeaturedDestinations() {
 
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
           {destinations.map((d) => {
-            const encodedName = encodeURIComponent(d.name);
             return (
               <Link
                 key={d.slug}
-                href={`/stay-listings?destination=${encodedName}`}
+                href={`/destinations/${d.slug}#destination-overview-section`}
                 className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
               >
                 <div className="relative h-28 sm:h-40">
