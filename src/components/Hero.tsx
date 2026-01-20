@@ -428,134 +428,21 @@ export function Hero({ banners = [] }: HeroProps) {
   }, []);
 
   return (
-    <section className="relative bg-gradient-to-br from-white via-blue-50/30 to-pink-50/30 min-h-screen overflow-hidden">
-      {/* Beautiful Background Animations */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Large gradient orbs with Tripeloo colors */}
-        <motion.div
-          animate={{ 
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-            scale: [1, 1.1, 1],
-            opacity: [0.08, 0.15, 0.08]
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E51A4B]/12 to-white/15 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ 
-            x: [0, -40, 0],
-            y: [0, -25, 0],
-            scale: [1, 1.12, 1],
-            opacity: [0.1, 0.18, 0.1]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-0 left-0 w-[480px] h-[480px] bg-gradient-to-tr from-white/12 to-[#E51A4B]/10 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ 
-            x: [0, 35, 0],
-            y: [0, -30, 0],
-            scale: [1, 1.08, 1],
-            opacity: [0.06, 0.12, 0.06]
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-r from-[#E51A4B]/8 to-white/10 rounded-full blur-3xl"
-        />
-        
-        {/* Medium floating orbs */}
-        <motion.div
-          animate={{ 
-            x: [0, 60, 0],
-            y: [0, -40, 0],
-            scale: [1, 1.15, 1],
-            opacity: [0.1, 0.2, 0.1]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute top-1/4 right-1/4 w-[300px] h-[300px] bg-gradient-to-br from-white/15 to-[#E51A4B]/10 rounded-full blur-2xl"
-        />
-        <motion.div
-          animate={{ 
-            x: [0, -50, 0],
-            y: [0, 35, 0],
-            scale: [1, 1.1, 1],
-            opacity: [0.08, 0.16, 0.08]
-          }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-1/4 left-1/4 w-[280px] h-[280px] bg-gradient-to-tr from-[#E51A4B]/12 to-white/12 rounded-full blur-2xl"
-        />
-        
-        {/* Small floating particles */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={`particle-${i}`}
-            animate={{
-              y: [0, -60, 0],
-              x: [0, Math.sin(i) * 30, 0],
-              opacity: [0.2, 0.5, 0.2],
-              scale: [1, 1.2, 1]
-            }}
-            transition={{
-              duration: 5 + i * 0.6,
-              repeat: Infinity,
-              delay: i * 0.3,
-              ease: "easeInOut",
-            }}
-            className={`absolute w-3 h-3 rounded-full ${
-              i % 2 === 0 ? 'bg-[#E51A4B]/25' : 'bg-white/35'
-            } blur-sm`}
-            style={{
-              left: `${10 + i * 11}%`,
-              top: `${20 + (i % 4) * 20}%`,
-            }}
-          />
-        ))}
+    <section className="relative bg-gradient-to-br from-white via-blue-50/30 to-pink-50/30 min-h-screen" style={{ willChange: 'auto', transform: 'translateZ(0)' }}>
+      {/* Simplified Static Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ willChange: 'auto' }}>
+        {/* Static gradient orbs - no animation for better performance */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E51A4B]/8 to-white/10 rounded-full blur-3xl opacity-60" />
+        <div className="absolute bottom-0 left-0 w-[480px] h-[480px] bg-gradient-to-tr from-white/8 to-[#E51A4B]/6 rounded-full blur-3xl opacity-60" />
       </div>
 
       {/* Main Content */}
       <div className="relative z-10 pt-28 sm:pt-32 md:pt-36 pb-2 sm:pb-8 px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center mb-8 sm:mb-10 relative">
-          {/* Beautiful background glow under heading */}
+          {/* Static background glow - no animation */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <motion.div
-              animate={{
-                scale: [1, 1.4, 1],
-                opacity: [0.2, 0.4, 0.2],
-              }}
-              transition={{
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute w-80 h-80 bg-[#E51A4B]/25 rounded-full blur-3xl"
-            />
-            <motion.div
-              animate={{
-                scale: [1, 1.3, 1],
-                opacity: [0.25, 0.45, 0.25],
-              }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.7,
-              }}
-              className="absolute w-64 h-64 bg-white/35 rounded-full blur-2xl"
-            />
-            <motion.div
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.15, 0.35, 0.15],
-              }}
-              transition={{
-                duration: 7,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1.2,
-              }}
-              className="absolute w-72 h-72 bg-gradient-to-r from-[#E51A4B]/20 to-white/30 rounded-full blur-3xl"
-            />
+            <div className="absolute w-80 h-80 bg-[#E51A4B]/15 rounded-full blur-3xl opacity-50" />
           </div>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-4 font-display relative inline-block z-10">
             <span className="relative z-10 text-gray-900 tracking-tight">
@@ -713,56 +600,38 @@ export function Hero({ banners = [] }: HeroProps) {
                     {displayBanners.map((banner, index) => (
                       <div key={banner.id} className="flex-[0_0_100%] min-w-0 relative">
                         <motion.div
-                          initial={{ scale: 1.1, opacity: 0 }}
+                          initial={{ scale: 1.05, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
-                          transition={{ duration: 0.8 }}
+                          transition={{ duration: 0.5 }}
                           className="relative w-full h-[350px] sm:h-[450px] md:h-[600px] lg:h-[700px] xl:h-[750px] 2xl:h-[800px] overflow-hidden"
                         >
                           {banner.link ? (
                             <a href={banner.link} className="block w-full h-full group/banner">
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                transition={{ duration: 0.6, ease: "easeOut" }}
-                                className="relative w-full h-full"
-                              >
+                              <div className="relative w-full h-full transition-transform duration-300 group-hover/banner:scale-[1.02]">
                                 <img
                                   src={optimizeCloudinaryUrl(banner.image)}
                                   alt={banner.title || 'Banner'}
                                   width={1920}
                                   height={1080}
-                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-110"
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/banner:scale-105"
                                   loading={index === 0 ? "eager" : "lazy"}
                                 />
                                 {/* Gradient Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
                                 <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />
                                 
-                                {/* Animated Shine Effect */}
-                                <motion.div
-                                  animate={{
-                                    x: ['-100%', '200%'],
-                                  }}
-                                  transition={{
-                                    duration: 3,
-                                    repeat: Infinity,
-                                    repeatDelay: 2,
-                                    ease: "easeInOut",
-                                  }}
-                                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
-                                />
-                                
                                 {banner.title && (
                                   <div className="absolute inset-0 flex items-center justify-center p-6 sm:p-8 md:p-12">
                                     <motion.div
-                                      initial={{ opacity: 0, y: 30 }}
+                                      initial={{ opacity: 0, y: 20 }}
                                       animate={{ opacity: 1, y: 0 }}
-                                      transition={{ duration: 0.8, delay: 0.3 }}
+                                      transition={{ duration: 0.5, delay: 0.2 }}
                                       className="text-center max-w-4xl"
                                     >
                                       <motion.h3
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ duration: 0.6, delay: 0.5 }}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.5, delay: 0.3 }}
                                         className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-2xl font-display"
                                       >
                                         {banner.title}
@@ -771,78 +640,60 @@ export function Hero({ banners = [] }: HeroProps) {
                                       <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: '100%' }}
-                                        transition={{ duration: 0.8, delay: 0.7 }}
-                                        className="h-1 bg-gradient-to-r from-transparent via-[#E51A4B] to-transparent mx-auto max-w-xs"
-                                      />
-                                    </motion.div>
-          </div>
-                                )}
-                              </motion.div>
-                            </a>
-                          ) : (
-                            <div className="relative w-full h-full group/banner">
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                transition={{ duration: 0.6, ease: "easeOut" }}
-                                className="relative w-full h-full"
-                              >
-                                <img
-                                  src={optimizeCloudinaryUrl(banner.image)}
-                                  alt={banner.title || 'Banner'}
-                                  width={1920}
-                                  height={1080}
-                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-110"
-                                  loading={index === 0 ? "eager" : "lazy"}
-                                />
-                                {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
-                                <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />
-                                
-                                {/* Animated Shine Effect */}
-                                <motion.div
-                                  animate={{
-                                    x: ['-100%', '200%'],
-                                  }}
-                                  transition={{
-                                    duration: 3,
-                                    repeat: Infinity,
-                                    repeatDelay: 2,
-                                    ease: "easeInOut",
-                                  }}
-                                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
-                                />
-                                
-                                {banner.title && (
-                                  <div className="absolute inset-0 flex items-center justify-center p-6 sm:p-8 md:p-12">
-                                    <motion.div
-                                      initial={{ opacity: 0, y: 30 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      transition={{ duration: 0.8, delay: 0.3 }}
-                                      className="text-center max-w-4xl"
-                                    >
-                                      <motion.h3
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ duration: 0.6, delay: 0.5 }}
-                                        className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-2xl font-display"
-                                      >
-                                        {banner.title}
-                                      </motion.h3>
-                                      {/* Decorative Underline */}
-                                      <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: '100%' }}
-                                        transition={{ duration: 0.8, delay: 0.7 }}
+                                        transition={{ duration: 0.6, delay: 0.4 }}
                                         className="h-1 bg-gradient-to-r from-transparent via-[#E51A4B] to-transparent mx-auto max-w-xs"
                                       />
                                     </motion.div>
                                   </div>
                                 )}
-                              </motion.div>
-              </div>
+                              </div>
+                            </a>
+                          ) : (
+                            <div className="relative w-full h-full group/banner">
+                              <div className="relative w-full h-full">
+                                <img
+                                  src={optimizeCloudinaryUrl(banner.image)}
+                                  alt={banner.title || 'Banner'}
+                                  width={1920}
+                                  height={1080}
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/banner:scale-105"
+                                  loading={index === 0 ? "eager" : "lazy"}
+                                />
+                                {/* Gradient Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+                                <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />
+                                
+                                {banner.title && (
+                                  <div className="absolute inset-0 flex items-center justify-center p-6 sm:p-8 md:p-12">
+                                    <motion.div
+                                      initial={{ opacity: 0, y: 20 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{ duration: 0.5, delay: 0.2 }}
+                                      className="text-center max-w-4xl"
+                                    >
+                                      <motion.h3
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.5, delay: 0.3 }}
+                                        className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-2xl font-display"
+                                      >
+                                        {banner.title}
+                                      </motion.h3>
+                                      {/* Decorative Underline */}
+                                      <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: '100%' }}
+                                        transition={{ duration: 0.6, delay: 0.4 }}
+                                        className="h-1 bg-gradient-to-r from-transparent via-[#E51A4B] to-transparent mx-auto max-w-xs"
+                                      />
+                                    </motion.div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           )}
                         </motion.div>
-                    </div>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -850,44 +701,34 @@ export function Hero({ banners = [] }: HeroProps) {
                 {/* Carousel Navigation */}
                 {displayBanners.length > 1 && (
                   <>
-                    <motion.button
+                    <button
                       onClick={scrollPrev}
-                      whileHover={{ scale: 1.1, x: -5 }}
-                      whileTap={{ scale: 0.95 }}
                       className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-3 sm:p-4 rounded-full shadow-2xl transition-all z-20 backdrop-blur-sm border border-gray-200/50 group/btn"
                       aria-label="Previous banner"
                     >
-                      <motion.svg
+                      <svg
                         className="w-5 h-5 sm:w-6 sm:h-6"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        animate={{ x: [0, -3, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                      </motion.svg>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#E51A4B]/0 to-[#E51A4B]/0 group-hover/btn:from-[#E51A4B]/10 group-hover/btn:to-transparent transition-all duration-300" />
-                    </motion.button>
-                    <motion.button
+                      </svg>
+                    </button>
+                    <button
                       onClick={scrollNext}
-                      whileHover={{ scale: 1.1, x: 5 }}
-                      whileTap={{ scale: 0.95 }}
                       className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-3 sm:p-4 rounded-full shadow-2xl transition-all z-20 backdrop-blur-sm border border-gray-200/50 group/btn"
                       aria-label="Next banner"
                     >
-                      <motion.svg
+                      <svg
                         className="w-5 h-5 sm:w-6 sm:h-6"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        animate={{ x: [0, 3, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                      </motion.svg>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-l from-[#E51A4B]/0 to-[#E51A4B]/0 group-hover/btn:from-[#E51A4B]/10 group-hover/btn:to-transparent transition-all duration-300" />
-                    </motion.button>
+                      </svg>
+                    </button>
                   </>
                 )}
 
@@ -900,7 +741,7 @@ export function Hero({ banners = [] }: HeroProps) {
                       animate={{
                         width: `${((selectedIndex + 1) / displayBanners.length) * 100}%`,
                       }}
-                      transition={{ duration: 0.3 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
                     />
                   </div>
                 )}
