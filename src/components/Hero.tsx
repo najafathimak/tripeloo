@@ -30,8 +30,16 @@ interface Trip {
   destination?: string;
 }
 
+interface Stay {
+  _id?: string;
+  id: string;
+  name: string;
+  destinationSlug?: string;
+  destination?: string;
+}
+
 interface SearchResult {
-  type: 'destination' | 'activity' | 'trip';
+  type: 'destination' | 'activity' | 'trip' | 'stay';
   id: string;
   name: string;
   slug?: string;
@@ -121,11 +129,12 @@ export function Hero({ banners = [] }: HeroProps) {
   // Use provided banners or default banners
   const displayBanners = banners.length > 0 ? banners : defaultBanners;
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'stays' | 'things-to-do' | 'restaurants-cafes'>('stays');
+  const [activeTab, setActiveTab] = useState<'all' | 'stays' | 'things-to-do' | 'restaurants-cafes'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [stays, setStays] = useState<Stay[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -198,7 +207,7 @@ export function Hero({ banners = [] }: HeroProps) {
     };
   }, []);
 
-  // Fetch destinations, activities, and trips
+  // Fetch destinations, activities, trips, and stays
   useEffect(() => {
     // Fetch destinations
       fetch('/api/destinations')
@@ -223,19 +232,27 @@ export function Hero({ banners = [] }: HeroProps) {
         setTrips(data.data || []);
       })
       .catch(() => {});
+
+    // Fetch stays - using admin endpoint to get all
+    fetch('/api/admin/stays?includeHidden=false')
+      .then(res => res.json())
+      .then(data => {
+        setStays(data.data || []);
+      })
+      .catch(() => {});
   }, []);
 
-  // Filter search results based on query - Limit results on mobile
+  // Filter search results based on query and active tab - Limit results on mobile
   useEffect(() => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       const results: SearchResult[] = [];
       const maxResults = isMobile ? 6 : 50; // Limit to 6 results on mobile
 
-      // Add matching destinations
+      // Always add matching destinations first
       destinations
         .filter(dest => dest.name.toLowerCase().includes(query))
-        .slice(0, isMobile ? 3 : undefined) // Limit destinations on mobile
+        .slice(0, isMobile ? (activeTab === 'all' ? 2 : 3) : undefined)
         .forEach(dest => {
           if (results.length < maxResults) {
             results.push({
@@ -247,38 +264,110 @@ export function Hero({ banners = [] }: HeroProps) {
           }
         });
 
-      // Add matching activities (things to do)
-      if (results.length < maxResults) {
-        activities
-          .filter(activity => activity.name.toLowerCase().includes(query))
-          .slice(0, isMobile ? 2 : undefined)
-          .forEach(activity => {
-            if (results.length < maxResults) {
-              results.push({
-                type: 'activity',
-                id: activity._id || activity.id,
-                name: activity.name,
-                destination: activity.destination || activity.destinationSlug,
-              });
-            }
-          });
-      }
+      // Filter based on active tab
+      if (activeTab === 'all') {
+        // Show all types: destinations + stays + activities + trips
+        // Add matching stays
+        if (results.length < maxResults) {
+          stays
+            .filter(stay => stay.name.toLowerCase().includes(query))
+            .slice(0, isMobile ? 2 : undefined)
+            .forEach(stay => {
+              if (results.length < maxResults) {
+                results.push({
+                  type: 'stay',
+                  id: stay._id || stay.id,
+                  name: stay.name,
+                  destination: stay.destination || stay.destinationSlug,
+                });
+              }
+            });
+        }
 
-      // Add matching trips (restaurants & cafes)
-      if (results.length < maxResults) {
-        trips
-          .filter(trip => trip.name.toLowerCase().includes(query))
-          .slice(0, isMobile ? 2 : undefined)
-          .forEach(trip => {
-            if (results.length < maxResults) {
-              results.push({
-                type: 'trip',
-                id: trip._id || trip.id,
-                name: trip.name,
-                destination: trip.destination || trip.destinationSlug,
-              });
-            }
-          });
+        // Add matching activities (things to do)
+        if (results.length < maxResults) {
+          activities
+            .filter(activity => activity.name.toLowerCase().includes(query))
+            .slice(0, isMobile ? 1 : undefined)
+            .forEach(activity => {
+              if (results.length < maxResults) {
+                results.push({
+                  type: 'activity',
+                  id: activity._id || activity.id,
+                  name: activity.name,
+                  destination: activity.destination || activity.destinationSlug,
+                });
+              }
+            });
+        }
+
+        // Add matching trips (restaurants & cafes)
+        if (results.length < maxResults) {
+          trips
+            .filter(trip => trip.name.toLowerCase().includes(query))
+            .slice(0, isMobile ? 1 : undefined)
+            .forEach(trip => {
+              if (results.length < maxResults) {
+                results.push({
+                  type: 'trip',
+                  id: trip._id || trip.id,
+                  name: trip.name,
+                  destination: trip.destination || trip.destinationSlug,
+                });
+              }
+            });
+        }
+      } else if (activeTab === 'stays') {
+        // Show only destinations + stays
+        if (results.length < maxResults) {
+          stays
+            .filter(stay => stay.name.toLowerCase().includes(query))
+            .slice(0, isMobile ? 3 : undefined)
+            .forEach(stay => {
+              if (results.length < maxResults) {
+                results.push({
+                  type: 'stay',
+                  id: stay._id || stay.id,
+                  name: stay.name,
+                  destination: stay.destination || stay.destinationSlug,
+                });
+              }
+            });
+        }
+      } else if (activeTab === 'things-to-do') {
+        // Show only destinations + activities
+        if (results.length < maxResults) {
+          activities
+            .filter(activity => activity.name.toLowerCase().includes(query))
+            .slice(0, isMobile ? 3 : undefined)
+            .forEach(activity => {
+              if (results.length < maxResults) {
+                results.push({
+                  type: 'activity',
+                  id: activity._id || activity.id,
+                  name: activity.name,
+                  destination: activity.destination || activity.destinationSlug,
+                });
+              }
+            });
+        }
+      } else if (activeTab === 'restaurants-cafes') {
+        // Show only destinations + trips
+        if (results.length < maxResults) {
+          trips
+            .filter(trip => trip.name.toLowerCase().includes(query))
+            .slice(0, isMobile ? 3 : undefined)
+            .forEach(trip => {
+              if (results.length < maxResults) {
+                results.push({
+                  type: 'trip',
+                  id: trip._id || trip.id,
+                  name: trip.name,
+                  destination: trip.destination || trip.destinationSlug,
+                });
+              }
+            });
+        }
       }
 
       setSearchResults(results);
@@ -287,7 +376,7 @@ export function Hero({ banners = [] }: HeroProps) {
       setShowSearchDropdown(false);
       setSearchResults([]);
     }
-  }, [searchQuery, destinations, activities, trips, isMobile]);
+  }, [searchQuery, destinations, activities, trips, stays, isMobile, activeTab]);
 
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
@@ -318,6 +407,23 @@ export function Hero({ banners = [] }: HeroProps) {
         : `/destinations/${selectedDest.slug}`;
       
       router.push(url);
+      return;
+    }
+
+    // Check if it's a stay
+    const selectedStay = stays.find(
+      s => s.name.toLowerCase() === query
+    );
+    
+    if (selectedStay) {
+      const destinationName = selectedStay.destination || '';
+      const queryParams = new URLSearchParams({
+        stay: selectedStay._id || selectedStay.id,
+      });
+      if (destinationName) {
+        queryParams.set('destination', destinationName);
+      }
+      router.push(`/item-details?${queryParams.toString()}`);
       return;
     }
 
@@ -399,6 +505,16 @@ export function Hero({ banners = [] }: HeroProps) {
         : `/destinations/${result.slug}`;
       
       router.push(url);
+    } else if (result.type === 'stay') {
+      // Navigate to stay details page
+      const destinationName = result.destination || '';
+      const queryParams = new URLSearchParams({
+        stay: result.id,
+      });
+      if (destinationName) {
+        queryParams.set('destination', destinationName);
+      }
+      router.push(`/item-details?${queryParams.toString()}`);
     } else if (result.type === 'activity') {
       // Navigate to things to do details page
       const destinationName = result.destination || '';
@@ -422,7 +538,7 @@ export function Hero({ banners = [] }: HeroProps) {
     }
   };
 
-  const handleTabClick = (tab: 'stays' | 'things-to-do' | 'restaurants-cafes') => {
+  const handleTabClick = (tab: 'all' | 'stays' | 'things-to-do' | 'restaurants-cafes') => {
     setActiveTab(tab);
   };
 
@@ -511,6 +627,17 @@ export function Hero({ banners = [] }: HeroProps) {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="flex flex-nowrap justify-center items-center gap-1 sm:gap-4 mb-8 w-full max-w-full overflow-x-auto px-2"
         >
+          <button
+            onClick={() => handleTabClick('all')}
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
+              activeTab === 'all'
+                ? 'bg-[#E51A4B] text-white shadow-lg'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Search className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
+            <span className="whitespace-nowrap">All</span>
+          </button>
           <button
             onClick={() => handleTabClick('stays')}
             className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
@@ -618,6 +745,8 @@ export function Hero({ banners = [] }: HeroProps) {
                       switch (result.type) {
                         case 'destination':
                           return 'Destination';
+                        case 'stay':
+                          return 'Stay';
                         case 'activity':
                           return 'Thing to Do';
                         case 'trip':
@@ -631,6 +760,8 @@ export function Hero({ banners = [] }: HeroProps) {
                       switch (result.type) {
                         case 'destination':
                           return 'bg-blue-100 text-blue-700';
+                        case 'stay':
+                          return 'bg-orange-100 text-orange-700';
                         case 'activity':
                           return 'bg-green-100 text-green-700';
                         case 'trip':
