@@ -129,7 +129,7 @@ export function Hero({ banners = [] }: HeroProps) {
   // Use provided banners or default banners
   const displayBanners = banners.length > 0 ? banners : defaultBanners;
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'all' | 'stays' | 'things-to-do' | 'restaurants-cafes'>('all');
+  const [activeTab, setActiveTab] = useState<'stays' | 'things-to-do' | 'restaurants-cafes' | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -252,7 +252,7 @@ export function Hero({ banners = [] }: HeroProps) {
       // Always add matching destinations first
       destinations
         .filter(dest => dest.name.toLowerCase().includes(query))
-        .slice(0, isMobile ? (activeTab === 'all' ? 2 : 3) : undefined)
+        .slice(0, isMobile ? (activeTab === null ? 2 : 3) : undefined)
         .forEach(dest => {
           if (results.length < maxResults) {
             results.push({
@@ -264,8 +264,8 @@ export function Hero({ banners = [] }: HeroProps) {
           }
         });
 
-      // Filter based on active tab
-      if (activeTab === 'all') {
+      // Filter based on active tab - if null, show all types
+      if (activeTab === null) {
         // Show all types: destinations + stays + activities + trips
         // Add matching stays
         if (results.length < maxResults) {
@@ -396,6 +396,7 @@ export function Hero({ banners = [] }: HeroProps) {
       } else if (activeTab === 'restaurants-cafes') {
         categoryParam = 'restaurants-cafes';
       }
+      // If activeTab is null, no category filter
       
       const queryParams = new URLSearchParams();
       if (categoryParam) {
@@ -538,8 +539,9 @@ export function Hero({ banners = [] }: HeroProps) {
     }
   };
 
-  const handleTabClick = (tab: 'all' | 'stays' | 'things-to-do' | 'restaurants-cafes') => {
-    setActiveTab(tab);
+  const handleTabClick = (tab: 'stays' | 'things-to-do' | 'restaurants-cafes' | null) => {
+    // Toggle: if clicking the same tab, deselect it (set to null)
+    setActiveTab(activeTab === tab ? null : tab);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -627,17 +629,6 @@ export function Hero({ banners = [] }: HeroProps) {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="flex flex-nowrap justify-center items-center gap-1 sm:gap-4 mb-8 w-full max-w-full overflow-x-auto px-2"
         >
-          <button
-            onClick={() => handleTabClick('all')}
-            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
-              activeTab === 'all'
-                ? 'bg-[#E51A4B] text-white shadow-lg'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <Search className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
-            <span className="whitespace-nowrap">All</span>
-          </button>
           <button
             onClick={() => handleTabClick('stays')}
             className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
