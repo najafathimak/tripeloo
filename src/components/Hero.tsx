@@ -439,7 +439,7 @@ export function Hero({ banners = [] }: HeroProps) {
     const handleFocus = () => {
       setIsInputFocused(true);
       // On mobile, scroll search container to top when keyboard opens
-      if (window.innerWidth < 768 && searchContainerRef.current) {
+      if (isMobile && searchContainerRef.current) {
         // Use requestAnimationFrame for smoother scrolling
         requestAnimationFrame(() => {
           setTimeout(() => {
@@ -451,7 +451,7 @@ export function Hero({ banners = [] }: HeroProps) {
               top: currentScroll + containerTop - 20, // 20px padding from top
               behavior: 'auto' 
             });
-          }, 100); // Reduced delay
+          }, 150);
         });
       }
     };
@@ -475,7 +475,7 @@ export function Hero({ banners = [] }: HeroProps) {
         input.removeEventListener('blur', handleBlur);
       }
     };
-  }, []);
+  }, [isMobile]);
 
   return (
     <section className="relative bg-gradient-to-br from-white via-blue-50/30 to-pink-50/30 min-h-screen" style={{ willChange: 'auto', transform: 'translateZ(0)' }}>
@@ -558,7 +558,7 @@ export function Hero({ banners = [] }: HeroProps) {
             {/* Mobile backdrop overlay */}
             {isMobile && isInputFocused && showSearchDropdown && (
               <div 
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[99]"
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[98]"
                 onClick={() => {
                   setIsInputFocused(false);
                   setShowSearchDropdown(false);
@@ -567,7 +567,7 @@ export function Hero({ banners = [] }: HeroProps) {
               />
             )}
             
-            <div className="flex items-center bg-gray-50 rounded-full border-2 border-gray-200 focus-within:border-[#E51A4B] transition-all shadow-lg relative z-[101]">
+            <div className="flex items-center bg-gray-50 rounded-full border-2 border-gray-200 focus-within:border-[#E51A4B] transition-all shadow-lg relative z-[99]">
               <div className="pl-4 sm:pl-6">
                 <Search className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
               </div>
@@ -595,30 +595,11 @@ export function Hero({ banners = [] }: HeroProps) {
             {showSearchDropdown && searchResults.length > 0 && (
               <div 
                 ref={dropdownRef}
-                className={`${
-                  isMobile && isInputFocused
-                    ? 'fixed left-4 right-4 z-[100]'
-                    : 'absolute top-full left-0 right-0 mt-2 z-50'
-                } bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden ${
+                className={`absolute top-full left-0 right-0 mt-2 z-[100] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden ${
                   isMobile && isInputFocused 
-                    ? 'max-h-[calc(100vh-200px)]' 
+                    ? 'max-h-[calc(100vh-220px)]' 
                     : 'max-h-80'
                 }`}
-                style={
-                  isMobile && isInputFocused && searchContainerRef.current
-                    ? (() => {
-                        const containerRect = searchContainerRef.current.getBoundingClientRect();
-                        const viewportHeight = window.innerHeight;
-                        const dropdownTop = containerRect.bottom + 8;
-                        const maxHeight = viewportHeight - dropdownTop - 16;
-                        
-                        return {
-                          top: `${dropdownTop}px`,
-                          maxHeight: `${Math.max(200, maxHeight)}px`,
-                        };
-                      })()
-                    : undefined
-                }
                 onMouseEnter={() => {
                   if (!isMobile) {
                     setIsInputFocused(true);
