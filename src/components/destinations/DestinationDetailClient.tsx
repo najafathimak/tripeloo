@@ -69,13 +69,56 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
   const [showLeadPopup, setShowLeadPopup] = useState(false);
   const [hasShownPopup, setHasShownPopup] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const selectedIndexRef = useRef(0);
   const imagesLoadedRef = useRef(false);
   const popupTriggeredRef = useRef(false);
   const hasShownPopupRef = useRef(false);
+  const isMobileRef = useRef(false);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const resizeRafRef = useRef<number | null>(null);
   
   // Create stable slug value for dependency array
   const stableSlug = useMemo(() => slug || 'destination', [slug]);
+  
+  // Memoize carousel images to prevent re-renders
+  const carouselImages = useMemo(() => {
+    if (!destination) return [];
+    return destination.customImages && destination.customImages.length > 0
+      ? destination.customImages
+      : [destination.coverImage];
+  }, [destination]);
+  
+  // Mobile detection - optimized
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 640;
+      if (mobile !== isMobileRef.current) {
+        isMobileRef.current = mobile;
+        setIsMobile(mobile);
+      }
+    };
+    
+    checkMobile();
+    
+    const handleResize = () => {
+      if (resizeRafRef.current) cancelAnimationFrame(resizeRafRef.current);
+      resizeRafRef.current = requestAnimationFrame(() => {
+        if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+        resizeTimeoutRef.current = setTimeout(checkMobile, 150);
+      });
+    };
+    
+    window.addEventListener('resize', handleResize, { passive: true });
+    
+    return () => {
+      if (resizeRafRef.current) cancelAnimationFrame(resizeRafRef.current);
+      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // Determine which category to show first
   const getDefaultCategory = () => {
@@ -320,10 +363,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
     );
   }
 
-  // Prepare images for carousel
-  const carouselImages = destination.customImages && destination.customImages.length > 0
-    ? destination.customImages
-    : [destination.coverImage];
+  // Carousel images are now memoized above
 
   // Order sections based on category selection
   const sections = [
@@ -365,61 +405,80 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
 
       {/* Breadcrumbs */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: isMobile ? -10 : -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: isMobile ? 0.3 : 0.5 }}
         className="bg-gray-50 border-b border-gray-200 relative z-10"
+        style={{
+          willChange: 'transform, opacity',
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <nav className="flex items-center gap-2 text-sm">
-            <motion.div
-              whileHover={{ x: -2 }}
-              transition={{ duration: 0.2 }}
-            >
+            {!isMobile ? (
+              <motion.div
+                whileHover={{ x: -2 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Link href="/" className="text-gray-600 hover:text-[#E51A4B] transition-colors flex items-center gap-1">
+                  <motion.div
+                    animate={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                  >
+                    <Home className="w-4 h-4" />
+                  </motion.div>
+                  <span>Home</span>
+                </Link>
+              </motion.div>
+            ) : (
               <Link href="/" className="text-gray-600 hover:text-[#E51A4B] transition-colors flex items-center gap-1">
-                <motion.div
-                  animate={{ rotate: [0, -10, 10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                >
-                  <Home className="w-4 h-4" />
-                </motion.div>
+                <Home className="w-4 h-4" />
                 <span>Home</span>
               </Link>
-            </motion.div>
-            <motion.div
-              animate={{ x: [0, 2, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
+            )}
+            {!isMobile ? (
+              <motion.div
+                animate={{ x: [0, 2, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </motion.div>
+            ) : (
               <ChevronRight className="w-4 h-4 text-gray-400" />
-            </motion.div>
-            <motion.div
-              whileHover={{ x: -2 }}
-              transition={{ duration: 0.2 }}
-            >
+            )}
+            {!isMobile ? (
+              <motion.div
+                whileHover={{ x: -2 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Link href="/destinations" className="text-gray-600 hover:text-[#E51A4B] transition-colors">
+                  Destinations
+                </Link>
+              </motion.div>
+            ) : (
               <Link href="/destinations" className="text-gray-600 hover:text-[#E51A4B] transition-colors">
                 Destinations
               </Link>
-            </motion.div>
-            <motion.div
-              animate={{ x: [0, 2, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
+            )}
+            {!isMobile ? (
+              <motion.div
+                animate={{ x: [0, 2, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </motion.div>
+            ) : (
               <ChevronRight className="w-4 h-4 text-gray-400" />
-            </motion.div>
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-gray-900 font-medium font-display"
-            >
+            )}
+            <span className="text-gray-900 font-medium font-display">
               {destination.name}
-            </motion.span>
+            </span>
           </nav>
         </div>
       </motion.div>
 
       {/* Destination Images Carousel */}
-      <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden group px-4 sm:px-6 md:px-8 lg:px-12 z-10">
+      <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden group px-4 sm:px-6 md:px-8 lg:px-12 z-10" style={{ contain: 'layout style paint' }}>
         {/* Fixed Navigation Tabs Overlay */}
         {(stays.length > 0 || activities.length > 0 || trips.length > 0) && (
           <div className="absolute top-4 sm:top-6 md:top-8 left-1/2 -translate-x-1/2 z-40 w-full max-w-7xl px-4 sm:px-6 md:px-8 lg:px-12">
@@ -521,15 +580,15 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
           className="absolute -inset-2 bg-gradient-to-r from-[#E51A4B] via-blue-500 to-purple-500 rounded-3xl blur-2xl -z-10"
         />
         
-        <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 h-full">
-          <div className="overflow-hidden h-full rounded-2xl" ref={emblaRef}>
-            <div className="flex h-full">
+        <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 h-full" style={{ contain: 'layout style paint' }}>
+          <div className="overflow-hidden h-full rounded-2xl" ref={emblaRef} style={{ contain: 'layout style paint' }}>
+            <div className="flex h-full" style={{ willChange: 'transform' }}>
               {carouselImages.map((image, index) => (
-                <div key={index} className="flex-[0_0_100%] min-w-0 relative h-full">
+                <div key={`carousel-img-${index}`} className="flex-[0_0_100%] min-w-0 relative h-full">
                   <motion.div
-                    initial={{ scale: 1.05, opacity: 0 }}
+                    initial={{ scale: isMobile ? 1 : 1.05, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    transition={{ duration: isMobile ? 0.3 : 0.5, ease: "easeOut" }}
                     className="relative w-full h-full"
                     style={{
                       willChange: 'transform, opacity',
@@ -538,7 +597,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                     }}
                   >
                     <motion.div
-                      whileHover={{ scale: 1.03 }}
+                      whileHover={!isMobile ? { scale: 1.03 } : {}}
                       transition={{ duration: 0.4, ease: "easeOut" }}
                       className="relative w-full h-full"
                     >
@@ -551,8 +610,9 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                         loading={index === 0 ? "eager" : "lazy"}
                         decoding={index === 0 ? "sync" : "async"}
                         style={{
-                          willChange: 'transform',
+                          willChange: index === selectedIndex ? 'transform' : 'auto',
                           backfaceVisibility: 'hidden',
+                          transform: 'translateZ(0)',
                         }}
                       />
                     </motion.div>
@@ -805,42 +865,66 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
 
       {/* Overview Section with Animated Background */}
       <section id="destination-overview-section" className="relative py-12 sm:py-16 md:py-20 z-10 overflow-hidden">
-        {/* Enhanced Animated Background */}
+        {/* Enhanced Animated Background - Reduced on mobile for performance */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Large floating orbs */}
-          <motion.div
-            animate={{
-              x: [0, 100, 0],
-              y: [0, 50, 0],
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3]
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E51A4B]/20 via-pink-300/15 to-rose-200/10 rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{
-              x: [0, -80, 0],
-              y: [0, -60, 0],
-              scale: [1, 1.3, 1],
-              opacity: [0.3, 0.5, 0.3]
-            }}
-            transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-blue-300/20 via-cyan-300/15 to-sky-200/10 rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{
-              x: [0, 60, 0],
-              y: [0, -40, 0],
-              scale: [1, 1.1, 1],
-              opacity: [0.2, 0.4, 0.2]
-            }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-r from-purple-300/15 via-pink-300/10 to-rose-200/10 rounded-full blur-3xl"
-          />
+          {/* Large floating orbs - Reduced animation on mobile */}
+          {!isMobile && (
+            <>
+              <motion.div
+                animate={{
+                  x: [0, 100, 0],
+                  y: [0, 50, 0],
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.5, 0.3]
+                }}
+                transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E51A4B]/20 via-pink-300/15 to-rose-200/10 rounded-full blur-3xl"
+                style={{
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                }}
+              />
+              <motion.div
+                animate={{
+                  x: [0, -80, 0],
+                  y: [0, -60, 0],
+                  scale: [1, 1.3, 1],
+                  opacity: [0.3, 0.5, 0.3]
+                }}
+                transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-blue-300/20 via-cyan-300/15 to-sky-200/10 rounded-full blur-3xl"
+                style={{
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                }}
+              />
+              <motion.div
+                animate={{
+                  x: [0, 60, 0],
+                  y: [0, -40, 0],
+                  scale: [1, 1.1, 1],
+                  opacity: [0.2, 0.4, 0.2]
+                }}
+                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-r from-purple-300/15 via-pink-300/10 to-rose-200/10 rounded-full blur-3xl"
+                style={{
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                }}
+              />
+            </>
+          )}
           
-          {/* Additional smaller animated particles */}
-          {[...Array(6)].map((_, i) => (
+          {/* Static background for mobile - no animations */}
+          {isMobile && (
+            <>
+              <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br from-[#E51A4B]/10 via-pink-300/8 to-rose-200/5 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-gradient-to-tr from-blue-300/10 via-cyan-300/8 to-sky-200/5 rounded-full blur-3xl" />
+            </>
+          )}
+          
+          {/* Additional smaller animated particles - Reduced on mobile */}
+          {!isMobile && [...Array(6)].map((_, i) => (
             <motion.div
               key={i}
               animate={{
@@ -858,106 +942,146 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
               className="absolute w-32 h-32 bg-gradient-to-br from-[#E51A4B]/10 to-pink-300/5 rounded-full blur-2xl"
               style={{
                 left: `${20 + i * 15}%`,
-                top: `${30 + i * 10}%`
+                top: `${30 + i * 10}%`,
+                willChange: 'transform, opacity',
+                backfaceVisibility: 'hidden',
               }}
             />
           ))}
           
-          {/* Animated gradient mesh */}
-          <motion.div
-            animate={{
-              backgroundPosition: ['0% 0%', '100% 100%']
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "linear"
-            }}
-            className="absolute inset-0 opacity-30"
-            style={{
-              backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(229, 26, 75, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%)',
-              backgroundSize: '200% 200%'
-            }}
-          />
+          {/* Animated gradient mesh - Static on mobile */}
+          {!isMobile ? (
+            <motion.div
+              animate={{
+                backgroundPosition: ['0% 0%', '100% 100%']
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                repeatType: "reverse",
+                ease: "linear"
+              }}
+              className="absolute inset-0 opacity-30"
+              style={{
+                backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(229, 26, 75, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%)',
+                backgroundSize: '200% 200%',
+                willChange: 'background-position',
+              }}
+            />
+          ) : (
+            <div
+              className="absolute inset-0 opacity-20"
+              style={{
+                backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(229, 26, 75, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%)',
+                backgroundSize: '100% 100%',
+              }}
+            />
+          )}
         </div>
 
         {/* Content Container */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: isMobile ? 10 : 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: isMobile ? 0.4 : 0.8, delay: isMobile ? 0 : 0.2 }}
             className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 md:p-12 lg:p-16 border border-white/50 overflow-hidden"
+            style={{
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden',
+            }}
           >
             {/* Card inner glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-gray-50/50 rounded-3xl opacity-90" />
             
-            {/* Animated border glow */}
-            <motion.div
-              animate={{
-                opacity: [0.3, 0.6, 0.3],
-                scale: [1, 1.02, 1]
-              }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-0 rounded-3xl bg-gradient-to-r from-[#E51A4B]/10 via-pink-300/10 to-[#E51A4B]/10 blur-xl -z-10"
-            />
+            {/* Animated border glow - Static on mobile */}
+            {!isMobile ? (
+              <motion.div
+                animate={{
+                  opacity: [0.3, 0.6, 0.3],
+                  scale: [1, 1.02, 1]
+                }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 rounded-3xl bg-gradient-to-r from-[#E51A4B]/10 via-pink-300/10 to-[#E51A4B]/10 blur-xl -z-10"
+                style={{
+                  willChange: 'opacity, transform',
+                }}
+              />
+            ) : (
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-[#E51A4B]/5 via-pink-300/5 to-[#E51A4B]/5 blur-xl -z-10" />
+            )}
             
-            {/* Shine effect */}
-            <motion.div
-              animate={{
-                x: ['-100%', '200%']
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                repeatDelay: 3,
-                ease: "easeInOut"
-              }}
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -z-10"
-              style={{ transform: 'skewX(-12deg)' }}
-            />
+            {/* Shine effect - Disabled on mobile */}
+            {!isMobile && (
+              <motion.div
+                animate={{
+                  x: ['-100%', '200%']
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  repeatDelay: 3,
+                  ease: "easeInOut"
+                }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -z-10"
+                style={{
+                  transform: 'skewX(-12deg)',
+                  willChange: 'transform',
+                }}
+              />
+            )}
             
             {/* Content wrapper with relative positioning */}
             <div className="relative z-10">
               {/* Breadcrumb Style Header */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: isMobile ? -10 : -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                transition={{ duration: isMobile ? 0.3 : 0.6, delay: isMobile ? 0 : 0.3 }}
                 className="mb-6"
+                style={{
+                  willChange: 'transform, opacity',
+                }}
               >
                 <nav className="flex items-center gap-2 text-sm sm:text-base text-gray-600 mb-6">
-                  <motion.div
-                    whileHover={{ x: -2 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  {!isMobile ? (
+                    <motion.div
+                      whileHover={{ x: -2 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Link href="/destinations" className="hover:text-[#E51A4B] transition-colors font-medium">
+                        Destinations
+                      </Link>
+                    </motion.div>
+                  ) : (
                     <Link href="/destinations" className="hover:text-[#E51A4B] transition-colors font-medium">
                       Destinations
                     </Link>
-                  </motion.div>
-                  <motion.div
-                    animate={{ x: [0, 2, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
+                  )}
+                  {!isMobile ? (
+                    <motion.div
+                      animate={{ x: [0, 2, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </motion.div>
+                  ) : (
                     <ChevronRight className="w-4 h-4" />
-                  </motion.div>
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="text-gray-900 font-semibold font-display"
-                  >
+                  )}
+                  <span className="text-gray-900 font-semibold font-display">
                     {destination.name}
-                  </motion.span>
+                  </span>
                 </nav>
               </motion.div>
               
               <motion.h2
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: isMobile ? 10 : 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
+                transition={{ duration: isMobile ? 0.4 : 0.8, delay: isMobile ? 0.1 : 0.4 }}
                 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 font-display relative"
+                style={{
+                  willChange: 'transform, opacity',
+                }}
               >
                 <span className="relative z-10 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
                   {destination.overviewHeading || `About ${destination.name}`}
@@ -966,16 +1090,22 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: "100%" }}
-                  transition={{ duration: 1, delay: 0.6 }}
+                  transition={{ duration: isMobile ? 0.5 : 1, delay: isMobile ? 0.2 : 0.6 }}
                   className="h-1 bg-gradient-to-r from-[#E51A4B] via-pink-500 to-[#E51A4B] mt-3 rounded-full"
+                  style={{
+                    willChange: 'width',
+                  }}
                 />
               </motion.h2>
               
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: isMobile ? 10 : 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.5 }}
+                transition={{ duration: isMobile ? 0.4 : 0.8, delay: isMobile ? 0.15 : 0.5 }}
                 className="prose prose-lg sm:prose-xl max-w-none"
+                style={{
+                  willChange: 'transform, opacity',
+                }}
               >
                 <p className="text-lg sm:text-xl md:text-2xl text-gray-700 leading-relaxed sm:leading-loose font-light">
                   {destination.overviewDescription || destination.summary}
@@ -984,10 +1114,13 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
 
               {/* Need Support Section - Elegant Ad */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: isMobile ? 10 : 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.7 }}
+                transition={{ duration: isMobile ? 0.4 : 0.8, delay: isMobile ? 0.2 : 0.7 }}
                 className="mt-8 sm:mt-10"
+                style={{
+                  willChange: 'transform, opacity',
+                }}
               >
                 <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 group">
                   {/* Subtle gradient background */}
