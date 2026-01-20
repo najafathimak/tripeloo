@@ -349,7 +349,7 @@ export function Header() {
                         : 'border-gray-300 text-gray-700 hover:border-gray-400'
                     }`}
                   >
-                    Restaurants & Cafes
+                    Food spots
                   </button>
                 </div>
               </div>

@@ -1188,20 +1188,20 @@ export default function ActivityForm({ initialData, isEdit = false }: ActivityFo
             </p>
           </div>
 
-          {/* Nearby Restaurants & Cafes */}
+          {/* Nearby Food spots */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Nearby Restaurants & Cafes <span className="text-gray-500 text-xs">(Optional)</span>
+              Nearby Food spots <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <MultiSelectDropdown
               options={trips.map(t => ({ id: t._id || t.id || '', name: t.name }))}
               selectedIds={formData.nearbyTrips || []}
               onChange={(selected) => setFormData({ ...formData, nearbyTrips: selected })}
-              placeholder="Select Restaurants & Cafes..."
+              placeholder="Select Food spots..."
               loading={loadingTrips}
             />
             <p className="mt-1 text-xs text-gray-500">
-              Click to select multiple items. These will be displayed as "Nearby Restaurants & Cafes" cards on the activity detail page.
+              Click to select multiple items. These will be displayed as "Nearby Food spots" cards on the activity detail page.
             </p>
           </div>
 

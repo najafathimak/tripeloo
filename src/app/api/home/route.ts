@@ -23,6 +23,7 @@ export async function GET() {
           testimonialsHeading: 'Testimonials',
           testimonials: [],
           heroBanners: [],
+          featuredDestinations: [],
         },
       });
     }
@@ -43,6 +44,7 @@ export async function GET() {
         title: banner.title?.trim() || '',
         link: banner.link?.trim() || '',
       })) : [],
+      featuredDestinations: Array.isArray(homeData.featuredDestinations) ? homeData.featuredDestinations : [],
     };
 
     return NextResponse.json({ data: mappedData }, {
@@ -72,6 +74,7 @@ export async function PUT(request: NextRequest) {
       testimonialsHeading,
       testimonials = [],
       heroBanners = [],
+      featuredDestinations = [],
     } = body;
 
     // All fields are optional - no validation required
@@ -102,6 +105,10 @@ export async function PUT(request: NextRequest) {
         image: banner.image?.trim() || '',
         title: banner.title?.trim() || '',
         link: banner.link?.trim() || '',
+      })) : [],
+      featuredDestinations: Array.isArray(featuredDestinations) ? featuredDestinations.map((dest: any) => ({
+        slug: dest.slug?.trim() || '',
+        order: typeof dest.order === 'number' ? dest.order : 0,
       })) : [],
       updatedAt: new Date(),
     };

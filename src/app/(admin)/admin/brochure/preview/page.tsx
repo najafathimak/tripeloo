@@ -512,7 +512,7 @@ export default function BrochurePreviewPage() {
                 )}
               </div>
 
-              {/* Summary (for Stays/Restaurants & Cafes) */}
+              {/* Summary (for Stays/Food spots) */}
               {selectedItem.summary && itemType !== "activity" && (
                 <p className="mt-4 mb-6 text-gray-600 text-sm sm:text-base">
                   {selectedItem.summary}
@@ -583,7 +583,7 @@ export default function BrochurePreviewPage() {
                 </div>
               )}
 
-              {/* Restaurant/Cafe Features (for Restaurants & Cafes) */}
+              {/* Restaurant/Cafe Features (for Food spots) */}
               {selectedItem.properties && Array.isArray(selectedItem.properties) && selectedItem.properties.length > 0 && itemType === "trip" && (
                 <div className="mt-8 mb-6 bg-white rounded-2xl p-5 sm:p-6 shadow-inner">
                   <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">Restaurant/Cafe Features</h2>
@@ -666,7 +666,7 @@ export default function BrochurePreviewPage() {
                 );
               })()}
 
-              {/* Dishes Section (for Restaurants & Cafes) */}
+              {/* Dishes Section (for Food spots) */}
               {itemType === "trip" && selectedItem.packages && Array.isArray(selectedItem.packages) && selectedItem.packages.length > 0 && (() => {
                 const packagesToShow = selectedPackages.length > 0
                   ? selectedItem.packages.filter((pkg: any, idx: number) => {

@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import { ArrowRight, MapPin, ChevronRight, Home } from "lucide-react";
+import { ArrowRight, MapPin, ChevronRight, Home, MessageCircle } from "lucide-react";
 import { LeadFormPopup } from "@/components/LeadFormPopup";
+import { getPrimaryWhatsAppNumber, formatWhatsAppNumber } from "@/utils/whatsapp";
 
 interface DestinationDetailClientProps {
   slug: string;
@@ -67,6 +68,9 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showLeadPopup, setShowLeadPopup] = useState(false);
   const [hasShownPopup, setHasShownPopup] = useState(false);
+  
+  // Create stable slug value for dependency array
+  const stableSlug = useMemo(() => slug || 'destination', [slug]);
 
   // Determine which category to show first
   const getDefaultCategory = () => {
@@ -76,6 +80,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
   };
 
   const [activeSection, setActiveSection] = useState<string>(getDefaultCategory());
+  const [activeTab, setActiveTab] = useState<string>('');
 
   // Carousel setup for destination images
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -127,14 +132,26 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
     fetchData();
   }, [slug]);
 
-  // Popup scroll detection for destination overview page
+  // Popup scroll detection for destination overview page (both mobile and desktop)
   useEffect(() => {
-    // Check if form was already filled/submitted - if yes, never show again
-    if (typeof window !== 'undefined') {
-      const formFilled = localStorage.getItem('leadFormFilled');
-      if (formFilled === 'true') {
+    if (typeof window === 'undefined') return;
+    if (!stableSlug) return;
+
+    const formFilled = localStorage.getItem('leadFormFilled') === 'true';
+    const popupKey = `leadPopup_destination_${stableSlug}`;
+
+    // Check cooldown based on form filled status
+    const lastShownTimestamp = localStorage.getItem(popupKey);
+    if (lastShownTimestamp) {
+      const lastShown = parseInt(lastShownTimestamp, 10);
+      const now = Date.now();
+      const cooldownMs = formFilled 
+        ? 24 * 60 * 60 * 1000  // 24 hours if filled
+        : 30 * 60 * 1000;      // 30 minutes if not filled
+      
+      if (now - lastShown < cooldownMs) {
         setHasShownPopup(true);
-        return;
+        return; // Still in cooldown period
       }
     }
 
@@ -165,9 +182,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
         scrollTimeoutId = setTimeout(() => {
           setShowLeadPopup(true);
           setHasShownPopup(true);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('leadPopupLastShown', Date.now().toString());
-          }
+          localStorage.setItem(popupKey, Date.now().toString());
         }, 300);
       }
     };
@@ -180,7 +195,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
     };
 
     // Initial check after component mounts and page loads
-    timeoutId = setTimeout(checkScroll, 500);
+    timeoutId = setTimeout(checkScroll, 1000);
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleScroll, { passive: true });
@@ -191,7 +206,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
     };
-  }, [hasShownPopup]);
+  }, [hasShownPopup, stableSlug]);
 
   const handleItemClick = (itemId: string, type: "stay" | "activity" | "trip") => {
     const destinationName = encodeURIComponent(destination?.name || slug);
@@ -278,7 +293,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
   const sections = [
     { key: "stays", title: "Stays", items: stays, type: "stay" as const },
     { key: "activities", title: "Things to Do", items: activities, type: "activity" as const },
-    { key: "trips", title: "Restaurants & Cafes", items: trips, type: "trip" as const },
+    { key: "trips", title: "Food spots", items: trips, type: "trip" as const },
   ];
 
   // Reorder sections based on activeSection
@@ -369,6 +384,97 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
 
       {/* Destination Images Carousel */}
       <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden group px-4 sm:px-6 md:px-8 lg:px-12 z-10">
+        {/* Fixed Navigation Tabs Overlay */}
+        {(stays.length > 0 || activities.length > 0 || trips.length > 0) && (
+          <div className="absolute top-4 sm:top-6 md:top-8 left-1/2 -translate-x-1/2 z-40 w-full max-w-7xl px-4 sm:px-6 md:px-8 lg:px-12">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-3 md:gap-4 rounded-lg md:rounded-full px-2 sm:px-4 md:px-6 py-1.5 sm:py-3"
+            >
+              <motion.button
+                onClick={() => {
+                  setActiveTab('overview');
+                  document.getElementById('destination-overview-section')?.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                  });
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-2.5 sm:px-6 md:px-8 py-1.5 sm:py-2.5 md:py-3 text-white font-semibold text-xs sm:text-base md:text-lg border-2 rounded-full transition-all duration-300 ${
+                  activeTab === 'overview' 
+                    ? 'border-[#E51A4B] shadow-[0_0_15px_rgba(229,26,75,0.5)]' 
+                    : 'border-white/40 hover:border-white/60'
+                }`}
+              >
+                Overview
+              </motion.button>
+              {stays.length > 0 && (
+                <motion.button
+                  onClick={() => {
+                    setActiveTab('stays');
+                    document.getElementById('section-stays')?.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-2.5 sm:px-6 md:px-8 py-1.5 sm:py-2.5 md:py-3 text-white font-semibold text-xs sm:text-base md:text-lg border-2 rounded-full transition-all duration-300 ${
+                    activeTab === 'stays' 
+                      ? 'border-[#E51A4B] shadow-[0_0_15px_rgba(229,26,75,0.5)]' 
+                      : 'border-white/40 hover:border-white/60'
+                  }`}
+                >
+                  Stays
+                </motion.button>
+              )}
+              {activities.length > 0 && (
+                <motion.button
+                  onClick={() => {
+                    setActiveTab('activities');
+                    document.getElementById('section-activities')?.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-2.5 sm:px-6 md:px-8 py-1.5 sm:py-2.5 md:py-3 text-white font-semibold text-xs sm:text-base md:text-lg border-2 rounded-full transition-all duration-300 ${
+                    activeTab === 'activities' 
+                      ? 'border-[#E51A4B] shadow-[0_0_15px_rgba(229,26,75,0.5)]' 
+                      : 'border-white/40 hover:border-white/60'
+                  }`}
+                >
+                  Things to Do
+                </motion.button>
+              )}
+              {trips.length > 0 && (
+                <motion.button
+                  onClick={() => {
+                    setActiveTab('trips');
+                    document.getElementById('section-trips')?.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-2.5 sm:px-6 md:px-8 py-1.5 sm:py-2.5 md:py-3 text-white font-semibold text-xs sm:text-base md:text-lg border-2 rounded-full transition-all duration-300 ${
+                    activeTab === 'trips' 
+                      ? 'border-[#E51A4B] shadow-[0_0_15px_rgba(229,26,75,0.5)]' 
+                      : 'border-white/40 hover:border-white/60'
+                  }`}
+                >
+                  Food spots
+                </motion.button>
+              )}
+            </motion.div>
+          </div>
+        )}
+        
         {/* Decorative Border Glow */}
         <motion.div
           animate={{
@@ -643,105 +749,6 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      {(stays.length > 0 || activities.length > 0 || trips.length > 0) && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6"
-          >
-            {stays.length > 0 && (
-              <motion.button
-                onClick={() => {
-                  document.getElementById('section-stays')?.scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'start'
-                  });
-                }}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="group relative px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 text-gray-900 font-semibold text-base sm:text-lg md:text-xl border-2 border-gray-900 rounded-xl hover:text-[#E51A4B] hover:border-[#E51A4B] transition-all duration-300 bg-white shadow-sm hover:shadow-lg overflow-hidden"
-              >
-                {/* Background gradient on hover */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  className="absolute inset-0 bg-gradient-to-r from-[#E51A4B]/5 to-pink-500/5"
-                  transition={{ duration: 0.3 }}
-                />
-                <span className="relative z-10">Stays</span>
-                {/* Underline animation */}
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileHover={{ width: "100%" }}
-                  className="absolute bottom-0 left-0 h-0.5 bg-[#E51A4B]"
-                  transition={{ duration: 0.3 }}
-                />
-              </motion.button>
-            )}
-            {activities.length > 0 && (
-              <motion.button
-                onClick={() => {
-                  document.getElementById('section-activities')?.scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'start'
-                  });
-                }}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="group relative px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 text-gray-900 font-semibold text-base sm:text-lg md:text-xl border-2 border-gray-900 rounded-xl hover:text-[#E51A4B] hover:border-[#E51A4B] transition-all duration-300 bg-white shadow-sm hover:shadow-lg overflow-hidden"
-              >
-                {/* Background gradient on hover */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  className="absolute inset-0 bg-gradient-to-r from-[#E51A4B]/5 to-pink-500/5"
-                  transition={{ duration: 0.3 }}
-                />
-                <span className="relative z-10">Things to Do</span>
-                {/* Underline animation */}
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileHover={{ width: "100%" }}
-                  className="absolute bottom-0 left-0 h-0.5 bg-[#E51A4B]"
-                  transition={{ duration: 0.3 }}
-                />
-              </motion.button>
-            )}
-            {trips.length > 0 && (
-              <motion.button
-                onClick={() => {
-                  document.getElementById('section-trips')?.scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'start'
-                  });
-                }}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="group relative px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 text-gray-900 font-semibold text-base sm:text-lg md:text-xl border-2 border-gray-900 rounded-xl hover:text-[#E51A4B] hover:border-[#E51A4B] transition-all duration-300 bg-white shadow-sm hover:shadow-lg overflow-hidden"
-              >
-                {/* Background gradient on hover */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  className="absolute inset-0 bg-gradient-to-r from-[#E51A4B]/5 to-pink-500/5"
-                  transition={{ duration: 0.3 }}
-                />
-                <span className="relative z-10">Restaurants & Cafes</span>
-                {/* Underline animation */}
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileHover={{ width: "100%" }}
-                  className="absolute bottom-0 left-0 h-0.5 bg-[#E51A4B]"
-                  transition={{ duration: 0.3 }}
-                />
-              </motion.button>
-            )}
-          </motion.div>
-        </div>
-      )}
 
       {/* Overview Section with Animated Background */}
       <section id="destination-overview-section" className="relative py-12 sm:py-16 md:py-20 z-10 overflow-hidden">
@@ -921,6 +928,43 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                   {destination.overviewDescription || destination.summary}
                 </p>
               </motion.div>
+
+              {/* Need Support Section - Elegant Ad */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.7 }}
+                className="mt-8 sm:mt-10"
+              >
+                <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 group">
+                  {/* Subtle gradient background */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#E51A4B]/5 via-transparent to-pink-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#E51A4B] animate-pulse" />
+                        <p className="text-sm sm:text-base font-semibold text-gray-900">
+                          Need Guidance?
+                        </p>
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-500 ml-3.5">
+                        Let's create wonderful memories together
+                      </p>
+                    </div>
+                    <motion.button
+                      onClick={() => setShowLeadPopup(true)}
+                      whileHover={{ scale: 1.02, x: 2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-shrink-0 inline-flex items-center gap-2 bg-[#E51A4B] hover:bg-[#c91742] text-white font-medium px-5 sm:px-6 py-2.5 rounded-lg shadow-sm hover:shadow transition-all duration-300 text-sm whitespace-nowrap"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>Connect</span>
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+
             </div>
           </motion.div>
         </div>
@@ -978,7 +1022,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
               </motion.div>
 
               {/* Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 overflow-x-auto sm:overflow-x-visible pb-4 sm:pb-0 scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
                 {section.items.slice(0, 8).map((item, index) => (
                   <motion.div
                     key={item.id}
@@ -997,7 +1041,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                       transition: { duration: 0.3 }
                     }}
                     onClick={() => handleItemClick(item.id, section.type)}
-                    className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer relative"
+                    className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer relative flex-shrink-0 w-[280px] sm:w-auto sm:flex-shrink"
                   >
                     {/* Card Glow on Hover */}
                     <motion.div
@@ -1086,6 +1130,8 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
         isOpen={showLeadPopup}
         onClose={() => setShowLeadPopup(false)}
         onSkip={() => setShowLeadPopup(false)}
+        itemName={destination?.name}
+        itemDestination={destination?.name}
       />
     </div>
   );
