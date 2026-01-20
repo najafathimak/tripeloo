@@ -68,6 +68,11 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showLeadPopup, setShowLeadPopup] = useState(false);
   const [hasShownPopup, setHasShownPopup] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const selectedIndexRef = useRef(0);
+  const imagesLoadedRef = useRef(false);
+  const popupTriggeredRef = useRef(false);
+  const hasShownPopupRef = useRef(false);
   
   // Create stable slug value for dependency array
   const stableSlug = useMemo(() => slug || 'destination', [slug]);
@@ -99,7 +104,11 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
   useEffect(() => {
     if (!emblaApi) return;
     const onSelect = () => {
-      setSelectedIndex(emblaApi.selectedScrollSnap());
+      const newIndex = emblaApi.selectedScrollSnap();
+      if (newIndex !== selectedIndexRef.current) {
+        selectedIndexRef.current = newIndex;
+        setSelectedIndex(newIndex);
+      }
     };
     emblaApi.on("select", onSelect);
     onSelect();
@@ -121,6 +130,28 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
           setStays(data.data.stays || []);
           setActivities(data.data.activities || []);
           setTrips(data.data.trips || []);
+          
+          // Preload carousel images
+          const carouselImages = data.data.destination?.customImages && data.data.destination.customImages.length > 0
+            ? data.data.destination.customImages
+            : [data.data.destination?.coverImage].filter(Boolean);
+          
+          if (carouselImages.length > 0) {
+            // Preload images
+            const imagePromises = carouselImages.slice(0, 3).map((img: string) => {
+              return new Promise<void>((resolve) => {
+                const image = new Image();
+                image.onload = () => resolve();
+                image.onerror = () => resolve(); // Resolve even on error to not block
+                image.src = optimizeCloudinaryUrl(img);
+              });
+            });
+            
+            Promise.all(imagePromises).then(() => {
+              imagesLoadedRef.current = true;
+              setImagesLoaded(true);
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching destination data:", error);
@@ -150,6 +181,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
         : 30 * 60 * 1000;      // 30 minutes if not filled
       
       if (now - lastShown < cooldownMs) {
+        hasShownPopupRef.current = true;
         setHasShownPopup(true);
         return; // Still in cooldown period
       }
@@ -157,11 +189,11 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
 
     let timeoutId: NodeJS.Timeout;
     let scrollTimeoutId: NodeJS.Timeout;
-    let popupTriggered = false;
+    let rafId: number;
 
     // Wait for page to load before checking
     const checkScroll = () => {
-      if (hasShownPopup || popupTriggered) return;
+      if (hasShownPopupRef.current || popupTriggeredRef.current) return;
 
       // Look for overview section
       const overviewSection = document.getElementById('destination-overview-section');
@@ -176,22 +208,25 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
       const windowHeight = window.innerHeight;
 
       // Trigger when overview section is scrolled into view (middle of viewport)
-      if (rect.top < windowHeight * 0.7 && rect.bottom > windowHeight * 0.3 && !popupTriggered) {
-        popupTriggered = true;
+      if (rect.top < windowHeight * 0.7 && rect.bottom > windowHeight * 0.3 && !popupTriggeredRef.current) {
+        popupTriggeredRef.current = true;
         // Add a small delay before showing popup for better UX
         scrollTimeoutId = setTimeout(() => {
           setShowLeadPopup(true);
+          hasShownPopupRef.current = true;
           setHasShownPopup(true);
           localStorage.setItem(popupKey, Date.now().toString());
         }, 300);
       }
     };
 
-    // Scroll detection
+    // Scroll detection - optimized with RAF
     const handleScroll = () => {
-      // Debounce scroll events
-      if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
-      scrollTimeoutId = setTimeout(checkScroll, 150);
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
+        scrollTimeoutId = setTimeout(checkScroll, 150);
+      });
     };
 
     // Initial check after component mounts and page loads
@@ -203,6 +238,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
       if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
     };
@@ -491,14 +527,19 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
               {carouselImages.map((image, index) => (
                 <div key={index} className="flex-[0_0_100%] min-w-0 relative h-full">
                   <motion.div
-                    initial={{ scale: 1.1, opacity: 0 }}
+                    initial={{ scale: 1.05, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.8 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
                     className="relative w-full h-full"
+                    style={{
+                      willChange: 'transform, opacity',
+                      backfaceVisibility: 'hidden',
+                      transform: 'translateZ(0)',
+                    }}
                   >
                     <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      whileHover={{ scale: 1.03 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
                       className="relative w-full h-full"
                     >
                       <img
@@ -506,15 +547,20 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                         alt={`${destination.name} - Image ${index + 1}`}
                         width={1920}
                         height={1080}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
                         loading={index === 0 ? "eager" : "lazy"}
+                        decoding={index === 0 ? "sync" : "async"}
+                        style={{
+                          willChange: 'transform',
+                          backfaceVisibility: 'hidden',
+                        }}
                       />
                     </motion.div>
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
                     <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />
                     
-                    {/* Animated Shine Effect */}
+                    {/* Animated Shine Effect - optimized */}
                     <motion.div
                       animate={{
                         x: ['-100%', '200%'],
@@ -526,6 +572,10 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                         ease: "easeInOut",
                       }}
                       className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+                      style={{
+                        willChange: 'transform',
+                        backfaceVisibility: 'hidden',
+                      }}
                     />
                   </motion.div>
                 </div>
@@ -657,7 +707,10 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                 animate={{
                   width: `${((selectedIndex + 1) / carouselImages.length) * 100}%`,
                 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                style={{
+                  willChange: 'width',
+                }}
               />
             </div>
           )}

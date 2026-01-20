@@ -38,15 +38,41 @@ export function LeadFormPopup({ isOpen, onClose, onSkip, itemName, itemType, ite
   const [savedFormData, setSavedFormData] = useState<typeof formData | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [showMessageField, setShowMessageField] = useState(false);
+  const isMobileRef = useRef(false);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const rafIdRef = useRef<number | null>(null);
 
-  // Detect mobile on mount and resize
+  // Detect mobile on mount and resize - optimized with RAF and debouncing
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
+      const mobile = window.innerWidth < 640;
+      if (mobile !== isMobileRef.current) {
+        isMobileRef.current = mobile;
+        setIsMobile(mobile);
+      }
     };
+
+    // Initial check
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    // Optimized resize handler with RAF and debouncing
+    const handleResize = () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = requestAnimationFrame(() => {
+        if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+        resizeTimeoutRef.current = setTimeout(checkMobile, 150);
+      });
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    
+    return () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
   
   // Check if form has been filled and load saved data
@@ -302,27 +328,38 @@ Thank you!`);
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-2 sm:p-4 bg-black/60 backdrop-blur-md overflow-hidden"
             onClick={onClose}
             style={{
               willChange: 'opacity',
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
+              transform: 'translateZ(0)',
             }}
           >
-        {/* Decorative gradient orbs */}
+        {/* Decorative gradient orbs - optimized */}
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 0.3 }}
-          transition={{ delay: 0.1, duration: 0.8 }}
+          transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
           className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#E51A4B] rounded-full blur-3xl"
+          style={{
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden',
+            transform: 'translateZ(0)',
+          }}
         />
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 0.2 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
+          transition={{ delay: 0.15, duration: 0.6, ease: "easeOut" }}
           className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-500 rounded-full blur-3xl"
+          style={{
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden',
+            transform: 'translateZ(0)',
+          }}
         />
 
         {/* Main Popup */}
@@ -353,18 +390,20 @@ Thank you!`);
           }}
           transition={{ 
             type: isMobile ? "tween" : "spring", 
-            duration: isMobile ? 0.3 : undefined,
-            stiffness: isMobile ? undefined : 300,
-            damping: isMobile ? undefined : 30,
-            mass: isMobile ? undefined : 0.8
+            duration: isMobile ? 0.25 : undefined,
+            stiffness: isMobile ? undefined : 400,
+            damping: isMobile ? undefined : 25,
+            mass: isMobile ? undefined : 0.7,
+            ease: isMobile ? "easeOut" : undefined
           }}
           className="relative bg-white rounded-t-3xl sm:rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full h-[75vh] sm:max-h-[90vh] flex flex-col border border-gray-100 mx-0 sm:mx-4 overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           style={{
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(229, 26, 75, 0.1)',
-            willChange: 'transform',
+            willChange: 'transform, opacity',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
+            transform: 'translateZ(0)',
           }}
         >
           {/* Animated gradient border */}
