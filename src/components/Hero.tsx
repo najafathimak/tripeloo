@@ -390,15 +390,19 @@ export function Hero({ banners = [] }: HeroProps) {
       setIsInputFocused(true);
       // On mobile, scroll search container to top when keyboard opens
       if (window.innerWidth < 768 && searchContainerRef.current) {
-        setTimeout(() => {
-          // Scroll the search container to the top of the viewport
-          const containerTop = searchContainerRef.current?.getBoundingClientRect().top || 0;
-          const currentScroll = window.scrollY;
-          window.scrollTo({ 
-            top: currentScroll + containerTop - 20, // 20px padding from top
-            behavior: 'smooth' 
-          });
-        }, 150); // Delay to allow keyboard animation
+        // Use requestAnimationFrame for smoother scrolling
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            // Scroll the search container to the top of the viewport
+            const containerTop = searchContainerRef.current?.getBoundingClientRect().top || 0;
+            const currentScroll = window.scrollY;
+            // Use instant scroll instead of smooth to prevent flickering
+            window.scrollTo({ 
+              top: currentScroll + containerTop - 20, // 20px padding from top
+              behavior: 'auto' 
+            });
+          }, 100); // Reduced delay
+        });
       }
     };
 
