@@ -130,8 +130,13 @@ export function Hero({ banners = [] }: HeroProps) {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isMobileRef = useRef(false);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const resizeRafRef = useRef<number | null>(null);
 
   // Carousel setup
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -162,6 +167,37 @@ export function Hero({ banners = [] }: HeroProps) {
     };
   }, [emblaApi]);
 
+  // Mobile detection
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      if (mobile !== isMobileRef.current) {
+        isMobileRef.current = mobile;
+        setIsMobile(mobile);
+      }
+    };
+    
+    checkMobile();
+    
+    const handleResize = () => {
+      if (resizeRafRef.current) cancelAnimationFrame(resizeRafRef.current);
+      resizeRafRef.current = requestAnimationFrame(() => {
+        if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+        resizeTimeoutRef.current = setTimeout(checkMobile, 150);
+      });
+    };
+    
+    window.addEventListener('resize', handleResize, { passive: true });
+    
+    return () => {
+      if (resizeRafRef.current) cancelAnimationFrame(resizeRafRef.current);
+      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   // Fetch destinations, activities, and trips
   useEffect(() => {
     // Fetch destinations
@@ -189,47 +225,61 @@ export function Hero({ banners = [] }: HeroProps) {
       .catch(() => {});
   }, []);
 
-  // Filter search results based on query
+  // Filter search results based on query - Limit results on mobile
   useEffect(() => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       const results: SearchResult[] = [];
+      const maxResults = isMobile ? 6 : 50; // Limit to 6 results on mobile
 
       // Add matching destinations
       destinations
         .filter(dest => dest.name.toLowerCase().includes(query))
+        .slice(0, isMobile ? 3 : undefined) // Limit destinations on mobile
         .forEach(dest => {
-          results.push({
-            type: 'destination',
-            id: dest._id || dest.slug || '',
-            name: dest.name,
-            slug: dest.slug,
-          });
+          if (results.length < maxResults) {
+            results.push({
+              type: 'destination',
+              id: dest._id || dest.slug || '',
+              name: dest.name,
+              slug: dest.slug,
+            });
+          }
         });
 
       // Add matching activities (things to do)
-      activities
-        .filter(activity => activity.name.toLowerCase().includes(query))
-        .forEach(activity => {
-          results.push({
-            type: 'activity',
-            id: activity._id || activity.id,
-            name: activity.name,
-            destination: activity.destination || activity.destinationSlug,
+      if (results.length < maxResults) {
+        activities
+          .filter(activity => activity.name.toLowerCase().includes(query))
+          .slice(0, isMobile ? 2 : undefined)
+          .forEach(activity => {
+            if (results.length < maxResults) {
+              results.push({
+                type: 'activity',
+                id: activity._id || activity.id,
+                name: activity.name,
+                destination: activity.destination || activity.destinationSlug,
+              });
+            }
           });
-        });
+      }
 
       // Add matching trips (restaurants & cafes)
-      trips
-        .filter(trip => trip.name.toLowerCase().includes(query))
-        .forEach(trip => {
-          results.push({
-            type: 'trip',
-            id: trip._id || trip.id,
-            name: trip.name,
-            destination: trip.destination || trip.destinationSlug,
+      if (results.length < maxResults) {
+        trips
+          .filter(trip => trip.name.toLowerCase().includes(query))
+          .slice(0, isMobile ? 2 : undefined)
+          .forEach(trip => {
+            if (results.length < maxResults) {
+              results.push({
+                type: 'trip',
+                id: trip._id || trip.id,
+                name: trip.name,
+                destination: trip.destination || trip.destinationSlug,
+              });
+            }
           });
-        });
+      }
 
       setSearchResults(results);
       setShowSearchDropdown(results.length > 0);
@@ -237,7 +287,7 @@ export function Hero({ banners = [] }: HeroProps) {
       setShowSearchDropdown(false);
       setSearchResults([]);
     }
-  }, [searchQuery, destinations, activities, trips]);
+  }, [searchQuery, destinations, activities, trips, isMobile]);
 
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
@@ -504,8 +554,20 @@ export function Hero({ banners = [] }: HeroProps) {
           className="max-w-4xl mx-auto mb-12"
           ref={searchContainerRef}
         >
-          <div className="relative">
-            <div className="flex items-center bg-gray-50 rounded-full border-2 border-gray-200 focus-within:border-[#E51A4B] transition-all shadow-lg">
+          <div className="relative z-50">
+            {/* Mobile backdrop overlay */}
+            {isMobile && isInputFocused && showSearchDropdown && (
+              <div 
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[99]"
+                onClick={() => {
+                  setIsInputFocused(false);
+                  setShowSearchDropdown(false);
+                  searchInputRef.current?.blur();
+                }}
+              />
+            )}
+            
+            <div className="flex items-center bg-gray-50 rounded-full border-2 border-gray-200 focus-within:border-[#E51A4B] transition-all shadow-lg relative z-[101]">
               <div className="pl-4 sm:pl-6">
                 <Search className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
               </div>
@@ -516,6 +578,14 @@ export function Hero({ banners = [] }: HeroProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
                 onFocus={() => setIsInputFocused(true)}
+                onBlur={() => {
+                  // Delay blur to allow click events on dropdown items
+                  setTimeout(() => {
+                    if (!dropdownRef.current?.matches(':hover')) {
+                      setIsInputFocused(false);
+                    }
+                  }, 200);
+                }}
                 placeholder="Destinations, stays, things to do, food spots"
                 className="flex-1 px-4 sm:px-6 py-4 sm:py-5 bg-transparent border-none outline-none text-sm sm:text-base text-gray-900 placeholder-gray-400"
               />
@@ -523,60 +593,108 @@ export function Hero({ banners = [] }: HeroProps) {
 
             {/* Search Dropdown */}
             {showSearchDropdown && searchResults.length > 0 && (
-              <div className={`${
-                isInputFocused && typeof window !== 'undefined' && window.innerWidth < 768
-                  ? 'fixed top-20 left-4 right-4 mt-2 max-h-[calc(100vh-250px)] z-[100]'
-                  : 'absolute top-full left-0 right-0 mt-2 max-h-80 z-50'
-              } bg-white rounded-lg shadow-xl border border-gray-200 overflow-y-auto`}>
-                {searchResults.map((result, index) => {
-                  const getTypeLabel = () => {
-                    switch (result.type) {
-                      case 'destination':
-                        return 'Destination';
-                      case 'activity':
-                        return 'Thing to Do';
-                      case 'trip':
-                        return 'Restaurant/Cafe';
-                      default:
-                        return '';
-                    }
-                  };
+              <div 
+                ref={dropdownRef}
+                className={`${
+                  isMobile && isInputFocused
+                    ? 'fixed left-4 right-4 z-[100]'
+                    : 'absolute top-full left-0 right-0 mt-2 z-50'
+                } bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden ${
+                  isMobile && isInputFocused 
+                    ? 'max-h-[calc(100vh-200px)]' 
+                    : 'max-h-80'
+                }`}
+                style={
+                  isMobile && isInputFocused && searchContainerRef.current
+                    ? (() => {
+                        const containerRect = searchContainerRef.current.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        const dropdownTop = containerRect.bottom + 8;
+                        const maxHeight = viewportHeight - dropdownTop - 16;
+                        
+                        return {
+                          top: `${dropdownTop}px`,
+                          maxHeight: `${Math.max(200, maxHeight)}px`,
+                        };
+                      })()
+                    : undefined
+                }
+                onMouseEnter={() => {
+                  if (!isMobile) {
+                    setIsInputFocused(true);
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (!isMobile) {
+                    setIsInputFocused(false);
+                  }
+                }}
+              >
+                {/* Scrollable container */}
+                <div className="overflow-y-auto max-h-full custom-scrollbar-thin">
+                  {searchResults.map((result, index) => {
+                    const getTypeLabel = () => {
+                      switch (result.type) {
+                        case 'destination':
+                          return 'Destination';
+                        case 'activity':
+                          return 'Thing to Do';
+                        case 'trip':
+                          return 'Restaurant/Cafe';
+                        default:
+                          return '';
+                      }
+                    };
 
-                  const getTypeColor = () => {
-                    switch (result.type) {
-                      case 'destination':
-                        return 'bg-blue-100 text-blue-700';
-                      case 'activity':
-                        return 'bg-green-100 text-green-700';
-                      case 'trip':
-                        return 'bg-purple-100 text-purple-700';
-                      default:
-                        return 'bg-gray-100 text-gray-700';
-                    }
-                  };
+                    const getTypeColor = () => {
+                      switch (result.type) {
+                        case 'destination':
+                          return 'bg-blue-100 text-blue-700';
+                        case 'activity':
+                          return 'bg-green-100 text-green-700';
+                        case 'trip':
+                          return 'bg-purple-100 text-purple-700';
+                        default:
+                          return 'bg-gray-100 text-gray-700';
+                      }
+                    };
 
-                  return (
-                    <button
-                      key={`${result.type}-${result.id}-${index}`}
-                      onClick={() => handleSearchResultSelect(result)}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 flex items-center justify-between group"
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <span className={`px-2 py-1 rounded text-xs font-semibold flex-shrink-0 ${getTypeColor()}`}>
+                    return (
+                      <button
+                        key={`${result.type}-${result.id}-${index}`}
+                        onClick={() => handleSearchResultSelect(result)}
+                        onMouseDown={(e) => {
+                          // Prevent input blur on mobile
+                          e.preventDefault();
+                        }}
+                        className="w-full text-left px-4 py-3 sm:py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0 flex items-center gap-2 sm:gap-3 group"
+                      >
+                        <span className={`px-2 py-1 rounded-md text-xs font-semibold flex-shrink-0 ${getTypeColor()}`}>
                           {getTypeLabel()}
                         </span>
-                        <span className="text-gray-900 font-medium truncate group-hover:text-[#E51A4B] transition-colors">
-                          {result.name}
-                        </span>
-                      </div>
-                      {result.destination && (
-                        <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                          {result.destination}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                        <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                          <span className="text-gray-900 font-medium text-sm sm:text-base truncate group-hover:text-[#E51A4B] transition-colors">
+                            {result.name}
+                          </span>
+                          {result.destination && (
+                            <span className="text-xs text-gray-500 flex-shrink-0 sm:ml-auto">
+                              {result.destination}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                  
+                  {/* Show more indicator on mobile */}
+                  {isMobile && searchQuery.trim() && (
+                    <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-200 text-center sticky bottom-0">
+                      <span className="text-xs text-gray-600">
+                        Showing top {searchResults.length} results
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
