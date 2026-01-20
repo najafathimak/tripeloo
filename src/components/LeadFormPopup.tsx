@@ -302,9 +302,14 @@ Thank you!`);
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-2 sm:p-4 bg-black/60 backdrop-blur-md overflow-hidden"
             onClick={onClose}
+            style={{
+              willChange: 'opacity',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+            }}
           >
         {/* Decorative gradient orbs */}
         <motion.div
@@ -347,15 +352,19 @@ Thank you!`);
             y: 30
           }}
           transition={{ 
-            type: "spring", 
-            stiffness: 300,
-            damping: 30,
-            mass: 0.8
+            type: isMobile ? "tween" : "spring", 
+            duration: isMobile ? 0.3 : undefined,
+            stiffness: isMobile ? undefined : 300,
+            damping: isMobile ? undefined : 30,
+            mass: isMobile ? undefined : 0.8
           }}
           className="relative bg-white rounded-t-3xl sm:rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full h-[75vh] sm:max-h-[90vh] flex flex-col border border-gray-100 mx-0 sm:mx-4 overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           style={{
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(229, 26, 75, 0.1)',
+            willChange: 'transform',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
           }}
         >
           {/* Animated gradient border */}

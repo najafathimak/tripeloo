@@ -8,7 +8,7 @@ import StatisticsSection from '@/components/StatisticsSection';
 import TestimonialsCarousel from '@/components/TestimonialsCarousel';
 import { MixedCardsCarousel } from '@/components/MixedCardsCarousel';
 import { LeadFormPopup } from '@/components/LeadFormPopup';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface HomePageData {
   heroDesktopImage: string;
@@ -44,6 +44,9 @@ export default function HomePageClient() {
     fetchHomeData();
   }, []);
 
+  const popupTriggeredRef = useRef(false);
+  const hasShownPopupRef = useRef(false);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -59,6 +62,7 @@ export default function HomePageClient() {
         const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours
         
         if (now - lastShown < oneDayInMs) {
+          hasShownPopupRef.current = true;
           setHasShownPopup(true);
           return;
         }
@@ -72,6 +76,7 @@ export default function HomePageClient() {
         const thirtyMinutesInMs = 30 * 60 * 1000; // 30 minutes
         
         if (now - lastShown < thirtyMinutesInMs) {
+          hasShownPopupRef.current = true;
           setHasShownPopup(true);
           return;
         }
@@ -80,11 +85,10 @@ export default function HomePageClient() {
 
     let timeoutId: NodeJS.Timeout;
     let scrollTimeoutId: NodeJS.Timeout;
-    let popupTriggered = false;
 
     // Wait for page to load before checking
     const checkScroll = () => {
-      if (hasShownPopup || popupTriggered) return;
+      if (hasShownPopupRef.current || popupTriggeredRef.current) return;
 
       const featuredSection = document.getElementById('featured-destinations-section');
       
@@ -100,22 +104,26 @@ export default function HomePageClient() {
       // Trigger when featured section is visible in viewport
       const featuredIsVisible = featuredRect.top < windowHeight * 0.8 && featuredRect.bottom > 0;
 
-      if (featuredIsVisible && !popupTriggered) {
-        popupTriggered = true;
+      if (featuredIsVisible && !popupTriggeredRef.current) {
+        popupTriggeredRef.current = true;
         // Add a small delay before showing popup for better UX
         scrollTimeoutId = setTimeout(() => {
           setShowLeadPopup(true);
+          hasShownPopupRef.current = true;
           setHasShownPopup(true);
           localStorage.setItem('leadPopupLastShown', Date.now().toString());
         }, 300);
       }
     };
 
-    // Scroll detection for sections
+    // Scroll detection for sections - use requestAnimationFrame for smoother performance
+    let rafId: number;
     const handleScroll = () => {
-      // Debounce scroll events
-      if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
-      scrollTimeoutId = setTimeout(checkScroll, 150);
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
+        scrollTimeoutId = setTimeout(checkScroll, 150);
+      });
     };
 
     // Initial check after component mounts and page loads
@@ -127,10 +135,11 @@ export default function HomePageClient() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
       if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
     };
-  }, [hasShownPopup]);
+  }, []); // Empty dependency array - only run once on mount
 
   const fetchHomeData = async () => {
     try {
