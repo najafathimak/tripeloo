@@ -87,7 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="canonical" href={siteConfig.url} />
       </head>
-      <body className={`${playfairDisplay.variable} ${inter.variable} font-sans`}>
+      <body className={`${playfairDisplay.variable} ${inter.variable} font-sans`} suppressHydrationWarning>
         <AuthProvider>
           <ConditionalLayout>{children}</ConditionalLayout>
         </AuthProvider>

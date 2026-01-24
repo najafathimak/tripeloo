@@ -60,6 +60,10 @@ interface FormData {
   additionalDetails: AdditionalDetail[];
   nearbyStays?: string[];
   nearbyActivities?: string[];
+  foodItems: string[];
+  menuImage: string;
+  menu: string;
+  moreInfo: string;
 }
 
 interface TripFormProps {
@@ -90,6 +94,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
     additionalDetails: [],
     nearbyStays: [],
     nearbyActivities: [],
+    foodItems: [],
+    menuImage: "",
+    menu: "",
+    moreInfo: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -232,6 +240,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
           description: detail.description || "",
           points: detail.points || [],
         })),
+        foodItems: initialData.foodItems || [],
+        menuImage: Array.isArray(initialData.menuImage) ? (initialData.menuImage[0] || "") : (initialData.menuImage || ""),
+        menu: initialData.menu || "",
+        moreInfo: initialData.moreInfo || "",
       });
       setImagePreview(initialData.coverImage || "");
     }
@@ -617,11 +629,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
 
     const newErrors: FormErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = "Cafe name is required";
+    if (!formData.name.trim()) newErrors.name = "Restaurant/Cafe name is required";
     if (!formData.destinationSlug) newErrors.destinationSlug = "Destination is required";
     if (!formData.category.trim()) newErrors.category = "Category is required";
     if (!formData.coverImage.trim()) newErrors.coverImage = "Cover image is required";
-    if (!formData.summary.trim()) newErrors.summary = "Summary is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -667,6 +678,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
           additionalDetails: formData.additionalDetails,
           nearbyStays: formData.nearbyStays || [],
           nearbyActivities: formData.nearbyActivities || [],
+          foodItems: formData.foodItems || [],
+          menuImage: formData.menuImage.trim(),
+          menu: formData.menu.trim(),
+          moreInfo: formData.moreInfo.trim(),
         }),
       });
 
@@ -735,7 +750,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="e.g., Forest Camping Experience"
+                placeholder="Restaurant name or Cafe name"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent ${
                   errors.name ? "border-red-500" : "border-gray-300"
                 }`}
@@ -882,56 +897,174 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
             </div>
           </div>
 
-          {/* Carousel Images */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Carousel Images <span className="text-gray-500 text-xs">(Optional)</span>
-            </label>
-            <div className="space-y-4">
-              {formData.carouselImages.map((img, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="grid md:grid-cols-2 gap-4 mb-2">
-                    <div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageUpload(e, true, index)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                      {img.url && (
-                        <div className="mt-2 relative w-full h-32 rounded overflow-hidden">
-                          <Image src={img.url} alt={`Carousel ${index + 1}`} fill className="object-cover" />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        placeholder="Image Title/Caption"
-                        value={img.title}
-                        onChange={(e) => updateCarouselImage(index, "title", e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeCarouselImage(index)}
-                        className="mt-2 text-red-600 hover:text-red-700 text-sm flex items-center gap-1"
-                      >
-                        <Trash2 size={14} />
-                        Remove
-                      </button>
+          {/* Carousel Images and Menu Upload */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Carousel Images */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Carousel Images <span className="text-gray-500 text-xs">(Optional)</span>
+              </label>
+              <div className="space-y-4">
+                {formData.carouselImages.map((img, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                    <div className="grid md:grid-cols-2 gap-4 mb-2">
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, true, index)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                        />
+                        {img.url && (
+                          <div className="mt-2 relative w-full h-32 rounded overflow-hidden">
+                            <Image src={img.url} alt={`Carousel ${index + 1}`} fill className="object-cover" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Image Title/Caption"
+                          value={img.title}
+                          onChange={(e) => updateCarouselImage(index, "title", e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeCarouselImage(index)}
+                          className="mt-2 text-red-600 hover:text-red-700 text-sm flex items-center gap-1"
+                        >
+                          <Trash2 size={14} />
+                          Remove
+                        </button>
+                      </div>
                     </div>
                   </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addCarouselImage}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+                >
+                  <Plus size={16} />
+                  Add Carousel Image
+                </button>
+              </div>
+            </div>
+
+            {/* Menu Upload */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Menu Upload <span className="text-gray-500 text-xs">(Optional)</span>
+              </label>
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+                      if (!allowedTypes.includes(file.type)) {
+                        setErrors({
+                          ...errors,
+                          general: "Please upload a valid image (JPEG, PNG, or WebP)",
+                        });
+                        return;
+                      }
+
+                      if (file.size > 10 * 1024 * 1024) {
+                        setErrors({
+                          ...errors,
+                          general: "Image size must be less than 10MB",
+                        });
+                        return;
+                      }
+
+                      setIsUploading(true);
+                      setUploadProgress(0);
+                      setErrors({ ...errors, general: undefined });
+
+                      try {
+                        const uploadFormData = new FormData();
+                        uploadFormData.append("file", file);
+
+                        const response = await fetch("/api/upload", {
+                          method: "POST",
+                          body: uploadFormData,
+                        });
+
+                        if (!response.ok) {
+                          const errorData = await response.json();
+                          throw new Error(errorData.error || "Upload failed");
+                        }
+
+                        const data = await response.json();
+                        setFormData({ ...formData, menuImage: data.url });
+                        setUploadProgress(100);
+                      } catch (error: any) {
+                        setErrors({
+                          ...errors,
+                          general: error.message || "Failed to upload menu image",
+                        });
+                      } finally {
+                        setIsUploading(false);
+                        setTimeout(() => setUploadProgress(0), 1000);
+                      }
+                    }}
+                    className="hidden"
+                    id="menuUpload"
+                    disabled={isUploading}
+                  />
+                  <label
+                    htmlFor="menuUpload"
+                    className={`flex items-center gap-2 px-6 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-all ${
+                      isUploading
+                        ? "border-blue-400 bg-blue-50 cursor-not-allowed"
+                        : formData.menuImage
+                        ? "border-green-300 bg-green-50"
+                        : "border-gray-300 hover:border-[#E51A4B] hover:bg-gray-50"
+                    }`}
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="animate-spin text-blue-600" size={20} />
+                        <span className="text-blue-700 font-medium">Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="text-gray-600" size={20} />
+                        <span className="text-gray-700 font-medium">
+                          {formData.menuImage ? "Change Menu Image" : "Upload Menu Image"}
+                        </span>
+                      </>
+                    )}
+                  </label>
+                  {formData.menuImage && !isUploading && (
+                    <span className="text-sm text-green-600 flex items-center gap-1">
+                      <CheckCircle size={16} />
+                      Menu uploaded
+                    </span>
+                  )}
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={addCarouselImage}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
-              >
-                <Plus size={16} />
-                Add Carousel Image
-              </button>
+
+                {formData.menuImage && (
+                  <div className="relative w-full h-64 rounded-lg overflow-hidden border border-gray-200">
+                    <Image src={formData.menuImage} alt="Menu preview" fill className="object-contain bg-gray-50" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, menuImage: "" });
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -990,14 +1123,14 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
           {/* Summary */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Summary/Description <span className="text-red-500">*</span>
+              Summary/Description <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <textarea
               name="summary"
               value={formData.summary}
               onChange={handleInputChange}
               rows={4}
-              placeholder="Describe the trip in detail..."
+              placeholder="Describe the restaurant/cafe in detail..."
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#E51A4B] resize-none ${
                 errors.summary ? "border-red-500" : "border-gray-300"
               }`}
@@ -1010,7 +1143,7 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
           {/* Properties */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Trip Properties/Features <span className="text-gray-500 text-xs">(Optional)</span>
+              Features <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <div className="flex gap-2 mb-2">
               <input
@@ -1263,6 +1396,123 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Food Items Images */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Food Items Images <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <p className="text-xs text-gray-500 mb-4">
+              Upload multiple images of food items. These will be displayed in a gallery.
+            </p>
+            <div className="space-y-3">
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                multiple
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length === 0) return;
+
+                  setIsUploading(true);
+                  setUploadProgress(0);
+                  try {
+                    const uploadedUrls: string[] = [];
+                    
+                    for (const file of files) {
+                      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+                      if (!allowedTypes.includes(file.type)) {
+                        continue;
+                      }
+
+                      if (file.size > 10 * 1024 * 1024) {
+                        continue;
+                      }
+
+                      const uploadFormData = new FormData();
+                      uploadFormData.append("file", file);
+
+                      const response = await fetch("/api/upload", {
+                        method: "POST",
+                        body: uploadFormData,
+                      });
+
+                      if (response.ok) {
+                        const data = await response.json();
+                        uploadedUrls.push(data.url);
+                        setUploadProgress((uploadedUrls.length / files.length) * 100);
+                      }
+                    }
+
+                    if (uploadedUrls.length > 0) {
+                      setFormData({ ...formData, foodItems: [...formData.foodItems, ...uploadedUrls] });
+                    }
+                  } catch (error) {
+                    console.error("Error uploading food item images:", error);
+                    setErrors({
+                      ...errors,
+                      general: "Failed to upload some images. Please try again.",
+                    });
+                  } finally {
+                    setIsUploading(false);
+                    setTimeout(() => setUploadProgress(0), 1000);
+                    // Reset input
+                    e.target.value = "";
+                  }
+                }}
+                disabled={isUploading}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              {isUploading && (
+                <div className="space-y-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-blue-600 flex items-center gap-1">
+                    <Loader2 className="animate-spin" size={12} />
+                    Uploading images... {Math.round(uploadProgress)}%
+                  </p>
+                </div>
+              )}
+              {formData.foodItems.length > 0 && (
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  {formData.foodItems.map((img, imgIndex) => (
+                    <div key={imgIndex} className="relative h-32 rounded overflow-hidden border border-gray-200">
+                      <Image src={img} alt={`Food item ${imgIndex + 1}`} fill className="object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, foodItems: formData.foodItems.filter((_, i) => i !== imgIndex) })}
+                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Menu Text Field */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Menu <span className="text-gray-500 text-xs">(Optional - Detailed dishes and prices)</span>
+            </label>
+            <textarea
+              name="menu"
+              value={formData.menu}
+              onChange={handleInputChange}
+              rows={8}
+              placeholder="Enter detailed menu with dishes and prices...&#10;e.g.,&#10;Appetizers:&#10;- Bruschetta - ₹250&#10;- Caesar Salad - ₹300&#10;&#10;Main Course:&#10;- Margherita Pizza - ₹500&#10;- Pasta Carbonara - ₹600"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B] resize-none"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Enter detailed menu information with dishes and prices. This will be displayed on the restaurant/cafe detail page.
+            </p>
           </div>
 
           {/* Dishes/Menu Items */}
@@ -1566,11 +1816,29 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
               name="propertyName"
               value={formData.propertyName}
               onChange={handleInputChange}
-              placeholder="e.g., Trip ABC, Package XYZ (for admin identification)"
+              placeholder="e.g., Restaurant ABC, Cafe XYZ (for admin identification)"
               className="w-full px-4 py-3 border-2 border-yellow-500 bg-white rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-600 font-medium"
             />
             <p className="mt-2 text-xs text-gray-700 font-medium">
-              ⚠️ This is the internal property name for admin identification. Display name (shown below) is what users see.
+              ⚠️ This is the internal property name for admin identification. Display name (shown above) is what users see.
+            </p>
+          </div>
+
+          {/* More Info (Admin Only) */}
+          <div className="bg-blue-50 border-2 border-blue-400 rounded-lg p-4">
+            <label className="block text-sm font-bold text-gray-800 mb-2">
+              More Info <span className="text-blue-700 text-xs font-semibold">(Admin Only)</span>
+            </label>
+            <textarea
+              name="moreInfo"
+              value={formData.moreInfo}
+              onChange={handleInputChange}
+              rows={6}
+              placeholder="Enter additional information for admin reference only. This will not be displayed to users."
+              className="w-full px-4 py-3 border-2 border-blue-500 bg-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-600 resize-none"
+            />
+            <p className="mt-2 text-xs text-gray-700 font-medium">
+              ℹ️ This field is only visible in the admin panel and will not be displayed to users.
             </p>
           </div>
 
@@ -1787,6 +2055,10 @@ export default function TripForm({ initialData, isEdit = false }: TripFormProps 
                   contactNumber: "",
                   address: "",
                   additionalDetails: [],
+                  foodItems: [],
+                  menuImage: "",
+                  menu: "",
+                  moreInfo: "",
                 });
                 setImagePreview("");
                 setPointInputs({});

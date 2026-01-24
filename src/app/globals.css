@@ -544,6 +544,18 @@ html {
   display: none;
 }
 
+/* Food Items Swiper - Ensure proper card display */
+.food-items-swiper .swiper-slide {
+  width: auto !important;
+  height: auto !important;
+  display: flex !important;
+}
+
+.food-items-swiper .swiper-wrapper {
+  display: flex !important;
+  align-items: stretch !important;
+}
+
 /* Hide scrollbar for overflow containers */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */
@@ -575,5 +587,29 @@ html {
 
 .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
+}
+
+/* Custom scrollbar for menu board */
+.menu-board-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #FCD34D #FEF3C7;
+}
+
+.menu-board-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.menu-board-scrollbar::-webkit-scrollbar-track {
+  background: #FEF3C7;
+  border-radius: 4px;
+}
+
+.menu-board-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #FCD34D;
+  border-radius: 4px;
+}
+
+.menu-board-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #FBBF24;
 }
 
