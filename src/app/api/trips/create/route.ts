@@ -27,6 +27,10 @@ export async function POST(request: NextRequest) {
       additionalDetails = [],
       nearbyStays = [],
       nearbyActivities = [],
+      foodItems = [],
+      menuImage,
+      menu,
+      moreInfo,
     } = body;
 
     // Validation
@@ -62,9 +66,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!summary || summary.trim().length === 0) {
-      errors.summary = 'Summary is required';
-    }
+    // Summary is optional - no validation needed
 
     if (Object.keys(errors).length > 0) {
       return NextResponse.json({ errors }, { status: 400 });
@@ -105,6 +107,10 @@ export async function POST(request: NextRequest) {
       })),
       nearbyStays: Array.isArray(nearbyStays) ? nearbyStays.filter((id: string) => id && id.trim()) : [],
       nearbyActivities: Array.isArray(nearbyActivities) ? nearbyActivities.filter((id: string) => id && id.trim()) : [],
+      foodItems: Array.isArray(foodItems) ? foodItems.filter((img: string) => img && img.trim()) : [],
+      menuImage: menuImage?.trim() || '',
+      menu: menu?.trim() || '',
+      moreInfo: moreInfo?.trim() || '',
       isHidden: false,
       createdAt: new Date(),
       updatedAt: new Date(),

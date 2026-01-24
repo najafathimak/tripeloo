@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Image as ImageIcon, MapPin, Hotel, Activity, Plane, MessageSquare, Gift, TrendingUp, Users, Star } from "lucide-react";
+import { LayoutDashboard, Image as ImageIcon, MapPin, Hotel, Activity, UtensilsCrossed, MessageSquare, Gift, TrendingUp, Users, Star } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
     { href: "/admin/destinations", label: "Destinations", icon: MapPin, color: "bg-green-500" },
     { href: "/admin/stays", label: "Stays", icon: Hotel, color: "bg-purple-500" },
     { href: "/admin/things", label: "Things to Do", icon: Activity, color: "bg-orange-500" },
-    { href: "/admin/trips", label: "Food spots", icon: Plane, color: "bg-cyan-500" },
+    { href: "/admin/trips", label: "Food spots", icon: UtensilsCrossed, color: "bg-cyan-500" },
     { href: "/admin/reviews", label: "Reviews", icon: MessageSquare, color: "bg-pink-500" },
     { href: "/admin/loyalty-points", label: "Loyalty Points", icon: Gift, color: "bg-red-500" },
     { href: "/admin/leads", label: "Website Leads", icon: Users, color: "bg-indigo-500" },
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
           <StatCard
             label="Food spots"
             value={stats.trips}
-            icon={Plane}
+            icon={UtensilsCrossed}
             color="bg-cyan-500/20 border-cyan-500/50"
             iconColor="text-cyan-400"
           />

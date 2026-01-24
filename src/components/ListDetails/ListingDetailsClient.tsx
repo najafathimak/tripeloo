@@ -79,9 +79,11 @@ const BookingSidebar = ({
           
           <div className="relative z-10">
             <h2 className="text-gray-800 font-semibold text-lg line-clamp-2 mb-3">{title}</h2>
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-xl font-bold text-gray-900">{price}</p>
-            </div>
+            {itemType !== 'trip' && (
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-xl font-bold text-gray-900">{price}</p>
+              </div>
+            )}
             
             {/* Selected Rooms Info */}
             {selectedRooms.length > 0 && (

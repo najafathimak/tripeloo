@@ -1,7 +1,6 @@
 "use client";
 import ListCarousel from "@/components/ListDetails/ListCarousel";
 import LocationSection from "@/components/ListDetails/LocationSection";
-import PriceSection from "@/components/ListDetails/PriceSection";
 import ReviewsSection from "@/components/ListDetails/ReviewsSection";
 import PackagesSection from "@/components/ListDetails/PackagesSection";
 import BookingSidebar from "@/components/ListDetails/ListingDetailsClient";
@@ -12,6 +11,11 @@ import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import type { Package } from "@/components/ListDetails/PackagesSection";
+import { optimizeCloudinaryUrl } from "@/utils/cloudinary";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 
 // Expandable Additional Detail Component
 const AdditionalDetailItem = ({ detail }: { detail: any }) => {
@@ -71,6 +75,10 @@ const TripDetailsContent = () => {
   const [loading, setLoading] = useState(true);
   const [reviewSummary, setReviewSummary] = useState({ average: 0, totalReviews: 0 });
   const bookingRef = useRef<HTMLDivElement | null>(null);
+  const menuScrollRefMobile = useRef<HTMLDivElement | null>(null);
+  const menuScrollRefDesktop = useRef<HTMLDivElement | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
 
   useEffect(() => {
     const fetchTripData = async () => {
@@ -129,6 +137,62 @@ const TripDetailsContent = () => {
       bookingRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
+
+  // Check scroll position for menu board
+  const checkMenuScroll = () => {
+    // Check both mobile and desktop refs, use the one that's visible
+    const mobileRef = menuScrollRefMobile.current;
+    const desktopRef = menuScrollRefDesktop.current;
+    const activeRef = mobileRef?.offsetParent ? mobileRef : desktopRef;
+    
+    if (activeRef) {
+      const { scrollTop, scrollHeight, clientHeight } = activeRef;
+      setShowScrollTop(scrollTop > 10);
+      setShowScrollBottom(scrollTop < scrollHeight - clientHeight - 10);
+    }
+  };
+
+  const scrollMenuUp = () => {
+    const mobileRef = menuScrollRefMobile.current;
+    const desktopRef = menuScrollRefDesktop.current;
+    const activeRef = mobileRef?.offsetParent ? mobileRef : desktopRef;
+    
+    if (activeRef) {
+      activeRef.scrollBy({ top: -200, behavior: 'smooth' });
+    }
+  };
+
+  const scrollMenuDown = () => {
+    const mobileRef = menuScrollRefMobile.current;
+    const desktopRef = menuScrollRefDesktop.current;
+    const activeRef = mobileRef?.offsetParent ? mobileRef : desktopRef;
+    
+    if (activeRef) {
+      activeRef.scrollBy({ top: 200, behavior: 'smooth' });
+    }
+  };
+
+  // Set up scroll listener for menu board
+  useEffect(() => {
+    if (tripData?.menu) {
+      // Check scroll state after a brief delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        checkMenuScroll();
+      }, 100);
+      
+      const handleScroll = () => checkMenuScroll();
+      
+      // Add listeners to both refs
+      menuScrollRefMobile.current?.addEventListener('scroll', handleScroll);
+      menuScrollRefDesktop.current?.addEventListener('scroll', handleScroll);
+      
+      return () => {
+        clearTimeout(timer);
+        menuScrollRefMobile.current?.removeEventListener('scroll', handleScroll);
+        menuScrollRefDesktop.current?.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, [tripData?.menu]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -224,12 +288,8 @@ const TripDetailsContent = () => {
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 mt-4">
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {formatPrice(displayPrice)}/-
-                </p>
-              </div>
             </div>
+
 
             {/* Summary */}
             {tripData.summary && (
@@ -237,23 +297,145 @@ const TripDetailsContent = () => {
                 <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
                   About
                 </h2>
-                <p>{tripData.summary}</p>
+                <p className="text-gray-700">{tripData.summary}</p>
               </div>
             )}
 
-            {/* Includes section hidden */}
-
-            {/* Restaurant/Cafe Properties */}
+            {/* Features */}
             {tripData.properties && tripData.properties.length > 0 && (
               <div className="mt-8 bg-red-50 rounded-2xl p-5 sm:p-6 shadow-inner">
                 <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
-                  Restaurant/Cafe Features
+                  Features
                 </h2>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
                   {tripData.properties.map((prop: string, index: number) => (
                     <div key={index}>{prop}</div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Food Items Images - Mobile Carousel */}
+            {tripData.foodItems && Array.isArray(tripData.foodItems) && tripData.foodItems.length > 0 && (
+              <>
+                {/* Mobile Carousel */}
+                <div className="mt-8 md:hidden">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
+                    Food Items
+                  </h2>
+                  <div className="relative w-full overflow-hidden">
+                    <Swiper
+                      spaceBetween={15}
+                      slidesPerView={1}
+                      modules={[Navigation, Autoplay]}
+                      navigation
+                      autoplay={{
+                        delay: 3000,
+                        disableOnInteraction: false,
+                      }}
+                      loop={tripData.foodItems.length > 1}
+                      className="!pb-12 w-full"
+                    >
+                      {tripData.foodItems.map((img: string, index: number) => (
+                        <SwiperSlide key={index}>
+                          <div className="relative w-full h-64 rounded-xl overflow-hidden border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer bg-white">
+                            <Image
+                              src={optimizeCloudinaryUrl(img)}
+                              alt={`Food item ${index + 1}`}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform duration-500"
+                              loading={index < 3 ? "eager" : "lazy"}
+                              sizes="100vw"
+                            />
+                          </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                  </div>
+                </div>
+
+                {/* Desktop Grid Layout */}
+                <div className="mt-8 hidden md:block">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
+                    Food Items
+                  </h2>
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                    {tripData.foodItems.map((img: string, index: number) => (
+                      <div
+                        key={index}
+                        className="relative w-full h-64 lg:h-72 rounded-xl overflow-hidden border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer bg-white"
+                      >
+                        <Image
+                          src={optimizeCloudinaryUrl(img)}
+                          alt={`Food item ${index + 1}`}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          loading={index < 6 ? "eager" : "lazy"}
+                          sizes="(max-width: 1024px) 50vw, 33vw"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Menu Board Section - Mobile Only */}
+            {tripData.menu && tripData.menu.trim() && (
+              <div className="mt-8 md:hidden">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
+                  Menu
+                </h2>
+                <div className="relative bg-gradient-to-br from-amber-100 via-amber-50 to-orange-50 rounded-2xl p-4 sm:p-6 shadow-xl border-4 border-amber-300/50">
+                  {/* Wood grain texture effect */}
+                  <div className="absolute inset-0 rounded-xl opacity-5" style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='wood' x='0' y='0' width='100' height='20' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 10 Q25 5, 50 10 T100 10' stroke='%238B4513' stroke-width='0.5' fill='none'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23wood)'/%3E%3C/svg%3E")`,
+                    backgroundSize: '100% 20px',
+                  }}></div>
+                  
+                  {/* Scrollable menu content */}
+                  <div className="relative bg-white/90 backdrop-blur-sm rounded-xl border-2 border-amber-200/50 shadow-inner overflow-hidden">
+                    {/* Scroll top button */}
+                    {showScrollTop && (
+                      <button
+                        onClick={scrollMenuUp}
+                        className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 bg-amber-600 hover:bg-amber-700 text-white rounded-full p-2 shadow-lg transition-all duration-200 flex items-center justify-center"
+                        aria-label="Scroll up"
+                      >
+                        <ChevronUp className="w-5 h-5" />
+                      </button>
+                    )}
+                    
+                    {/* Scrollable content */}
+                    <div
+                      ref={menuScrollRefMobile}
+                      className="max-h-96 overflow-y-auto px-6 py-6 menu-board-scrollbar"
+                    >
+                      <div className="text-gray-800 font-serif">
+                        <pre className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed font-medium">
+                          {tripData.menu}
+                        </pre>
+                      </div>
+                    </div>
+                    
+                    {/* Scroll bottom button */}
+                    {showScrollBottom && (
+                      <button
+                        onClick={scrollMenuDown}
+                        className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10 bg-amber-600 hover:bg-amber-700 text-white rounded-full p-2 shadow-lg transition-all duration-200 flex items-center justify-center"
+                        aria-label="Scroll down"
+                      >
+                        <ChevronDown className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Decorative corners - wood style */}
+                  <div className="absolute top-3 left-3 w-8 h-8 border-t-4 border-l-4 border-amber-600/60 rounded-tl-lg"></div>
+                  <div className="absolute top-3 right-3 w-8 h-8 border-t-4 border-r-4 border-amber-600/60 rounded-tr-lg"></div>
+                  <div className="absolute bottom-3 left-3 w-8 h-8 border-b-4 border-l-4 border-amber-600/60 rounded-bl-lg"></div>
+                  <div className="absolute bottom-3 right-3 w-8 h-8 border-b-4 border-r-4 border-amber-600/60 rounded-br-lg"></div>
                 </div>
               </div>
             )}
@@ -287,13 +469,6 @@ const TripDetailsContent = () => {
               </div>
             )}
 
-            {/* Price Section */}
-            <div className="mb-5">
-              <PriceSection 
-                includes={tripData.includes || []} 
-                excludes={tripData.excludes || []} 
-              />
-            </div>
 
             {/* Additional Details - Expandable */}
             {tripData.additionalDetails && tripData.additionalDetails.length > 0 && (() => {
@@ -372,19 +547,80 @@ const TripDetailsContent = () => {
 
           {/* Desktop Sidebar */}
           <div ref={bookingRef} className="hidden md:block sticky top-20">
-            <BookingSidebar
-              selectedRooms={selectedPackages}
-              title={tripData.name}
-              price={formatPrice(displayPrice)}
-              oldPrice=""
-              savings=""
-              className="w-full lg:w-[350px]"
-              isPackage={true}
-              destination={destination || tripData.destinationName}
-              itemType="trip"
-              itemLocation={tripData.location || tripData.destinationName}
-              itemImportantInfo={tripData.importantInfo}
-            />
+            <div className="space-y-6">
+              <BookingSidebar
+                selectedRooms={selectedPackages}
+                title={tripData.name}
+                price={formatPrice(displayPrice)}
+                oldPrice=""
+                savings=""
+                className="w-full lg:w-[350px]"
+                isPackage={true}
+                destination={destination || tripData.destinationName}
+                itemType="trip"
+                itemLocation={tripData.location || tripData.destinationName}
+                itemImportantInfo={tripData.importantInfo}
+              />
+              
+              {/* Menu Board Section - Desktop Only */}
+              {tripData.menu && tripData.menu.trim() && (
+                <div className="w-full lg:w-[350px]">
+                  <h2 className="text-lg font-semibold mb-4 text-gray-900">
+                    Menu
+                  </h2>
+                  <div className="relative bg-gradient-to-br from-amber-100 via-amber-50 to-orange-50 rounded-2xl p-4 shadow-xl border-4 border-amber-300/50">
+                    {/* Wood grain texture effect */}
+                    <div className="absolute inset-0 rounded-xl opacity-5" style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='wood' x='0' y='0' width='100' height='20' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 10 Q25 5, 50 10 T100 10' stroke='%238B4513' stroke-width='0.5' fill='none'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23wood)'/%3E%3C/svg%3E")`,
+                      backgroundSize: '100% 20px',
+                    }}></div>
+                    
+                    {/* Scrollable menu content */}
+                    <div className="relative bg-white/90 backdrop-blur-sm rounded-xl border-2 border-amber-200/50 shadow-inner overflow-hidden">
+                      {/* Scroll top button */}
+                      {showScrollTop && (
+                        <button
+                          onClick={scrollMenuUp}
+                          className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 bg-amber-600 hover:bg-amber-700 text-white rounded-full p-2 shadow-lg transition-all duration-200 flex items-center justify-center"
+                          aria-label="Scroll up"
+                        >
+                          <ChevronUp className="w-5 h-5" />
+                        </button>
+                      )}
+                      
+                      {/* Scrollable content */}
+                      <div
+                        ref={menuScrollRefDesktop}
+                        className="max-h-[600px] lg:max-h-[700px] overflow-y-auto px-4 py-4 menu-board-scrollbar"
+                      >
+                        <div className="text-gray-800 font-serif">
+                          <pre className="whitespace-pre-wrap text-sm leading-relaxed font-medium">
+                            {tripData.menu}
+                          </pre>
+                        </div>
+                      </div>
+                      
+                      {/* Scroll bottom button */}
+                      {showScrollBottom && (
+                        <button
+                          onClick={scrollMenuDown}
+                          className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10 bg-amber-600 hover:bg-amber-700 text-white rounded-full p-2 shadow-lg transition-all duration-200 flex items-center justify-center"
+                          aria-label="Scroll down"
+                        >
+                          <ChevronDown className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Decorative corners - wood style */}
+                    <div className="absolute top-3 left-3 w-8 h-8 border-t-4 border-l-4 border-amber-600/60 rounded-tl-lg"></div>
+                    <div className="absolute top-3 right-3 w-8 h-8 border-t-4 border-r-4 border-amber-600/60 rounded-tr-lg"></div>
+                    <div className="absolute bottom-3 left-3 w-8 h-8 border-b-4 border-l-4 border-amber-600/60 rounded-bl-lg"></div>
+                    <div className="absolute bottom-3 right-3 w-8 h-8 border-b-4 border-r-4 border-amber-600/60 rounded-br-lg"></div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -408,6 +644,7 @@ const TripDetailsContent = () => {
         <span>Book Now</span>
         <span className="text-lg animate-bounce">↓</span>
       </button>
+
     </div>
   );
 };

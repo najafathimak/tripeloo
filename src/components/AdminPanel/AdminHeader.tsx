@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Image as ImageIcon, MapPin, Hotel, Activity, Plane, Menu, X, MessageSquare, Gift, FileText, Tag, ChevronDown, Users } from "lucide-react";
+import { LayoutDashboard, Image as ImageIcon, MapPin, Hotel, Activity, UtensilsCrossed, Menu, X, MessageSquare, Gift, FileText, Tag, ChevronDown, Users } from "lucide-react";
 
 export function AdminHeader() {
   const [open, setOpen] = useState(false);
@@ -31,7 +31,7 @@ export function AdminHeader() {
     { href: "/admin/destinations", label: "Destinations", icon: MapPin },
     { href: "/admin/stays", label: "Stays", icon: Hotel },
     { href: "/admin/things", label: "Things to Do", icon: Activity },
-    { href: "/admin/trips", label: "Food spots", icon: Plane },
+    { href: "/admin/trips", label: "Food spots", icon: UtensilsCrossed },
   ];
 
   // Secondary navigation links (less frequently used - in dropdown)

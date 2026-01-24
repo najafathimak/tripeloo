@@ -540,8 +540,16 @@ export function Hero({ banners = [] }: HeroProps) {
   };
 
   const handleTabClick = (tab: 'stays' | 'things-to-do' | 'restaurants-cafes' | null) => {
-    // Toggle: if clicking the same tab, deselect it (set to null)
-    setActiveTab(activeTab === tab ? null : tab);
+    // Redirect to destinations page with category parameter
+    if (tab) {
+      const categoryMap: Record<string, string> = {
+        'stays': 'stays',
+        'things-to-do': 'things-to-do',
+        'restaurants-cafes': 'restaurants-cafes'
+      };
+      const category = categoryMap[tab];
+      router.push(`/destinations?category=${category}`);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

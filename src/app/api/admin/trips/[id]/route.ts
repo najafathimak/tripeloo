@@ -79,9 +79,13 @@ export async function PUT(
       additionalDetails = [],
       nearbyStays = [],
       nearbyActivities = [],
+      foodItems = [],
+      menuImage,
+      menu,
+      moreInfo,
     } = body;
 
-    if (!name || !destinationSlug || !category || !coverImage || !summary) {
+    if (!name || !destinationSlug || !category || !coverImage) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -119,7 +123,7 @@ export async function PUT(
           startingPrice: startingPrice ? Number(startingPrice) : 0,
           originalPrice: originalPrice ? Number(originalPrice) : null,
           currency: currency || 'INR',
-          summary: summary.trim(),
+          summary: summary?.trim() || '',
           includes: Array.isArray(includes) ? includes.filter((i: string) => i.trim()) : [],
           excludes: Array.isArray(excludes) ? excludes.filter((e: string) => e.trim()) : [],
           properties: Array.isArray(properties) ? properties.filter((p: string) => p.trim()) : [],
@@ -143,6 +147,10 @@ export async function PUT(
           })),
           nearbyStays: Array.isArray(nearbyStays) ? nearbyStays.filter((id: string) => id && id.trim()) : [],
           nearbyActivities: Array.isArray(nearbyActivities) ? nearbyActivities.filter((id: string) => id && id.trim()) : [],
+          foodItems: Array.isArray(foodItems) ? foodItems.filter((img: string) => img && img.trim()) : [],
+          menuImage: menuImage?.trim() || '',
+          menu: menu?.trim() || '',
+          moreInfo: moreInfo?.trim() || '',
           updatedAt: new Date(),
         }
       }

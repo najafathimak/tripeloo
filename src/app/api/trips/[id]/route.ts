@@ -76,6 +76,10 @@ export async function GET(
         ? trip.nearbyActivities.map((id: any) => id?.toString?.() || String(id))
         : [],
       importantInfo: trip.importantInfo || '',
+      foodItems: Array.isArray(trip.foodItems) ? trip.foodItems.filter((img: string) => img && img.trim()) : [],
+      menuImage: trip.menuImage || '',
+      menu: trip.menu || '',
+      moreInfo: trip.moreInfo || '',
     };
     
     return NextResponse.json({ data: mappedTrip }, {
