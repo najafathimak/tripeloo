@@ -140,6 +140,9 @@ export function Hero({ banners = [] }: HeroProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showDestinationPopup, setShowDestinationPopup] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<'stays' | 'things-to-do' | 'restaurants-cafes' | null>(null);
+  const [selectedDestination, setSelectedDestination] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -213,9 +216,13 @@ export function Hero({ banners = [] }: HeroProps) {
       fetch('/api/destinations')
         .then(res => res.json())
         .then(data => {
-          setDestinations(data.data || []);
-      })
-      .catch(() => {});
+          // Sort destinations alphabetically by name
+          const sortedDestinations = (data.data || []).sort((a: Destination, b: Destination) => 
+            (a.name || '').localeCompare(b.name || '')
+          );
+          setDestinations(sortedDestinations);
+        })
+        .catch(() => {});
 
     // Fetch activities (things to do) - using admin endpoint to get all
     fetch('/api/admin/activities?includeHidden=false')
@@ -242,133 +249,25 @@ export function Hero({ banners = [] }: HeroProps) {
       .catch(() => {});
   }, []);
 
-  // Filter search results based on query and active tab - Limit results on mobile
+  // Filter search results - Only destinations
   useEffect(() => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       const results: SearchResult[] = [];
       const maxResults = isMobile ? 6 : 50; // Limit to 6 results on mobile
 
-      // Always add matching destinations first
+      // Only show destinations
       destinations
         .filter(dest => dest.name.toLowerCase().includes(query))
-        .slice(0, isMobile ? (activeTab === null ? 2 : 3) : undefined)
+        .slice(0, maxResults)
         .forEach(dest => {
-          if (results.length < maxResults) {
-            results.push({
-              type: 'destination',
-              id: dest._id || dest.slug || '',
-              name: dest.name,
-              slug: dest.slug,
-            });
-          }
+          results.push({
+            type: 'destination',
+            id: dest._id || dest.slug || '',
+            name: dest.name,
+            slug: dest.slug,
+          });
         });
-
-      // Filter based on active tab - if null, show all types
-      if (activeTab === null) {
-        // Show all types: destinations + stays + activities + trips
-        // Add matching stays
-        if (results.length < maxResults) {
-          stays
-            .filter(stay => stay.name.toLowerCase().includes(query))
-            .slice(0, isMobile ? 2 : undefined)
-            .forEach(stay => {
-              if (results.length < maxResults) {
-                results.push({
-                  type: 'stay',
-                  id: stay._id || stay.id,
-                  name: stay.name,
-                  destination: stay.destination || stay.destinationSlug,
-                });
-              }
-            });
-        }
-
-        // Add matching activities (things to do)
-        if (results.length < maxResults) {
-          activities
-            .filter(activity => activity.name.toLowerCase().includes(query))
-            .slice(0, isMobile ? 1 : undefined)
-            .forEach(activity => {
-              if (results.length < maxResults) {
-                results.push({
-                  type: 'activity',
-                  id: activity._id || activity.id,
-                  name: activity.name,
-                  destination: activity.destination || activity.destinationSlug,
-                });
-              }
-            });
-        }
-
-        // Add matching trips (restaurants & cafes)
-        if (results.length < maxResults) {
-          trips
-            .filter(trip => trip.name.toLowerCase().includes(query))
-            .slice(0, isMobile ? 1 : undefined)
-            .forEach(trip => {
-              if (results.length < maxResults) {
-                results.push({
-                  type: 'trip',
-                  id: trip._id || trip.id,
-                  name: trip.name,
-                  destination: trip.destination || trip.destinationSlug,
-                });
-              }
-            });
-        }
-      } else if (activeTab === 'stays') {
-        // Show only destinations + stays
-        if (results.length < maxResults) {
-          stays
-            .filter(stay => stay.name.toLowerCase().includes(query))
-            .slice(0, isMobile ? 3 : undefined)
-            .forEach(stay => {
-              if (results.length < maxResults) {
-                results.push({
-                  type: 'stay',
-                  id: stay._id || stay.id,
-                  name: stay.name,
-                  destination: stay.destination || stay.destinationSlug,
-                });
-              }
-            });
-        }
-      } else if (activeTab === 'things-to-do') {
-        // Show only destinations + activities
-        if (results.length < maxResults) {
-          activities
-            .filter(activity => activity.name.toLowerCase().includes(query))
-            .slice(0, isMobile ? 3 : undefined)
-            .forEach(activity => {
-              if (results.length < maxResults) {
-                results.push({
-                  type: 'activity',
-                  id: activity._id || activity.id,
-                  name: activity.name,
-                  destination: activity.destination || activity.destinationSlug,
-                });
-              }
-            });
-        }
-      } else if (activeTab === 'restaurants-cafes') {
-        // Show only destinations + trips
-        if (results.length < maxResults) {
-          trips
-            .filter(trip => trip.name.toLowerCase().includes(query))
-            .slice(0, isMobile ? 3 : undefined)
-            .forEach(trip => {
-              if (results.length < maxResults) {
-                results.push({
-                  type: 'trip',
-                  id: trip._id || trip.id,
-                  name: trip.name,
-                  destination: trip.destination || trip.destinationSlug,
-                });
-              }
-            });
-        }
-      }
 
       setSearchResults(results);
       setShowSearchDropdown(results.length > 0);
@@ -376,180 +275,67 @@ export function Hero({ banners = [] }: HeroProps) {
       setShowSearchDropdown(false);
       setSearchResults([]);
     }
-  }, [searchQuery, destinations, activities, trips, stays, isMobile, activeTab]);
+  }, [searchQuery, destinations, isMobile]);
 
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
 
     const query = searchQuery.trim().toLowerCase();
     
-    // Check if it's a destination
+    // Only search for destinations
     const selectedDest = destinations.find(
       d => d.name.toLowerCase() === query
     );
     
     if (selectedDest && selectedDest.slug) {
-      // Navigate to destination detail page with category
-      let categoryParam = '';
-      if (activeTab === 'things-to-do') {
-        categoryParam = 'things-to-do';
-      } else if (activeTab === 'restaurants-cafes') {
-        categoryParam = 'restaurants-cafes';
-      }
-      // If activeTab is null, no category filter
-      
-      const queryParams = new URLSearchParams();
-      if (categoryParam) {
-        queryParams.set('category', categoryParam);
-      }
-      
-      const url = categoryParam 
-        ? `/destinations/${selectedDest.slug}?${queryParams.toString()}`
-        : `/destinations/${selectedDest.slug}`;
-      
-      router.push(url);
+      // Navigate to destination detail page
+      router.push(`/destinations/${selectedDest.slug}`);
       return;
     }
 
-    // Check if it's a stay
-    const selectedStay = stays.find(
-      s => s.name.toLowerCase() === query
-    );
-    
-    if (selectedStay) {
-      const destinationName = selectedStay.destination || '';
-      const queryParams = new URLSearchParams({
-        stay: selectedStay._id || selectedStay.id,
-      });
-      if (destinationName) {
-        queryParams.set('destination', destinationName);
-      }
-      router.push(`/item-details?${queryParams.toString()}`);
-      return;
-    }
-
-    // Check if it's an activity (thing to do)
-    const selectedActivity = activities.find(
-      a => a.name.toLowerCase() === query
-    );
-    
-    if (selectedActivity) {
-      const destinationName = selectedActivity.destination || '';
-      const queryParams = new URLSearchParams({
-        'things-to-do': selectedActivity._id || selectedActivity.id,
-      });
-      if (destinationName) {
-        queryParams.set('destination', destinationName);
-      }
-      router.push(`/things-to-do?${queryParams.toString()}`);
-      return;
-    }
-
-    // Check if it's a trip (restaurant/cafe)
-    const selectedTrip = trips.find(
-      t => t.name.toLowerCase() === query
-    );
-    
-    if (selectedTrip) {
-      const destinationName = selectedTrip.destination || '';
-      const queryParams = new URLSearchParams({
-        trips: selectedTrip._id || selectedTrip.id,
-      });
-      if (destinationName) {
-        queryParams.set('destination', destinationName);
-      }
-      router.push(`/trips?${queryParams.toString()}`);
-      return;
-    }
-
-    // Fallback to stay-listings if nothing found
-    const encodedDestination = encodeURIComponent(searchQuery.trim());
-    let categoryParam = '';
-    
-    if (activeTab === 'things-to-do') {
-      categoryParam = 'things-to-do';
-    } else if (activeTab === 'restaurants-cafes') {
-      categoryParam = 'restaurants-cafes';
-    }
-
-    const queryParams = new URLSearchParams({
-      destination: encodedDestination,
-    });
-    
-    if (categoryParam) {
-      queryParams.set('category', categoryParam);
-    }
-
-    router.push(`/stay-listings?${queryParams.toString()}`);
+    // If no exact match, show dropdown with matching destinations
+    // (handled by useEffect that filters destinations)
   };
 
   const handleSearchResultSelect = (result: SearchResult) => {
     setSearchQuery(result.name);
     setShowSearchDropdown(false);
     
+    // Only handle destinations
     if (result.type === 'destination' && result.slug) {
-      // Navigate to destination detail page with category filter
-      let categoryParam = '';
-      if (activeTab === 'things-to-do') {
-        categoryParam = 'things-to-do';
-      } else if (activeTab === 'restaurants-cafes') {
-        categoryParam = 'restaurants-cafes';
-      }
-      
-      const queryParams = new URLSearchParams();
-      if (categoryParam) {
-        queryParams.set('category', categoryParam);
-      }
-      
-      const url = categoryParam 
-        ? `/destinations/${result.slug}?${queryParams.toString()}`
-        : `/destinations/${result.slug}`;
-      
-      router.push(url);
-    } else if (result.type === 'stay') {
-      // Navigate to stay details page
-      const destinationName = result.destination || '';
-      const queryParams = new URLSearchParams({
-        stay: result.id,
-      });
-      if (destinationName) {
-        queryParams.set('destination', destinationName);
-      }
-      router.push(`/item-details?${queryParams.toString()}`);
-    } else if (result.type === 'activity') {
-      // Navigate to things to do details page
-      const destinationName = result.destination || '';
-      const queryParams = new URLSearchParams({
-        'things-to-do': result.id,
-      });
-      if (destinationName) {
-        queryParams.set('destination', destinationName);
-      }
-      router.push(`/things-to-do?${queryParams.toString()}`);
-    } else if (result.type === 'trip') {
-      // Navigate to trips/restaurants & cafes details page
-      const destinationName = result.destination || '';
-      const queryParams = new URLSearchParams({
-        trips: result.id,
-      });
-      if (destinationName) {
-        queryParams.set('destination', destinationName);
-      }
-      router.push(`/trips?${queryParams.toString()}`);
+      router.push(`/destinations/${result.slug}`);
     }
   };
 
   const handleTabClick = (tab: 'stays' | 'things-to-do' | 'restaurants-cafes' | null) => {
-    // Redirect to destinations page with category parameter
+    // Show destination selection popup
     if (tab) {
+      setSelectedCategory(tab);
+      setShowDestinationPopup(true);
+      setSelectedDestination('');
+    }
+  };
+
+  const handleDestinationSelect = () => {
+    if (selectedCategory && selectedDestination) {
       const categoryMap: Record<string, string> = {
         'stays': 'stays',
         'things-to-do': 'things-to-do',
         'restaurants-cafes': 'restaurants-cafes'
       };
-      const category = categoryMap[tab];
-      router.push(`/destinations?category=${category}`);
+      const category = categoryMap[selectedCategory];
+      const destination = encodeURIComponent(selectedDestination);
+      router.push(`/stay-listings?destination=${destination}&category=${category}`);
+      setShowDestinationPopup(false);
+      setSelectedCategory(null);
+      setSelectedDestination('');
     }
+  };
+
+  const handleClosePopup = () => {
+    setShowDestinationPopup(false);
+    setSelectedCategory(null);
+    setSelectedDestination('');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -712,7 +498,7 @@ export function Hero({ banners = [] }: HeroProps) {
                     }
                   }, 200);
                 }}
-                placeholder="Destinations, stays, things to do, food spots"
+                placeholder="Search destination..."
                 className="flex-1 px-4 sm:px-6 py-4 sm:py-5 bg-transparent border-none outline-none text-sm sm:text-base text-gray-900 placeholder-gray-400"
               />
             </div>
@@ -740,35 +526,9 @@ export function Hero({ banners = [] }: HeroProps) {
                 {/* Scrollable container */}
                 <div className="overflow-y-auto max-h-full custom-scrollbar-thin">
                   {searchResults.map((result, index) => {
-                    const getTypeLabel = () => {
-                      switch (result.type) {
-                        case 'destination':
-                          return 'Destination';
-                        case 'stay':
-                          return 'Stay';
-                        case 'activity':
-                          return 'Thing to Do';
-                        case 'trip':
-                          return 'Restaurant/Cafe';
-                        default:
-                          return '';
-                      }
-                    };
-
-                    const getTypeColor = () => {
-                      switch (result.type) {
-                        case 'destination':
-                          return 'bg-blue-100 text-blue-700';
-                        case 'stay':
-                          return 'bg-orange-100 text-orange-700';
-                        case 'activity':
-                          return 'bg-green-100 text-green-700';
-                        case 'trip':
-                          return 'bg-purple-100 text-purple-700';
-                        default:
-                          return 'bg-gray-100 text-gray-700';
-                      }
-                    };
+                    // Only destinations are shown, so simplify the labels
+                    const getTypeLabel = () => 'Destination';
+                    const getTypeColor = () => 'bg-blue-100 text-blue-700';
 
                     return (
                       <button
@@ -1015,6 +775,88 @@ export function Hero({ banners = [] }: HeroProps) {
           </motion.div>
         )}
       </div>
+
+      {/* Destination Selection Popup */}
+      {showDestinationPopup && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={handleClosePopup}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative"
+          >
+            {/* Close Button */}
+            <button
+              onClick={handleClosePopup}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Popup Content */}
+            <div className="mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                Select Destination
+              </h2>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Choose a destination to explore {selectedCategory === 'stays' ? 'stays' : selectedCategory === 'things-to-do' ? 'things to do' : 'food spots'}
+              </p>
+            </div>
+
+            {/* Destination Dropdown */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Destination
+              </label>
+              <select
+                value={selectedDestination}
+                onChange={(e) => setSelectedDestination(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent text-gray-900 bg-white appearance-none cursor-pointer"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  paddingRight: '2.5rem'
+                }}
+              >
+                <option value="">Select a destination</option>
+                {destinations.map((dest) => (
+                  <option key={dest._id || dest.slug || dest.name} value={dest.slug || dest.name}>
+                    {dest.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleClosePopup}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDestinationSelect}
+                disabled={!selectedDestination}
+                className="flex-1 px-4 py-3 bg-[#E51A4B] text-white font-semibold rounded-lg hover:bg-[#c91742] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Continue
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </section>
   );
 }

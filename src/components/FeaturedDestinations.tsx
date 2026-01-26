@@ -80,7 +80,7 @@ export function FeaturedDestinations() {
 
   if (loading) {
     return (
-      <section className="mt-16 sm:mt-24">
+      <section className="mt-0">
         <div className="container">
           <div className="flex items-end justify-between">
             <h2 className="text-lg sm:text-2xl font-bold">
@@ -110,7 +110,7 @@ export function FeaturedDestinations() {
   }
 
   return (
-    <section className="mt-16 sm:mt-24">
+    <section className="mt-0">
       <div className="container">
         <div className="flex items-end justify-between">
           <h2 className="text-lg sm:text-2xl font-bold">
