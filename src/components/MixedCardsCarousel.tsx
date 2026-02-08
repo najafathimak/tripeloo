@@ -19,10 +19,20 @@ interface MixedCard {
   destination?: string;
 }
 
+type FilterTag = 'all' | 'stay' | 'activity' | 'trip';
+
+const FILTER_TAGS: { value: FilterTag; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'stay', label: 'Stays' },
+  { value: 'activity', label: 'Things to do' },
+  { value: 'trip', label: 'Food spots' },
+];
+
 export function MixedCardsCarousel() {
   const router = useRouter();
   const [cards, setCards] = useState<MixedCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTag, setActiveTag] = useState<FilterTag>('all');
 
   useEffect(() => {
     fetchMixedCards();
@@ -179,6 +189,10 @@ export function MixedCardsCarousel() {
     );
   }
 
+  const filteredCards = activeTag === 'all'
+    ? cards
+    : cards.filter((c) => c.type === activeTag);
+
   if (cards.length === 0) {
     return null;
   }
@@ -191,17 +205,43 @@ export function MixedCardsCarousel() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8 sm:mb-12"
+          className="text-center mb-6 sm:mb-8"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 font-display">
             Experience the Exceptional
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Explore our curated collection of stays, activities, and dining experiences
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
+            Explore stays, things to do, food spots
           </p>
+
+          {/* Clickable filter tags */}
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+            {FILTER_TAGS.map((tag) => (
+              <motion.button
+                key={tag.value}
+                type="button"
+                onClick={() => setActiveTag(tag.value)}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  activeTag === tag.value
+                    ? 'bg-[#E51A4B] text-white shadow-lg shadow-[#E51A4B]/25'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-[#E51A4B]/50 hover:text-[#E51A4B]'
+                }`}
+              >
+                {tag.label}
+              </motion.button>
+            ))}
+          </div>
         </motion.div>
 
         <div className="relative px-10 md:px-12">
+          {filteredCards.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="text-gray-500 text-lg">No items in this category yet. Try another filter.</p>
+            </div>
+          ) : (
+          <>
           <Swiper
             modules={[Navigation, Autoplay]}
             spaceBetween={20}
@@ -232,10 +272,10 @@ export function MixedCardsCarousel() {
               delay: 3000,
               disableOnInteraction: false,
             }}
-            loop={cards.length > 5}
+            loop={filteredCards.length > 5}
             className="!pb-12"
           >
-            {cards.map((card) => (
+            {filteredCards.map((card) => (
               <SwiperSlide key={`${card.type}-${card.id}`}>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -273,10 +313,14 @@ export function MixedCardsCarousel() {
                     </h3>
                     
                     <div className="mt-auto flex items-center justify-between">
-                      <p className="text-lg sm:text-xl font-bold text-[#E51A4B]">
-                        ₹{card.price.toLocaleString()}
-                        {card.type === 'stay' && <span className="text-xs text-gray-600 font-normal"> / night</span>}
-                      </p>
+                      {card.price != null && card.price > 0 ? (
+                        <p className="text-lg sm:text-xl font-bold text-[#E51A4B]">
+                          ₹{card.price.toLocaleString()}
+                          {card.type === 'stay' && <span className="text-xs text-gray-600 font-normal"> / night</span>}
+                        </p>
+                      ) : (
+                        <span />
+                      )}
                       <motion.div
                         animate={{ x: [0, 4, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
@@ -292,7 +336,7 @@ export function MixedCardsCarousel() {
           </Swiper>
 
           {/* Custom Navigation Buttons */}
-          {cards.length > 4 && (
+          {filteredCards.length > 4 && (
             <>
               <motion.button
                 className="swiper-button-prev-mixed absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white text-gray-800 p-3 rounded-full shadow-xl transition-all hidden md:flex items-center justify-center border border-gray-200 hover:border-[#E51A4B] hover:text-[#E51A4B]"
@@ -315,6 +359,8 @@ export function MixedCardsCarousel() {
                 </svg>
               </motion.button>
             </>
+          )}
+          </>
           )}
         </div>
       </div>
