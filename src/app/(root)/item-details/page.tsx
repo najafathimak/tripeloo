@@ -7,7 +7,6 @@ import RoomsSection from "@/components/ListDetails/RoomsSection";
 import BookingSidebar from "@/components/ListDetails/ListingDetailsClient";
 import NearbyItems from "@/components/NearbyItems";
 import { BottomBookingTab } from "@/components/ListDetails/BottomBookingTab";
-import { LeadFormPopup } from "@/components/LeadFormPopup";
 import { Star, Car, Hotel, Utensils, Mountain, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useRef, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
@@ -71,7 +70,6 @@ const ListingDetailsContent = () => {
   const [stayData, setStayData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [reviewSummary, setReviewSummary] = useState({ average: 0, totalReviews: 0 });
-  const [showLeadPopup, setShowLeadPopup] = useState(false);
   const bookingRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -125,84 +123,6 @@ const ListingDetailsContent = () => {
       fetchReviewSummary();
     }
   }, [stayId]);
-
-  // Popup trigger logic for both mobile and desktop
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const isMobile = window.innerWidth < 768;
-    const formFilled = localStorage.getItem('leadFormFilled') === 'true';
-    const popupKey = `leadPopup_${stayId || 'item-details'}`;
-
-    // Check cooldown based on form filled status
-    const lastShownTimestamp = localStorage.getItem(popupKey);
-    if (lastShownTimestamp) {
-      const lastShown = parseInt(lastShownTimestamp, 10);
-      const now = Date.now();
-      const cooldownMs = formFilled 
-        ? 24 * 60 * 60 * 1000  // 24 hours if filled
-        : 30 * 60 * 1000;      // 30 minutes if not filled
-      
-      if (now - lastShown < cooldownMs) {
-        return; // Still in cooldown period
-      }
-    }
-
-    let timeoutId: NodeJS.Timeout;
-    let scrollTimeoutId: NodeJS.Timeout;
-    let hasTriggered = false;
-
-    if (isMobile) {
-      // Mobile: Trigger on scroll to additional-information-section
-      const handleScroll = () => {
-        if (hasTriggered) return;
-
-        const section = document.getElementById('additional-information-section');
-        if (!section) return;
-
-        const rect = section.getBoundingClientRect();
-        const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
-
-        if (isVisible && !showLeadPopup) {
-          hasTriggered = true;
-          localStorage.setItem(popupKey, Date.now().toString());
-          
-          setTimeout(() => {
-            setShowLeadPopup(true);
-          }, 500);
-        }
-      };
-
-      const debouncedScroll = () => {
-        if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
-        scrollTimeoutId = setTimeout(handleScroll, 200);
-      };
-
-      window.addEventListener('scroll', debouncedScroll);
-      timeoutId = setTimeout(handleScroll, 1500);
-
-      return () => {
-        window.removeEventListener('scroll', debouncedScroll);
-        if (timeoutId) clearTimeout(timeoutId);
-        if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
-      };
-    } else {
-      // Desktop: Show after 7 seconds
-      timeoutId = setTimeout(() => {
-        if (!hasTriggered && !showLeadPopup) {
-          hasTriggered = true;
-          localStorage.setItem(popupKey, Date.now().toString());
-          setShowLeadPopup(true);
-        }
-      }, 7000);
-
-      return () => {
-        if (timeoutId) clearTimeout(timeoutId);
-      };
-    }
-  }, [showLeadPopup, stayId]);
-
-
 
   if (loading) {
     return (
@@ -493,19 +413,6 @@ const ListingDetailsContent = () => {
           </div>
         </div>
       </div>
-
-      {/* Lead Form Popup for scroll detection */}
-      {stayData && (
-        <LeadFormPopup
-          isOpen={showLeadPopup}
-          onClose={() => setShowLeadPopup(false)}
-          onSkip={() => setShowLeadPopup(false)}
-          itemName={stayData.name}
-          itemType="stay"
-          itemPrice={formatPrice(stayData.startingPrice)}
-          itemDestination={destination || stayData.destinationName || stayData.destinationSlug}
-        />
-      )}
 
       {/* Bottom Booking Tab - Always show */}
       {stayData && (

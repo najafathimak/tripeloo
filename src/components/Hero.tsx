@@ -140,7 +140,6 @@ export function Hero({ banners = [] }: HeroProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [showDestinationPopup, setShowDestinationPopup] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'stays' | 'things-to-do' | 'restaurants-cafes' | null>(null);
   const [selectedDestination, setSelectedDestination] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -308,34 +307,29 @@ export function Hero({ banners = [] }: HeroProps) {
   };
 
   const handleTabClick = (tab: 'stays' | 'things-to-do' | 'restaurants-cafes' | null) => {
-    // Show destination selection popup
     if (tab) {
-      setSelectedCategory(tab);
-      setShowDestinationPopup(true);
+      // Toggle: if same tab clicked, close dropdown; otherwise switch tab
+      const newCategory = selectedCategory === tab ? null : tab;
+      setSelectedCategory(newCategory);
+      setActiveTab(newCategory);
       setSelectedDestination('');
     }
   };
 
-  const handleDestinationSelect = () => {
-    if (selectedCategory && selectedDestination) {
+  const handleDestinationSelect = (destSlugOrName: string) => {
+    if (selectedCategory && destSlugOrName) {
       const categoryMap: Record<string, string> = {
         'stays': 'stays',
         'things-to-do': 'things-to-do',
         'restaurants-cafes': 'restaurants-cafes'
       };
       const category = categoryMap[selectedCategory];
-      const destination = encodeURIComponent(selectedDestination);
+      const destination = encodeURIComponent(destSlugOrName);
       router.push(`/stay-listings?destination=${destination}&category=${category}`);
-      setShowDestinationPopup(false);
       setSelectedCategory(null);
+      setActiveTab(null);
       setSelectedDestination('');
     }
-  };
-
-  const handleClosePopup = () => {
-    setShowDestinationPopup(false);
-    setSelectedCategory(null);
-    setSelectedDestination('');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -458,6 +452,51 @@ export function Hero({ banners = [] }: HeroProps) {
           </button>
         </motion.div>
 
+        {/* Destination dropdown - inline when tab is selected */}
+        {selectedCategory && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6 sm:mb-8"
+          >
+            <span className="text-sm font-medium text-gray-700 shrink-0">
+              Choose destination for {selectedCategory === 'stays' ? 'stays' : selectedCategory === 'things-to-do' ? 'things to do' : 'food spots'}:
+            </span>
+            <div className="relative w-full sm:w-auto min-w-[200px] max-w-xs">
+              <select
+                value={selectedDestination}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedDestination(val);
+                  if (val) handleDestinationSelect(val);
+                }}
+                className="w-full px-4 py-2.5 sm:py-3 pr-12 border-2 border-gray-200 rounded-full focus:ring-2 focus:ring-[#E51A4B] focus:border-[#E51A4B] text-gray-900 bg-white appearance-none cursor-pointer text-sm sm:text-base font-medium"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                }}
+              >
+                <option value="">Select destination</option>
+                {destinations.map((dest) => (
+                  <option key={dest._id || dest.slug || dest.name} value={dest.slug || dest.name}>
+                    {dest.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={() => { setSelectedCategory(null); setActiveTab(null); setSelectedDestination(''); }}
+              className="text-sm text-gray-500 hover:text-gray-700 shrink-0"
+              aria-label="Close"
+            >
+              Cancel
+            </button>
+          </motion.div>
+        )}
+
         {/* Big Search Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -547,11 +586,9 @@ export function Hero({ banners = [] }: HeroProps) {
                           <span className="text-gray-900 font-medium text-sm sm:text-base truncate group-hover:text-[#E51A4B] transition-colors">
                             {result.name}
                           </span>
-                          {result.destination && (
-                            <span className="text-xs text-gray-500 flex-shrink-0 sm:ml-auto">
-                              {result.destination}
-                            </span>
-                          )}
+                          <span className="text-xs text-gray-500 flex-shrink-0 sm:ml-auto whitespace-nowrap">
+                            Explore stays, things to do, food spots
+                          </span>
                         </div>
                       </button>
                     );
@@ -776,87 +813,6 @@ export function Hero({ banners = [] }: HeroProps) {
         )}
       </div>
 
-      {/* Destination Selection Popup */}
-      {showDestinationPopup && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={handleClosePopup}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative"
-          >
-            {/* Close Button */}
-            <button
-              onClick={handleClosePopup}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Close"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Popup Content */}
-            <div className="mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                Select Destination
-              </h2>
-              <p className="text-gray-600 text-sm sm:text-base">
-                Choose a destination to explore {selectedCategory === 'stays' ? 'stays' : selectedCategory === 'things-to-do' ? 'things to do' : 'food spots'}
-              </p>
-            </div>
-
-            {/* Destination Dropdown */}
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Destination
-              </label>
-              <select
-                value={selectedDestination}
-                onChange={(e) => setSelectedDestination(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E51A4B] focus:border-transparent text-gray-900 bg-white appearance-none cursor-pointer"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 1rem center',
-                  paddingRight: '2.5rem'
-                }}
-              >
-                <option value="">Select a destination</option>
-                {destinations.map((dest) => (
-                  <option key={dest._id || dest.slug || dest.name} value={dest.slug || dest.name}>
-                    {dest.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={handleClosePopup}
-                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDestinationSelect}
-                disabled={!selectedDestination}
-                className="flex-1 px-4 py-3 bg-[#E51A4B] text-white font-semibold rounded-lg hover:bg-[#c91742] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Continue
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
     </section>
   );
 }

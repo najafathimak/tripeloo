@@ -67,19 +67,13 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showLeadPopup, setShowLeadPopup] = useState(false);
-  const [hasShownPopup, setHasShownPopup] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const selectedIndexRef = useRef(0);
   const imagesLoadedRef = useRef(false);
-  const popupTriggeredRef = useRef(false);
-  const hasShownPopupRef = useRef(false);
   const isMobileRef = useRef(false);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const resizeRafRef = useRef<number | null>(null);
-  
-  // Create stable slug value for dependency array
-  const stableSlug = useMemo(() => slug || 'destination', [slug]);
   
   // Memoize carousel images to prevent re-renders
   const carouselImages = useMemo(() => {
@@ -205,87 +199,6 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
 
     fetchData();
   }, [slug]);
-
-  // Popup scroll detection for destination overview page (both mobile and desktop)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!stableSlug) return;
-
-    const formFilled = localStorage.getItem('leadFormFilled') === 'true';
-    const popupKey = `leadPopup_destination_${stableSlug}`;
-
-    // Check cooldown based on form filled status
-    const lastShownTimestamp = localStorage.getItem(popupKey);
-    if (lastShownTimestamp) {
-      const lastShown = parseInt(lastShownTimestamp, 10);
-      const now = Date.now();
-      const cooldownMs = formFilled 
-        ? 24 * 60 * 60 * 1000  // 24 hours if filled
-        : 30 * 60 * 1000;      // 30 minutes if not filled
-      
-      if (now - lastShown < cooldownMs) {
-        hasShownPopupRef.current = true;
-        setHasShownPopup(true);
-        return; // Still in cooldown period
-      }
-    }
-
-    let timeoutId: NodeJS.Timeout;
-    let scrollTimeoutId: NodeJS.Timeout;
-    let rafId: number;
-
-    // Wait for page to load before checking
-    const checkScroll = () => {
-      if (hasShownPopupRef.current || popupTriggeredRef.current) return;
-
-      // Look for overview section
-      const overviewSection = document.getElementById('destination-overview-section');
-      
-      if (!overviewSection) {
-        // Retry after a short delay if element not found
-        timeoutId = setTimeout(checkScroll, 500);
-        return;
-      }
-
-      const rect = overviewSection.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-
-      // Trigger when overview section is scrolled into view (middle of viewport)
-      if (rect.top < windowHeight * 0.7 && rect.bottom > windowHeight * 0.3 && !popupTriggeredRef.current) {
-        popupTriggeredRef.current = true;
-        // Add a small delay before showing popup for better UX
-        scrollTimeoutId = setTimeout(() => {
-          setShowLeadPopup(true);
-          hasShownPopupRef.current = true;
-          setHasShownPopup(true);
-          localStorage.setItem(popupKey, Date.now().toString());
-        }, 300);
-      }
-    };
-
-    // Scroll detection - optimized with RAF
-    const handleScroll = () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
-        scrollTimeoutId = setTimeout(checkScroll, 150);
-      });
-    };
-
-    // Initial check after component mounts and page loads
-    timeoutId = setTimeout(checkScroll, 1000);
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll, { passive: true });
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      if (scrollTimeoutId) clearTimeout(scrollTimeoutId);
-      if (rafId) cancelAnimationFrame(rafId);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, [hasShownPopup, stableSlug]);
 
   const handleItemClick = (itemId: string, type: "stay" | "activity" | "trip") => {
     const destinationName = encodeURIComponent(destination?.name || slug);
