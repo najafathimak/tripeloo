@@ -198,7 +198,7 @@ export function MixedCardsCarousel() {
   }
 
   return (
-    <section className="pt-2 pb-0 bg-gradient-to-b from-white to-gray-50/50">
+    <section className="pt-8 pb-0 bg-gradient-to-b from-white to-gray-50/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

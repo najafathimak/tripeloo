@@ -84,7 +84,7 @@ export function FeaturedDestinations() {
 
   if (loading) {
     return (
-      <section className="mt-0" id="featured-destinations-section">
+      <section className="mt-8 pt-0" id="featured-destinations-section">
         <div className="container">
           <div className="flex items-end justify-between">
             <h2 className="text-lg sm:text-2xl font-bold">
@@ -98,10 +98,10 @@ export function FeaturedDestinations() {
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-[280px] sm:w-[320px] overflow-hidden rounded-xl border border-gray-100 bg-gray-100 animate-pulse"
+                className="flex-shrink-0 w-[280px] sm:w-[320px] overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 animate-pulse"
               >
-                <div className="h-28 sm:h-40 bg-gray-200" />
-                <div className="p-3 sm:p-4">
+                <div className="h-56 sm:h-64 bg-gray-200" />
+                <div className="p-5 sm:p-6">
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
                   <div className="h-3 bg-gray-200 rounded w-1/2" />
                 </div>
@@ -114,7 +114,7 @@ export function FeaturedDestinations() {
   }
 
   return (
-    <section className="mt-0" id="featured-destinations-section">
+    <section className="mt-8 pt-0" id="featured-destinations-section">
       <div className="container">
         <div className="flex items-end justify-between">
           <h2 className="text-lg sm:text-2xl font-bold">
@@ -129,17 +129,9 @@ export function FeaturedDestinations() {
           <Swiper
             modules={[Navigation, Autoplay]}
             spaceBetween={16}
-            slidesPerView={1.2}
+            slidesPerView={1.12}
             breakpoints={{
               640: {
-                slidesPerView: 2.2,
-                spaceBetween: 16,
-              },
-              768: {
-                slidesPerView: 3,
-                spaceBetween: 20,
-              },
-              1024: {
                 slidesPerView: 4,
                 spaceBetween: 24,
               },
@@ -159,29 +151,29 @@ export function FeaturedDestinations() {
               <SwiperSlide key={d.slug}>
                 <Link
                   href={`/destinations/${d.slug}#destination-overview-section`}
-                  className="group block overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm h-full"
+                  className="group block overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg hover:shadow-xl h-full transition-shadow"
                 >
-                  <div className="relative h-28 sm:h-40">
+                  <div className="relative h-56 sm:h-64">
                     <img
                       src={optimizeCloudinaryUrl(d.image)}
                       alt={d.name}
                       width={400}
-                      height={160}
+                      height={256}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                     />
                   </div>
-                  <div className="p-3 sm:p-4">
-                    <div className="font-semibold text-gray-900">{d.name}</div>
+                  <div className="p-5 sm:p-6">
+                    <div className="font-bold text-lg sm:text-xl text-gray-900">{d.name}</div>
                     {/* Non-clickable tags to convey what's available at this destination */}
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 cursor-default select-none">
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                      <span className="inline-block px-2.5 py-1 rounded-md text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 cursor-default select-none">
                         Stays
                       </span>
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 cursor-default select-none">
+                      <span className="inline-block px-2.5 py-1 rounded-md text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 cursor-default select-none">
                         Things to do
                       </span>
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 cursor-default select-none">
+                      <span className="inline-block px-2.5 py-1 rounded-md text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 cursor-default select-none">
                         Food spots
                       </span>
                     </div>

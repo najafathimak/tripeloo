@@ -136,7 +136,7 @@ export function DestinationStaysSection({ destinationSlug = "wayanad", destinati
             <ArrowRight className="w-5 h-5" />
           </motion.div>
         </div>
-        {/* Phone + Connect with Tripeloo - stop propagation so card click doesn't fire */}
+        {/* Phone + Connect with Tripeloo buddy - stop propagation so card click doesn't fire */}
         <div
           className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
@@ -151,9 +151,9 @@ export function DestinationStaysSection({ destinationSlug = "wayanad", destinati
           <button
             type="button"
             onClick={onConnectClick}
-            className="flex-1 min-w-0 py-2.5 px-3 rounded-xl bg-[#E51A4B] hover:bg-[#c91742] text-white text-sm font-semibold transition-colors text-center"
+            className="flex-1 min-w-0 py-2.5 px-3 rounded-xl bg-[#E51A4B] hover:bg-[#c91742] text-white text-xs sm:text-sm font-semibold transition-colors text-center"
           >
-            Connect with Tripeloo
+            Connect with Tripeloo buddy
           </button>
         </div>
       </div>
