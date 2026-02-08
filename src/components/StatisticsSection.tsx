@@ -121,7 +121,7 @@ export default function StatisticsSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-[#E51A4B] to-[#c91742] text-white overflow-hidden"
+      className="relative py-5 sm:py-16 lg:py-20 bg-gradient-to-br from-[#E51A4B] to-[#c91742] text-white overflow-hidden"
     >
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -153,7 +153,7 @@ export default function StatisticsSection() {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 lg:gap-12 mb-2 sm:mb-8">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             const displayValue = counts[index];
@@ -164,27 +164,27 @@ export default function StatisticsSection() {
                 className="flex flex-col items-center text-center group"
               >
                 {/* Icon */}
-                <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-white/20 rounded-full backdrop-blur-sm group-hover:bg-white/30 transition-all duration-300">
-                  <Icon className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10" />
+                <div className="mb-1.5 sm:mb-6 p-2 sm:p-4 bg-white/20 rounded-full backdrop-blur-sm group-hover:bg-white/30 transition-all duration-300">
+                  <Icon className="w-5 h-5 sm:w-8 sm:h-8 lg:w-10 lg:h-10" />
                 </div>
 
                 {/* Number with animation */}
-                <div className="mb-2 sm:mb-3">
-                  <span className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tabular-nums">
+                <div className="mb-0.5 sm:mb-3">
+                  <span className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tabular-nums">
                     {displayValue.toLocaleString()}
                   </span>
-                  <span className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold">
+                  <span className="text-xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold">
                     {stat.suffix}
                   </span>
                 </div>
 
                 {/* Label */}
-                <p className="text-xs sm:text-sm lg:text-base font-medium text-white/90 leading-tight mb-2">
+                <p className="text-[11px] sm:text-sm lg:text-base font-medium text-white/90 leading-tight mb-0.5 sm:mb-2">
                   {stat.label}
                 </p>
                 
-                {/* Caption */}
-                <p className="text-[10px] sm:text-xs text-white/70 font-light leading-relaxed max-w-[200px]">
+                {/* Caption - hidden on mobile to keep section compact */}
+                <p className="hidden sm:block text-[10px] sm:text-xs text-white/70 font-light leading-relaxed max-w-[200px]">
                   {stat.caption}
                 </p>
               </div>
@@ -192,9 +192,9 @@ export default function StatisticsSection() {
           })}
         </div>
 
-        {/* Positive Caption */}
-        <div className="text-center mt-6 sm:mt-8">
-          <p className="text-xs sm:text-sm text-white/80 font-light italic max-w-2xl mx-auto leading-relaxed">
+        {/* Positive Caption - tighter on mobile */}
+        <div className="text-center mt-2 sm:mt-8">
+          <p className="text-[11px] sm:text-sm text-white/80 font-light italic max-w-2xl mx-auto leading-snug sm:leading-relaxed">
             Trusted by thousands of travelers, we're committed to creating unforgettable experiences that bring joy and adventure to every journey.
           </p>
         </div>

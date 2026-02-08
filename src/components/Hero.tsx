@@ -384,21 +384,21 @@ export function Hero({ banners = [] }: HeroProps) {
   }, [isMobile]);
 
   return (
-    <section className="relative bg-gradient-to-br from-white via-blue-50/30 to-pink-50/30 min-h-screen" style={{ willChange: 'auto', transform: 'translateZ(0)' }}>
-      {/* Simplified Static Background */}
+    <section className="relative bg-gradient-to-br from-white via-blue-50/30 to-pink-50/30 min-h-0 sm:min-h-screen" style={{ willChange: 'auto', transform: 'translateZ(0)' }}>
+      {/* Simplified Static Background - subtle on mobile to avoid fogged look */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ willChange: 'auto' }}>
-        {/* Static gradient orbs - no animation for better performance */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E51A4B]/8 to-white/10 rounded-full blur-3xl opacity-60" />
-        <div className="absolute bottom-0 left-0 w-[480px] h-[480px] bg-gradient-to-tr from-white/8 to-[#E51A4B]/6 rounded-full blur-3xl opacity-60" />
+        {/* Static gradient orbs - reduced on mobile */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E51A4B]/8 to-white/10 rounded-full blur-3xl opacity-20 sm:opacity-60" />
+        <div className="absolute bottom-0 left-0 w-[480px] h-[480px] bg-gradient-to-tr from-white/8 to-[#E51A4B]/6 rounded-full blur-3xl opacity-20 sm:opacity-60" />
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 pt-28 sm:pt-32 md:pt-36 pb-2 sm:pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 pt-28 sm:pt-32 md:pt-36 pb-0 sm:pb-8 px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <div className="text-center mb-8 sm:mb-10 relative">
+        <div className="text-center mb-6 sm:mb-10 relative">
           {/* Static background glow - no animation */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="absolute w-80 h-80 bg-[#E51A4B]/15 rounded-full blur-3xl opacity-50" />
+            <div className="absolute w-80 h-80 bg-[#E51A4B]/15 rounded-full blur-3xl opacity-20 sm:opacity-50" />
           </div>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-4 font-display relative inline-block z-10">
             <span className="relative z-10 text-gray-900 tracking-tight">
@@ -415,7 +415,7 @@ export function Hero({ banners = [] }: HeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-nowrap justify-center items-center gap-1 sm:gap-4 mb-8 w-full max-w-full overflow-x-auto px-2"
+          className="flex flex-nowrap justify-center items-center gap-1 sm:gap-4 mb-6 sm:mb-8 w-full max-w-full overflow-x-auto px-2"
         >
           <button
             onClick={() => handleTabClick('stays')}
@@ -502,7 +502,7 @@ export function Hero({ banners = [] }: HeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="max-w-4xl mx-auto mb-12"
+          className="max-w-4xl mx-auto mb-6 sm:mb-12"
           ref={searchContainerRef}
         >
           <div className="relative z-50">
@@ -614,11 +614,11 @@ export function Hero({ banners = [] }: HeroProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="max-w-7xl lg:max-w-[90vw] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6"
+            className="max-w-7xl lg:max-w-[90vw] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 pb-0"
           >
             <div className="relative group">
               {/* Decorative Border Glow */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#E51A4B] via-blue-500 to-purple-500 rounded-2xl opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-500" />
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#E51A4B] via-blue-500 to-purple-500 rounded-2xl opacity-10 sm:opacity-20 blur-xl group-hover:opacity-30 transition-opacity duration-500" />
               
               <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
                 <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
