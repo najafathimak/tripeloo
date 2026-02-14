@@ -12,37 +12,37 @@ export type Destination = {
 
 export const destinations: Destination[] = [
   {
-    id: 'goa-beach-retreat',
-    name: 'Goa Beach Retreat',
-    slug: 'goa-beach-retreat',
-    location: 'Goa, India',
-    coverImage: 'https://images.unsplash.com/photo-1546484959-f9a53db89f9e?q=80&w=1600&auto=format&fit=crop',
+    id: 'wayanad',
+    name: 'Wayanad',
+    slug: 'wayanad',
+    location: 'Wayanad, Kerala',
+    coverImage: 'https://images.unsplash.com/photo-1501117716987-c8e71d1cd834?q=80&w=1600&auto=format&fit=crop',
     startingPrice: 2499,
     currency: 'INR',
-    summary: 'Beachside stays with curated activities and nightlife hops.',
-    tags: ['beach', 'nightlife', 'stays']
+    summary: 'Lush hills, wildlife sanctuaries, and scenic plantations.',
+    tags: ['hills', 'nature', 'stays']
   },
   {
-    id: 'manali-mountain-escape',
-    name: 'Manali Mountain Escape',
-    slug: 'manali-mountain-escape',
-    location: 'Manali, Himachal',
-    coverImage: 'https://images.unsplash.com/photo-1606041008023-472dfb5e530d?q=80&w=1600&auto=format&fit=crop',
+    id: 'munnar',
+    name: 'Munnar',
+    slug: 'munnar',
+    location: 'Munnar, Kerala',
+    coverImage: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=1600&auto=format&fit=crop',
     startingPrice: 1999,
     currency: 'INR',
-    summary: 'Snow peaks, pine trails, and cosy cabins.',
-    tags: ['mountain', 'hiking', 'cabins']
+    summary: 'Tea estates, misty valleys, and mountain retreats.',
+    tags: ['tea', 'mountains', 'stays']
   },
   {
-    id: 'jaipur-heritage-walks',
-    name: 'Jaipur Heritage Walks',
-    slug: 'jaipur-heritage-walks',
-    location: 'Jaipur, Rajasthan',
-    coverImage: 'https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=1600&auto=format&fit=crop',
-    startingPrice: 1499,
+    id: 'coorg',
+    name: 'Coorg',
+    slug: 'coorg',
+    location: 'Coorg, Karnataka',
+    coverImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1600&auto=format&fit=crop',
+    startingPrice: 2199,
     currency: 'INR',
-    summary: 'Palaces, pink hues, and royal street food tours.',
-    tags: ['heritage', 'culture', 'food']
+    summary: 'Coffee plantations, waterfalls, and peaceful homestays.',
+    tags: ['coffee', 'plantations', 'stays']
   }
 ];
 
