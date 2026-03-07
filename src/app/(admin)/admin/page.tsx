@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Image as ImageIcon, MapPin, Hotel, Activity, UtensilsCrossed, MessageSquare, Gift, TrendingUp, Users, Star } from "lucide-react";
+import { LayoutDashboard, Image as ImageIcon, MapPin, Hotel, Activity, UtensilsCrossed, MessageSquare, Gift, TrendingUp, Users, Star, Package } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
@@ -11,6 +11,7 @@ export default function AdminDashboard() {
     stays: 0,
     activities: 0,
     trips: 0,
+    tourPackages: 0,
     reviews: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -32,11 +33,12 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const [destinationsRes, staysRes, activitiesRes, tripsRes, reviewsRes] = await Promise.all([
+      const [destinationsRes, staysRes, activitiesRes, tripsRes, tourPackagesRes, reviewsRes] = await Promise.all([
         fetch("/api/admin/destinations"),
         fetch("/api/admin/stays"),
         fetch("/api/admin/activities"),
         fetch("/api/admin/trips"),
+        fetch("/api/admin/tour-packages"),
         fetch("/api/admin/reviews"),
       ]);
 
@@ -44,6 +46,7 @@ export default function AdminDashboard() {
       const stays = staysRes.ok ? await staysRes.json() : { data: [] };
       const activities = activitiesRes.ok ? await activitiesRes.json() : { data: [] };
       const trips = tripsRes.ok ? await tripsRes.json() : { data: [] };
+      const tourPackages = tourPackagesRes.ok ? await tourPackagesRes.json() : { data: [] };
       const reviews = reviewsRes.ok ? await reviewsRes.json() : { data: [] };
 
       setStats({
@@ -51,6 +54,7 @@ export default function AdminDashboard() {
         stays: Array.isArray(stays.data) ? stays.data.length : stays.data?.length || 0,
         activities: Array.isArray(activities.data) ? activities.data.length : activities.data?.length || 0,
         trips: Array.isArray(trips.data) ? trips.data.length : trips.data?.length || 0,
+        tourPackages: Array.isArray(tourPackages.data) ? tourPackages.data.length : tourPackages.data?.length || 0,
         reviews: Array.isArray(reviews.data) ? reviews.data.length : reviews.data?.length || 0,
       });
     } catch (error) {
@@ -66,6 +70,7 @@ export default function AdminDashboard() {
     { href: "/admin/stays", label: "Stays", icon: Hotel, color: "bg-purple-500" },
     { href: "/admin/things", label: "Things to Do", icon: Activity, color: "bg-orange-500" },
     { href: "/admin/trips", label: "Food spots", icon: UtensilsCrossed, color: "bg-cyan-500" },
+    { href: "/admin/tour-packages", label: "Tour Packages", icon: Package, color: "bg-teal-500" },
     { href: "/admin/reviews", label: "Reviews", icon: MessageSquare, color: "bg-pink-500" },
     { href: "/admin/loyalty-points", label: "Loyalty Points", icon: Gift, color: "bg-red-500" },
     { href: "/admin/leads", label: "Website Leads", icon: Users, color: "bg-indigo-500" },
@@ -85,7 +90,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <StatCard
             label="Destinations"
             value={stats.destinations}
@@ -113,6 +118,13 @@ export default function AdminDashboard() {
             icon={UtensilsCrossed}
             color="bg-cyan-500/20 border-cyan-500/50"
             iconColor="text-cyan-400"
+          />
+          <StatCard
+            label="Tour Packages"
+            value={stats.tourPackages}
+            icon={Package}
+            color="bg-teal-500/20 border-teal-500/50"
+            iconColor="text-teal-400"
           />
           <StatCard
             label="Reviews"
@@ -177,6 +189,12 @@ export default function AdminDashboard() {
               >
                 + Add New Trip
               </Link>
+              <Link
+                href="/admin/tour-packages/add"
+                className="block w-full bg-[#E51A4B] hover:bg-[#c91742] text-white font-semibold py-3 px-4 rounded-lg transition-colors text-center"
+              >
+                + Add New Tour Package
+              </Link>
             </div>
           </div>
 
@@ -209,6 +227,12 @@ export default function AdminDashboard() {
                 className="block w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-4 rounded-lg transition-colors text-center border border-white/20"
               >
                 Manage Food spots
+              </Link>
+              <Link
+                href="/admin/tour-packages/list"
+                className="block w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-4 rounded-lg transition-colors text-center border border-white/20"
+              >
+                Manage Tour Packages
               </Link>
             </div>
           </div>

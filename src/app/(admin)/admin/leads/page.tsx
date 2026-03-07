@@ -7,11 +7,15 @@ interface Lead {
   id: string;
   fullName: string;
   mobileNumber: string;
+  email?: string;
   destination: string;
   travelCount: number;
   travelDate: string;
   createdAt: string;
   status: string;
+  itemName?: string;
+  itemType?: string;
+  selectedDurationOptions?: string[];
 }
 
 export default function LeadsPage() {
@@ -83,15 +87,18 @@ export default function LeadsPage() {
   };
 
   const exportToCSV = () => {
-    const headers = ["Full Name", "Mobile Number", "Destination", "Travel Count", "Travel Date", "Created At", "Status"];
+    const headers = ["Full Name", "Mobile Number", "Email", "Destination", "Travel Count", "Travel Date", "Created At", "Status", "Item (Package)", "Selected Durations"];
     const rows = leads.map(lead => [
       lead.fullName,
       lead.mobileNumber,
+      lead.email || "",
       lead.destination,
       lead.travelCount.toString(),
       formatDate(lead.travelDate),
       formatDate(lead.createdAt),
       lead.status,
+      lead.itemName || "",
+      (lead.selectedDurationOptions || []).join("; "),
     ]);
 
     const csvContent = [
@@ -258,9 +265,17 @@ export default function LeadsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-white/80">
-                          <MapPin className="w-4 h-4" />
-                          {lead.destination}
+                        <div className="flex flex-col gap-1 text-white/80">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 flex-shrink-0" />
+                            <span>{lead.destination || "—"}</span>
+                          </div>
+                          {lead.itemType === "tour-package" && lead.itemName && (
+                            <span className="text-xs text-white/60">Package: {lead.itemName}</span>
+                          )}
+                          {lead.selectedDurationOptions && lead.selectedDurationOptions.length > 0 && (
+                            <span className="text-xs text-teal-300">Duration: {lead.selectedDurationOptions.join(", ")}</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">

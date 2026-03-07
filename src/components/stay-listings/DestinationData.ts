@@ -26,6 +26,17 @@ export type Trip = {
   category: string;
 };
 
+export type TourPackageListItem = {
+  id: string;
+  name: string;
+  coverImage: string;
+  packagePrice: number;
+  currency: string;
+  numberOfDays: number;
+  numberOfNights: number;
+  durationOptions: string[];
+};
+
 export const stayData: Record<string, Stay[]> = {
   wayanad: [
     {

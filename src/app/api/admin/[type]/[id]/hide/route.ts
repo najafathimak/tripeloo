@@ -6,6 +6,7 @@ const COLLECTIONS: Record<string, string> = {
   stays: 'stays',
   activities: 'activities',
   trips: 'trips',
+  'tour-packages': 'tour_packages',
 };
 
 export async function PATCH(

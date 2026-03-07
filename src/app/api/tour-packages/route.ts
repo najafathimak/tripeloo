@@ -1,0 +1,33 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { listTourPackagesByDestination } from '@/server/services/tourPackagesService';
+import { findDestinationBySlugOrName } from '@/server/repositories/destinationsRepository';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 1800;
+
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const destinationParam = searchParams.get('destination');
+
+    if (!destinationParam) {
+      return NextResponse.json({ error: 'Destination is required' }, { status: 400 });
+    }
+
+    const destination = await findDestinationBySlugOrName(destinationParam);
+    const destinationSlug = destination?.slug || destinationParam.toLowerCase().trim();
+
+    const data = await listTourPackagesByDestination(destinationSlug);
+    return NextResponse.json(
+      { data },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
+        },
+      }
+    );
+  } catch (error) {
+    console.error('[api/tour-packages] error', error);
+    return NextResponse.json({ error: 'Failed to load tour packages' }, { status: 500 });
+  }
+}

@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 
 interface AdminListPageProps {
   title: string;
-  type: "destinations" | "stays" | "activities" | "trips";
+  type: "destinations" | "stays" | "activities" | "trips" | "tour-packages";
   addRoute: string;
   editRoutePrefix: string;
   showAddButton?: boolean;
@@ -139,8 +139,8 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
     // Sort by price (ascending) - always enabled by default
     if (sortByPrice) {
       filtered = [...filtered].sort((a, b) => {
-        const priceA = a.startingPrice || a.price || 0;
-        const priceB = b.startingPrice || b.price || 0;
+        const priceA = a.startingPrice ?? a.price ?? a.packagePrice ?? 0;
+        const priceB = b.startingPrice ?? b.price ?? b.packagePrice ?? 0;
         return priceA - priceB;
       });
     }
@@ -536,9 +536,9 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
                     Location: {item.location}
                   </p>
                 )}
-                {item.startingPrice !== undefined && (
+                {(item.startingPrice !== undefined || item.packagePrice !== undefined) && (
                   <p className="text-[#E51A4B] font-bold text-lg mb-3">
-                    ₹{item.startingPrice}
+                    ₹{item.startingPrice ?? item.packagePrice ?? 0}
                     {item.currency && ` ${item.currency}`}
                   </p>
                 )}
@@ -704,14 +704,14 @@ export default function AdminListPage({ title, type, addRoute, editRoutePrefix, 
                   )}
 
                   {/* Price */}
-                  {viewingItem.startingPrice !== undefined && (
+                  {(viewingItem.startingPrice !== undefined || viewingItem.packagePrice !== undefined) && (
                     <div className="bg-red-50 rounded-lg p-4 border border-red-200">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-red-600 font-bold">₹</span>
-                        <h3 className="font-semibold text-gray-900">Starting Price</h3>
+                        <h3 className="font-semibold text-gray-900">{viewingItem.packagePrice !== undefined ? "Package Price" : "Starting Price"}</h3>
                       </div>
                       <p className="text-gray-700 font-bold text-lg">
-                        ₹{viewingItem.startingPrice}
+                        ₹{viewingItem.startingPrice ?? viewingItem.packagePrice ?? 0}
                         {viewingItem.currency && ` ${viewingItem.currency}`}
                         {viewingItem.originalPrice && (
                           <span className="text-gray-500 line-through text-sm ml-2">

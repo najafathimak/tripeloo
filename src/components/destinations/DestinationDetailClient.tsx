@@ -393,7 +393,7 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
       {/* Destination Images Carousel */}
       <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden group px-4 sm:px-6 md:px-8 lg:px-12 z-10" style={{ contain: 'layout style paint' }}>
         {/* Fixed Navigation Tabs Overlay */}
-        {(stays.length > 0 || activities.length > 0 || trips.length > 0) && (
+        {destination && (stays.length > 0 || activities.length > 0 || trips.length > 0 || true) && (
           <div className="absolute top-4 sm:top-6 md:top-8 left-1/2 -translate-x-1/2 z-40 w-full max-w-7xl px-4 sm:px-6 md:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -479,6 +479,16 @@ export default function DestinationDetailClient({ slug, category }: DestinationD
                   Food spots
                 </motion.button>
               )}
+              <motion.button
+                onClick={() => {
+                  router.push(`/tour-packages?destination=${encodeURIComponent(destination?.name || slug)}`);
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-2.5 sm:px-6 md:px-8 py-1.5 sm:py-2.5 md:py-3 text-white font-semibold text-xs sm:text-base md:text-lg border-2 border-white/40 hover:border-white/60 rounded-full transition-all duration-300"
+              >
+                Tour packages
+              </motion.button>
             </motion.div>
           </div>
         )}

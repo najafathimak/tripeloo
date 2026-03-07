@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, Bed, Camera, UtensilsCrossed } from 'lucide-react';
+import { Search, Bed, Camera, UtensilsCrossed, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
@@ -129,7 +129,7 @@ export function Hero({ banners = [] }: HeroProps) {
   // Use provided banners or default banners
   const displayBanners = banners.length > 0 ? banners : defaultBanners;
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'stays' | 'things-to-do' | 'restaurants-cafes' | null>(null);
+  const [activeTab, setActiveTab] = useState<'tour-packages' | 'stays' | 'things-to-do' | 'restaurants-cafes' | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -140,7 +140,7 @@ export function Hero({ banners = [] }: HeroProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<'stays' | 'things-to-do' | 'restaurants-cafes' | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<'tour-packages' | 'stays' | 'things-to-do' | 'restaurants-cafes' | null>(null);
   const [selectedDestination, setSelectedDestination] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -306,7 +306,7 @@ export function Hero({ banners = [] }: HeroProps) {
     }
   };
 
-  const handleTabClick = (tab: 'stays' | 'things-to-do' | 'restaurants-cafes' | null) => {
+  const handleTabClick = (tab: 'tour-packages' | 'stays' | 'things-to-do' | 'restaurants-cafes' | null) => {
     if (tab) {
       // Toggle: if same tab clicked, close dropdown; otherwise switch tab
       const newCategory = selectedCategory === tab ? null : tab;
@@ -318,14 +318,18 @@ export function Hero({ banners = [] }: HeroProps) {
 
   const handleDestinationSelect = (destSlugOrName: string) => {
     if (selectedCategory && destSlugOrName) {
-      const categoryMap: Record<string, string> = {
-        'stays': 'stays',
-        'things-to-do': 'things-to-do',
-        'restaurants-cafes': 'restaurants-cafes'
-      };
-      const category = categoryMap[selectedCategory];
       const destination = encodeURIComponent(destSlugOrName);
-      router.push(`/stay-listings?destination=${destination}&category=${category}`);
+      if (selectedCategory === 'tour-packages') {
+        router.push(`/tour-packages?destination=${destination}`);
+      } else {
+        const categoryMap: Record<string, string> = {
+          'stays': 'stays',
+          'things-to-do': 'things-to-do',
+          'restaurants-cafes': 'restaurants-cafes'
+        };
+        const category = categoryMap[selectedCategory];
+        router.push(`/stay-listings?destination=${destination}&category=${category}`);
+      }
       setSelectedCategory(null);
       setActiveTab(null);
       setSelectedDestination('');
@@ -410,46 +414,59 @@ export function Hero({ banners = [] }: HeroProps) {
           </h1>
         </div>
 
-        {/* Filter Tabs */}
+        {/* Filter Tabs - pill style; mobile: 2x2 grid so all visible without overflow */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-nowrap justify-center items-center gap-1 sm:gap-4 mb-6 sm:mb-8 w-full max-w-full overflow-x-auto px-2"
+          className="mb-6 sm:mb-8 w-full max-w-full px-1"
         >
-          <button
-            onClick={() => handleTabClick('stays')}
-            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
-              activeTab === 'stays'
-                ? 'bg-[#E51A4B] text-white shadow-lg'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <Bed className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
-            <span className="whitespace-nowrap">Stays</span>
-          </button>
-          <button 
-            onClick={() => handleTabClick('things-to-do')}
-            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
-              activeTab === 'things-to-do'
-                ? 'bg-[#E51A4B] text-white shadow-lg'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <Camera className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
-            <span className="whitespace-nowrap">Things to Do</span>
-          </button>
-          <button 
-            onClick={() => handleTabClick('restaurants-cafes')}
-            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all flex-shrink-0 whitespace-nowrap ${
-              activeTab === 'restaurants-cafes'
-                ? 'bg-[#E51A4B] text-white shadow-lg'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <UtensilsCrossed className="w-3.5 h-3.5 sm:w-5 sm:h-5 flex-shrink-0" />
-            <span className="whitespace-nowrap">Food spots</span>
-          </button>
+          <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-2 md:gap-3 lg:gap-4 max-w-lg md:max-w-none mx-auto">
+            <button
+              onClick={() => handleTabClick('tour-packages')}
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all ${
+                activeTab === 'tour-packages'
+                  ? 'bg-[#E51A4B] text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Package className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span className="truncate">Tour packages</span>
+            </button>
+            <button
+              onClick={() => handleTabClick('stays')}
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all ${
+                activeTab === 'stays'
+                  ? 'bg-[#E51A4B] text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Bed className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>Stays</span>
+            </button>
+            <button
+              onClick={() => handleTabClick('things-to-do')}
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all ${
+                activeTab === 'things-to-do'
+                  ? 'bg-[#E51A4B] text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Camera className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span className="truncate">Things to Do</span>
+            </button>
+            <button
+              onClick={() => handleTabClick('restaurants-cafes')}
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-base transition-all ${
+                activeTab === 'restaurants-cafes'
+                  ? 'bg-[#E51A4B] text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <UtensilsCrossed className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>Food spots</span>
+            </button>
+          </div>
         </motion.div>
 
         {/* Destination dropdown - inline when tab is selected */}
@@ -462,7 +479,7 @@ export function Hero({ banners = [] }: HeroProps) {
             className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6 sm:mb-8"
           >
             <span className="text-sm font-medium text-gray-700 shrink-0">
-              Choose destination for {selectedCategory === 'stays' ? 'stays' : selectedCategory === 'things-to-do' ? 'things to do' : 'food spots'}:
+              Choose destination for {selectedCategory === 'tour-packages' ? 'tour packages' : selectedCategory === 'stays' ? 'stays' : selectedCategory === 'things-to-do' ? 'things to do' : 'food spots'}:
             </span>
             <div className="relative w-full sm:w-auto min-w-[200px] max-w-xs">
               <select
