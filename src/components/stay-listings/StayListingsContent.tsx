@@ -24,7 +24,7 @@ import {
 
 import { stayData, activitiesData, tripsData, type Stay, type Activity, type Trip } from "./DestinationData";
 
-const tabData = ["Stays", "Things to Do", "Food spots"];
+const tabData = ["Stays", "Things to Do", "Food spots", "Tour packages"];
 
 // Helper function to map category based on item data
 const mapCategory = (item: any, type: 'stay' | 'activity' | 'trip'): string => {
@@ -100,16 +100,20 @@ function StayListingsContent() {
     }
   }, [rawDestination, router]);
 
-  // Update active tab when category query param changes
+  // Update active tab when category query param changes; redirect to tour-packages if that category
   useEffect(() => {
+    if (categoryParam === "tour-packages" && rawDestination) {
+      router.push(`/tour-packages?destination=${encodeURIComponent(rawDestination)}`);
+      return;
+    }
     if (categoryParam === "things-to-do") {
       setActiveTab("Things to Do");
-      } else if (categoryParam === "getaways" || categoryParam === "restaurants-cafes") {
+    } else if (categoryParam === "getaways" || categoryParam === "restaurants-cafes") {
       setActiveTab("Food spots");
     } else if (categoryParam === "stays") {
       setActiveTab("Stays");
     }
-  }, [categoryParam]);
+  }, [categoryParam, rawDestination, router]);
 
   // Fetch data from API
   useEffect(() => {
@@ -768,7 +772,13 @@ function StayListingsContent() {
           {tabData.map((tab) => (
             <motion.button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                if (tab === "Tour packages") {
+                  router.push(`/tour-packages?destination=${encodeURIComponent(rawDestination || "")}`);
+                  return;
+                }
+                setActiveTab(tab);
+              }}
               className={`relative flex-1 px-4 md:px-6 py-2.5 md:py-3 text-xs md:text-sm lg:text-base font-semibold rounded-full transition-all whitespace-nowrap ${
                 activeTab === tab
                   ? "text-white"
@@ -799,6 +809,7 @@ function StayListingsContent() {
           {activeTab === "Things to Do" &&
             `Things to Do in ${decodedDestination}`}
           {activeTab === "Food spots" && `Food spots in ${decodedDestination}`}
+          {activeTab === "Tour packages" && `Tour packages in ${decodedDestination}`}
         </motion.h1>
 
         {/* No results message */}
