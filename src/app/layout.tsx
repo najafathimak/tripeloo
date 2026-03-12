@@ -1,98 +1,71 @@
-import type { Metadata, Viewport } from 'next';
-import { Playfair_Display, Inter } from 'next/font/google';
-import './globals.css';
-import { ConditionalLayout } from '@/components/ConditionalLayout';
-import { AuthProvider } from '@/components/AuthProvider';
-import { siteConfig } from '@/config/site';
+import "./globals.css";
 
-const playfairDisplay = Playfair_Display({ 
-  subsets: ['latin'],
-  variable: '--font-playfair',
-  display: 'swap',
-});
-
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
-
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: `${siteConfig.name} — Book Stays, Things To Do & Food spots`,
-    template: `%s | ${siteConfig.name}`
-  },
-  description: siteConfig.description,
-  keywords: siteConfig.keywords,
-  authors: [{ name: 'Tripeloo' }],
-  creator: 'Tripeloo',
-  publisher: 'Tripeloo',
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  icons: [
-    { rel: 'icon', url: '/assets/favicon.png', type: 'image/png' },
-    { rel: 'apple-touch-icon', url: '/assets/favicon.png' }
-  ],
-  openGraph: {
-    title: `${siteConfig.name} — Book Stays, Things To Do & Food spots`,
-    description: siteConfig.description,
-    url: siteConfig.url,
-    siteName: siteConfig.name,
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
-        alt: `${siteConfig.name} - Book Stays, Things To Do & Food spots`,
-      }
-    ],
-    locale: 'en_IN',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: `${siteConfig.name} — Book Stays, Things To Do & Food spots`,
-    description: siteConfig.description,
-    images: [siteConfig.ogImage],
-  },
-  alternates: {
-    canonical: siteConfig.url,
-  },
-  verification: {
-    // Add your verification codes here when available
-    // google: 'your-google-verification-code',
-    // yandex: 'your-yandex-verification-code',
-    // yahoo: 'your-yahoo-verification-code',
-  },
+export const metadata = {
+  title: "Tripeloo",
+  description: "Travel Rhythm Platform",
 };
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en-IN">
-      <head>
-        <link rel="canonical" href={siteConfig.url} />
-      </head>
-      <body className={`${playfairDisplay.variable} ${inter.variable} font-sans`} suppressHydrationWarning>
-        <AuthProvider>
-          <ConditionalLayout>{children}</ConditionalLayout>
-        </AuthProvider>
+    <html lang="en">
+      <body>
+        {/* Navbar */}
+        <header
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "15px 40px",
+            background: "white",
+            borderBottom: "1px solid #eee",
+          }}
+        >
+          {/* Logo */}
+          <h2 style={{ color: "#e11d48", margin: 0 }}>Tripeloo</h2>
+
+          {/* Navigation */}
+          <nav style={{ display: "flex", gap: "25px" }}>
+            <a href="/">Home</a>
+            <a href="/destinations">Destinations</a>
+            <a href="/about">About</a>
+            <a href="/contact">Contact</a>
+          </nav>
+
+          {/* Right Buttons */}
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              style={{
+                padding: "8px 14px",
+                borderRadius: "6px",
+                border: "1px solid #2563eb",
+                background: "white",
+                color: "#2563eb",
+              }}
+            >
+              Call Assistance
+            </button>
+
+            <button
+              style={{
+                padding: "8px 14px",
+                borderRadius: "6px",
+                border: "none",
+                background: "#2563eb",
+                color: "white",
+              }}
+            >
+              Login
+            </button>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main>{children}</main>
       </body>
     </html>
   );
 }
-

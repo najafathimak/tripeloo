@@ -1,91 +1,160 @@
-import type { Metadata } from 'next';
-import { Hero } from '@/components/Hero';
-import { FeaturedDestinations } from '@/components/FeaturedDestinations';
-import { AboutBand } from '@/components/AboutBand';
-import OurSpecialities from '@/components/OurSpecialities';
-import StatisticsSection from '@/components/StatisticsSection';
-import TestimonialsCarousel from '@/components/TestimonialsCarousel';
-import { siteConfig } from '@/config/site';
-import HomePageClient from './HomePageClient';
-
-export const metadata: Metadata = {
-  title: 'Home',
-  description: 'Tripeloo: Discover and book curated stays, activities, and trips across top destinations in India. Find the best hotels, resorts, and experiences in Wayanad, Munnar, Coorg, and more.',
-  keywords: [
-    'travel booking',
-    'hotel booking',
-    'resort booking',
-    'things to do',
-    'travel packages',
-    'Wayanad hotels',
-    'Munnar resorts',
-    'Coorg stays',
-    'Kerala tourism',
-    'Karnataka tourism',
-    'India travel',
-  ],
-  openGraph: {
-    title: `${siteConfig.name} — Book Stays, Things To Do & Getaways`,
-    description: 'Discover and book curated stays, activities, and trips across top destinations in India.',
-    url: siteConfig.url,
-    siteName: siteConfig.name,
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
-        alt: 'Tripeloo - Travel Booking Platform',
-      }
-    ],
-    locale: 'en_IN',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: `${siteConfig.name} — Book Stays, Things To Do & Getaways`,
-    description: 'Discover and book curated stays, activities, and trips across top destinations in India.',
-    images: [siteConfig.ogImage],
-  },
-  alternates: {
-    canonical: siteConfig.url,
-  },
-};
-
-export default function Page() {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'TravelAgency',
-    name: siteConfig.name,
-    url: siteConfig.url,
-    description: siteConfig.description,
-    logo: `${siteConfig.url}/assets/Logo.png`,
-    sameAs: [
-      // Add social media links when available
-    ],
-    contactPoint: {
-      '@type': 'ContactPoint',
-      contactType: 'Customer Service',
-      availableLanguage: ['English', 'Hindi', 'Malayalam'],
-    },
-    areaServed: {
-      '@type': 'Country',
-      name: 'India',
-    },
-    offers: {
-      '@type': 'Offer',
-      category: 'Travel Services',
-    },
-  };
-
+export default function Home() {
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <main>
-        <HomePageClient />
-      </main>
-    </>
+    <div style={{ fontFamily: "Arial", background: "#f5f7fb" }}>
+
+      {/* HERO SECTION */}
+      <section
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          height: "450px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          textAlign: "center",
+        }}
+      >
+        <div>
+          <h1 style={{ fontSize: "50px", marginBottom: "10px" }}>
+            Explore the World with Tripeloo
+          </h1>
+
+          <p style={{ fontSize: "18px", marginBottom: "25px" }}>
+            Discover amazing travel destinations and unforgettable experiences
+          </p>
+
+          <button
+            style={{
+              padding: "12px 25px",
+              fontSize: "16px",
+              background: "#2563eb",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+            }}
+          >
+            Explore Trips
+          </button>
+        </div>
+      </section>
+
+      {/* POPULAR DESTINATIONS */}
+      <section style={{ padding: "60px 40px", textAlign: "center" }}>
+        <h2 style={{ marginBottom: "40px", fontSize: "32px" }}>
+          Popular Destinations
+        </h2>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "25px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          {["Goa", "Munnar", "Manali", "Wayanad"].map((place) => (
+            <div
+              key={place}
+              style={{
+                width: "260px",
+                background: "white",
+                borderRadius: "10px",
+                overflow: "hidden",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }}
+            >
+              <img
+                src={`https://source.unsplash.com/400x300/?${place}`}
+                alt={place}
+                style={{
+                  width: "100%",
+                  height: "170px",
+                  objectFit: "cover",
+                }}
+              />
+
+              <div style={{ padding: "15px" }}>
+                <h3>{place}</h3>
+                <p>Beautiful destination to explore.</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* WHY CHOOSE US */}
+      <section
+        style={{
+          background: "white",
+          padding: "60px 40px",
+          textAlign: "center",
+        }}
+      >
+        <h2 style={{ marginBottom: "40px", fontSize: "30px" }}>
+          Why Choose Tripeloo?
+        </h2>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "40px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ width: "250px" }}>
+            <h3>🌍 Best Destinations</h3>
+            <p>Handpicked travel experiences across beautiful places.</p>
+          </div>
+
+          <div style={{ width: "250px" }}>
+            <h3>💰 Affordable Packages</h3>
+            <p>Best travel deals with affordable pricing.</p>
+          </div>
+
+          <div style={{ width: "250px" }}>
+            <h3>⭐ Trusted Providers</h3>
+            <p>Verified travel providers and safe travel planning.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* CALL TO ACTION */}
+      <section
+        style={{
+          background: "#2563eb",
+          color: "white",
+          textAlign: "center",
+          padding: "60px 20px",
+        }}
+      >
+        <h2 style={{ marginBottom: "20px" }}>
+          Start Your Travel Journey Today
+        </h2>
+
+        <p style={{ marginBottom: "25px" }}>
+          Join thousands of travelers exploring the world with Tripeloo
+        </p>
+
+        <button
+          style={{
+            padding: "12px 25px",
+            background: "white",
+            color: "#2563eb",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "16px",
+          }}
+        >
+          Book Now
+        </button>
+      </section>
+
+    </div>
   );
 }
