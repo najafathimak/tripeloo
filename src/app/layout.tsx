@@ -12,7 +12,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body style={{ margin: 0, fontFamily: "Arial, sans-serif" }}>
+        
         {/* Navbar */}
         <header
           style={{
@@ -29,10 +30,26 @@ export default function RootLayout({
 
           {/* Navigation */}
           <nav style={{ display: "flex", gap: "25px" }}>
-            <a href="/">Home</a>
-            <a href="/destinations">Destinations</a>
-            <a href="/about">About</a>
-            <a href="/contact">Contact</a>
+            <a
+              href="/"
+              style={{ textDecoration: "none", color: "#333" }}
+            >
+              Home
+            </a>
+
+            <a
+              href="/destinations"
+              style={{ textDecoration: "none", color: "#333" }}
+            >
+              Destinations
+            </a>
+
+            <a
+              href="/about"
+              style={{ textDecoration: "none", color: "#333" }}
+            >
+              About
+            </a>
           </nav>
 
           {/* Right Buttons */}
@@ -44,27 +61,32 @@ export default function RootLayout({
                 border: "1px solid #2563eb",
                 background: "white",
                 color: "#2563eb",
+                cursor: "pointer",
               }}
             >
               Call Assistance
             </button>
 
-            <button
+            <a
+              href="/provider/login"
               style={{
                 padding: "8px 14px",
                 borderRadius: "6px",
                 border: "none",
                 background: "#2563eb",
                 color: "white",
+                textDecoration: "none",
+                cursor: "pointer",
               }}
             >
               Login
-            </button>
+            </a>
           </div>
         </header>
 
         {/* Page Content */}
         <main>{children}</main>
+
       </body>
     </html>
   );
