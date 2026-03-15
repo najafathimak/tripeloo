@@ -1,79 +1,116 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 export default function ProviderLogin() {
+
+  const router = useRouter();
+
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e:any) => {
+    e.preventDefault();
+
+    setError("");
+
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        email,
+        password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+
+      localStorage.setItem("isLoggedIn", "true");
+
+      router.push("/provider/dashboard");
+
+    } else {
+      setError("Invalid login credentials");
+    }
+  };
+
   return (
-    <div className="min-h-[85vh] flex items-center justify-center bg-gray-100">
+    <div style={{ padding: "20px" }}>
 
-      <div className="bg-white shadow-xl rounded-2xl p-10 w-[420px]">
+      <h1 style={{ fontSize: "32px", fontWeight: "bold" }}>
+        Tripeloo
+      </h1>
 
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
-          Tripeloo
-        </h1>
+      <p>Provider Login</p>
 
-        <p className="text-center text-gray-500 mb-8">
-          Provider Login
-        </p>
+      <form
+        onSubmit={handleLogin}
+        style={{
+          width: "300px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+        }}
+      >
 
-        <form className="flex flex-col gap-5">
+        <div>
+          <label>Username</label>
+          <input
+            type="text"
+            placeholder="Enter username"
+            value={username}
+            onChange={(e)=>setUsername(e.target.value)}
+          />
+        </div>
 
-          {/* Username */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Username
-            </label>
+        <div>
+          <label>Email</label>
+          <input
+            type="email"
+            placeholder="Enter email"
+            value={email}
+            onChange={(e)=>setEmail(e.target.value)}
+          />
+        </div>
 
-            <div className="flex items-center border rounded-lg p-2">
-              <span className="text-gray-400 px-2">👤</span>
+        <div>
+          <label>Password</label>
+          <input
+            type="password"
+            placeholder="Enter password"
+            value={password}
+            onChange={(e)=>setPassword(e.target.value)}
+          />
+        </div>
 
-              <input
-                type="text"
-                placeholder="Enter username"
-                className="w-full outline-none p-1"
-              />
-            </div>
-          </div>
+        {error && (
+          <p style={{ color: "red" }}>
+            {error}
+          </p>
+        )}
 
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Email
-            </label>
+        <button
+          type="submit"
+          style={{
+            background: "#2563eb",
+            color: "white",
+            padding: "8px",
+            borderRadius: "6px",
+            border: "none"
+          }}
+        >
+          Login
+        </button>
 
-            <div className="flex items-center border rounded-lg p-2">
-              <span className="text-gray-400 px-2">📧</span>
-
-              <input
-                type="email"
-                placeholder="Enter email"
-                className="w-full outline-none p-1"
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Password
-            </label>
-
-            <div className="flex items-center border rounded-lg p-2">
-              <span className="text-gray-400 px-2">🔒</span>
-
-              <input
-                type="password"
-                placeholder="Enter password"
-                className="w-full outline-none p-1"
-              />
-            </div>
-          </div>
-
-          <button className="bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-            Login
-          </button>
-
-        </form>
-
-      </div>
+      </form>
 
     </div>
   );

@@ -1,81 +1,147 @@
 "use client";
 
-export default function PropertyForm() {
+import { useState } from "react";
+
+export default function PropertyPage() {
+  const [property, setProperty] = useState({
+    name: "",
+    location: "",
+    price: "",
+    description: "",
+  });
+
+  const handleChange = (e: any) => {
+    setProperty({
+      ...property,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+    alert("Property Saved");
+  };
+
   return (
-    <div className="min-h-[85vh] flex items-center justify-center bg-gray-100">
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        marginTop: "50px",
+      }}
+    >
+      <div
+        style={{
+          width: "420px",
+          background: "#ffffff",
+          padding: "30px",
+          borderRadius: "10px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        }}
+      >
+        <h2
+          style={{
+            textAlign: "center",
+            fontSize: "26px",
+            fontWeight: "bold",
+            marginBottom: "20px",
+          }}
+        >
+          Add / Edit Property
+        </h2>
 
-      <div className="bg-white shadow-xl rounded-2xl p-10 w-[500px]">
-
-        <h1 className="text-3xl font-bold text-center mb-2">
-          Property Management
-        </h1>
-
-        <p className="text-center text-gray-500 mb-8">
-          Add or edit property details
-        </p>
-
-        <form className="flex flex-col gap-5">
-
-          {/* Property Name */}
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+        >
           <div>
-            <label className="block font-semibold mb-1">
-              Property Name
-            </label>
-
+            <label>Property Name</label>
             <input
               type="text"
+              name="name"
+              value={property.name}
+              onChange={handleChange}
               placeholder="Enter property name"
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-400"
+              style={{
+                width: "100%",
+                padding: "8px",
+                border: "1px solid #ccc",
+                borderRadius: "6px",
+                marginTop: "5px",
+              }}
             />
           </div>
 
-          {/* Location */}
           <div>
-            <label className="block font-semibold mb-1">
-              Location
-            </label>
-
+            <label>Location</label>
             <input
               type="text"
+              name="location"
+              value={property.location}
+              onChange={handleChange}
               placeholder="Enter location"
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-400"
+              style={{
+                width: "100%",
+                padding: "8px",
+                border: "1px solid #ccc",
+                borderRadius: "6px",
+                marginTop: "5px",
+              }}
             />
           </div>
 
-          {/* Price */}
           <div>
-            <label className="block font-semibold mb-1">
-              Price per Night
-            </label>
-
+            <label>Price</label>
             <input
               type="number"
+              name="price"
+              value={property.price}
+              onChange={handleChange}
               placeholder="Enter price"
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-400"
+              style={{
+                width: "100%",
+                padding: "8px",
+                border: "1px solid #ccc",
+                borderRadius: "6px",
+                marginTop: "5px",
+              }}
             />
           </div>
 
-          {/* Description */}
           <div>
-            <label className="block font-semibold mb-1">
-              Description
-            </label>
-
+            <label>Description</label>
             <textarea
+              name="description"
+              value={property.description}
+              onChange={handleChange}
               placeholder="Enter property description"
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-400"
-              rows={4}
+              style={{
+                width: "100%",
+                padding: "8px",
+                border: "1px solid #ccc",
+                borderRadius: "6px",
+                marginTop: "5px",
+              }}
             />
           </div>
 
-          <button className="bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+          <button
+            type="submit"
+            style={{
+              backgroundColor: "#2563eb",
+              color: "white",
+              padding: "10px",
+              borderRadius: "6px",
+              border: "none",
+              cursor: "pointer",
+              marginTop: "10px",
+            }}
+          >
             Save Property
           </button>
-
         </form>
-
       </div>
-
     </div>
   );
 }
