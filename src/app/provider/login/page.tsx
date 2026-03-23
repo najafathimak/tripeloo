@@ -1,117 +1,50 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-
-export default function ProviderLogin() {
-
-  const router = useRouter();
-
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleLogin = async (e:any) => {
-    e.preventDefault();
-
-    setError("");
-
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        email,
-        password,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-
-      localStorage.setItem("isLoggedIn", "true");
-
-      router.push("/provider/dashboard");
-
-    } else {
-      setError("Invalid login credentials");
-    }
-  };
-
+export default function LoginPage() {
   return (
-    <div style={{ padding: "20px" }}>
-
-      <h1 style={{ fontSize: "32px", fontWeight: "bold" }}>
-        Tripeloo
-      </h1>
-
-      <p>Provider Login</p>
-
-      <form
-        onSubmit={handleLogin}
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "#f4f4f4",
+      }}
+    >
+      <div
         style={{
-          width: "300px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
+          width: "350px",
+          padding: "30px",
+          background: "#fff",
+          borderRadius: "10px",
+          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
         }}
       >
+        <h2>Provider Login</h2>
 
-        <div>
-          <label>Username</label>
-          <input
-            type="text"
-            placeholder="Enter username"
-            value={username}
-            onChange={(e)=>setUsername(e.target.value)}
-          />
-        </div>
+        <input
+          placeholder="Email"
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <div>
-          <label>Email</label>
-          <input
-            type="email"
-            placeholder="Enter email"
-            value={email}
-            onChange={(e)=>setEmail(e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="Enter password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-          />
-        </div>
-
-        {error && (
-          <p style={{ color: "red" }}>
-            {error}
-          </p>
-        )}
+        <input
+          type="password"
+          placeholder="Password"
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
         <button
-          type="submit"
           style={{
-            background: "#2563eb",
+            width: "100%",
+            padding: "10px",
+            background: "#ff3b5c",
             color: "white",
-            padding: "8px",
-            borderRadius: "6px",
-            border: "none"
+            border: "none",
           }}
         >
           Login
         </button>
-
-      </form>
-
+      </div>
     </div>
   );
 }

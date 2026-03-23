@@ -2,73 +2,65 @@
 
 import { useState } from "react";
 
-export default function PropertiesPage() {
-
+export default function EditPropertyPage() {
   const [property, setProperty] = useState({
     title: "",
     location: "",
     price: "",
-    description: ""
+    description: "",
   });
 
-  const handleChange = (e:any) => {
+  const handleChange = (e: any) => {
     setProperty({
       ...property,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e:any) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
-
-    await fetch("/api/stays", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(property)
-    });
-
-    alert("Property Added Successfully");
+    alert("Property Updated Successfully");
   };
 
   return (
-    <div style={{padding:"40px"}}>
-
-      <h1>Add Property</h1>
+    <div style={{ padding: "40px" }}>
+      <h1>Edit Property</h1>
 
       <form onSubmit={handleSubmit}>
-
         <input
           name="title"
-          placeholder="Property Title"
+          placeholder="Title"
+          value={property.title}
           onChange={handleChange}
         />
+        <br /><br />
 
         <input
           name="location"
           placeholder="Location"
+          value={property.location}
           onChange={handleChange}
         />
+        <br /><br />
 
         <input
           name="price"
           placeholder="Price"
+          value={property.price}
           onChange={handleChange}
         />
+        <br /><br />
 
         <textarea
           name="description"
           placeholder="Description"
+          value={property.description}
           onChange={handleChange}
         />
+        <br /><br />
 
-        <button type="submit">
-          Add Property
-        </button>
-
+        <button type="submit">Update</button>
       </form>
-
     </div>
   );
 }

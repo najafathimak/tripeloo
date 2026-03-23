@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
+  const body = await req.json();
 
-  const { username, email, password } = await req.json();
+  const { email, password } = body;
 
-  const demoUser = {
-    username: "admin",
-    email: "admin@tripeloo.com",
-    password: "123456"
-  };
-
-  if (
-    username === demoUser.username &&
-    email === demoUser.email &&
-    password === demoUser.password
-  ) {
-    return NextResponse.json({ success: true });
+  if (email === "admin@tripeloo.com" && password === "123456") {
+    return NextResponse.json({
+      success: true,
+      message: "Login successful",
+    });
   }
 
-  return NextResponse.json({ success: false });
+  return NextResponse.json({
+    success: false,
+    message: "Invalid credentials",
+  });
 }

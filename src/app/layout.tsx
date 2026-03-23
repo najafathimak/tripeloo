@@ -30,30 +30,14 @@ export default function RootLayout({
 
           {/* Navigation */}
           <nav style={{ display: "flex", gap: "25px" }}>
-            <a
-              href="/"
-              style={{ textDecoration: "none", color: "#333" }}
-            >
-              Home
-            </a>
-
-            <a
-              href="/destinations"
-              style={{ textDecoration: "none", color: "#333" }}
-            >
-              Destinations
-            </a>
-
-            <a
-              href="/about"
-              style={{ textDecoration: "none", color: "#333" }}
-            >
-              About
-            </a>
+            <a href="/" style={linkStyle}>Home</a>
+            <a href="/destinations" style={linkStyle}>Destinations</a>
+            <a href="/about" style={linkStyle}>About</a>
           </nav>
 
           {/* Right Buttons */}
           <div style={{ display: "flex", gap: "10px" }}>
+            
             <button
               style={{
                 padding: "8px 14px",
@@ -67,20 +51,11 @@ export default function RootLayout({
               Call Assistance
             </button>
 
-            <a
-              href="/provider/login"
-              style={{
-                padding: "8px 14px",
-                borderRadius: "6px",
-                border: "none",
-                background: "#2563eb",
-                color: "white",
-                textDecoration: "none",
-                cursor: "pointer",
-              }}
-            >
+            {/* ✅ FIXED LOGIN LINK */}
+            <a href="/login" style={loginButton}>
               Login
             </a>
+
           </div>
         </header>
 
@@ -91,3 +66,18 @@ export default function RootLayout({
     </html>
   );
 }
+
+const linkStyle = {
+  textDecoration: "none",
+  color: "#333",
+};
+
+const loginButton = {
+  padding: "8px 14px",
+  borderRadius: "6px",
+  border: "none",
+  background: "#2563eb",
+  color: "white",
+  textDecoration: "none",
+  cursor: "pointer",
+};
